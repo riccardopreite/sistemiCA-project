@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">Find My Car</string>
+    <string name="title_activity_maps">Find My Car</string>
+    <string-array name="planets_array">
+        <item>Ristoranti</item>
+        <item>Sport</item>
+        <item>Svago</item>
+        <item>Macchina</item>
+        <item>Live</item>
+    </string-array>
+
+    <string name="name">Nome:</string>
+    <string name="address">Indirizzo:</string>
+    <string name="login">Login</string>
+    <string name="share">Condividi</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="enter_email">Inserisci Email</string>
+    <string name="enter_name">Enter Name</string>
+    <string name="pubblico">Pubblico</string>
+    <string name="travelling">Travelling</string>
+    <string name="privato">Privato</string>
+    <string name="custom_btn">Aggiungi POI</string>
+    <string name="nome">Nome:</string>
+    <string name="tipo">Privacy:</string>
+    <string name="gender">Gender</string>
+    <string name="reading">Reading</string>
+    <string name="sports">Sports</string>
+    <string name="header">Crea Punto di interesse</string>
+    <string name="spinner_name">Tipologia:</string>
+    <string name="info">Info</string>
+    <string name="help">Guida</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+
+    <string name="home_second">Home Second</string>
+    <string name="title_activity_navigation">navigation</string>
+    <string name="logout">Logout</string>
+    <string name="list">I tuoi punti di interesse</string>
+    <string name="x">X</string>
+    <string name="back">Back</string>
+    <string name="button">Button</string>
+    <string name="other_functionality">other functionality?</string>
+    <string name="add">Aggiungi</string>
+    <string name="nosrc">Nessun marker registrato!</string>
+    <string name="nocar">Nessuna macchina registrata!</string>
+    <string name="nofriend">Ancora nessun amico!</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome !"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="sign_in">     Login</string>
+    <string name="route">Portami</string>
+    <string name="elimina">   Elimina</string>
+    <string name="splash">splash</string>
+    <string name="title">Find My Car</string>
+    <string name="find_my_car_2020">Find My Car 2020</string>
+    <string name="phone">N. cellulare</string>
+    <string name="notsetphone">Nessun numero di cellulare</string>
+    <string name="website">Website</string>
+    <string name="noteseturi">Nessun sito web</string>
+    <string name="cancel">Annulla</string>
+    <string name="friend">Amici</string>
+    <string name="addfriend">Aggiungi amico</string>
+    <string name="addFriend">Accetta</string>
+    <string name="delete">Rifiuta</string>
+    <string name="friendheader">Nuova richiesta di amicizia</string>
+    <string name="removeFriend">Rimuovi</string>
+    <string name="POIname">POI:</string>
+    <string name="car">Auto</string>
+    <string name="live">Live</string>
+    <string name="remind">Rimanda</string>
+    <string name="timer">Timer:</string>
+    <string name="nolive">Nessun evento Live!</string>
+</resources>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/header"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:ellipsize="end"
+                android:textColor="#000000"
+                android:textSize="17sp"
+                android:text="@string/header"
+                android:maxLines="3"
+                android:textAlignment="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:textAllCaps="false"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/rl_lname"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bottom_border">
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/nome"
+                    android:id="@+id/lbl_lname"
+                    android:textColor="#000000"
+                    android:layout_centerVertical="true"
+                    />
+
+                <EditText
+                    android:id="@+id/txt_lname"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/lbl_lname"
+                    android:backgroundTint="#000000"
+                    android:textCursorDrawable="@drawable/color_cursor"
+                    android:inputType="text"
+                    android:singleLine="false"
+                    android:autofillHints="" />
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/address"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bottom_border">
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:text="@string/address"
+                    android:id="@+id/lbl_address"
+                    android:layout_centerVertical="true"
+                    />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/txt_address"
+                    android:layout_toEndOf="@+id/lbl_address"
+                    />
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bottom_border">
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+
+                    android:textColor="#000000"
+                    android:text="@string/spinner_name"
+                    android:id="@+id/spinner_name"
+                    android:layout_centerVertical="true"
+
+                    />
+                <Spinner
+                    android:id="@+id/planets_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/spinner_name"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/rl_gender"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bottom_border">
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tipo"
+                    android:textColor="#000000"
+                    android:id="@+id/lbl_gender"
+                    android:layout_centerVertical="true"
+                    />
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/rg_gender"
+                    android:layout_toEndOf="@+id/lbl_gender">
+
+                    <RadioButton
+                        android:id="@+id/rb_public"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="#2196F3"
+                        android:layout_gravity="start"
+                        android:checked="true"
+                        android:text="@string/pubblico"
+                        />
+
+                    <RadioButton
+                        android:id="@+id/rb_private"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:checked="false"
+                        android:text="@string/privato"
+                        />
+                </RadioGroup>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/timePicker"
+                android:layout_marginTop="10dp"
+                android:visibility="gone">
+                <TimePicker android:id="@+id/timePicker1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:timePickerMode="spinner" />
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/buttonlayout"
+                android:layout_marginTop="16dp">
+
+                <Button
+                    android:id="@+id/removeBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginStart="34dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@color/colorBackground"
+                    android:text="@string/cancel" />
+
+                <Button
+                    android:id="@+id/addBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@+id/removeBtn"
+                    android:layout_alignParentEnd="true"
+                    android:layout_gravity="end"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="34dp"
+                    android:background="#2196F3"
+                    android:text="@string/add" />
+            </RelativeLayout>
+        </LinearLayout>
+
+    </ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

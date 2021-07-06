@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:showIn="@+id/list_layout">
+
+    <group android:checkableBehavior="single"
+        android:id="@+id/firstgroup">
+        <item
+            android:id="@+id/list"
+            android:icon="@drawable/ic_list"
+            android:title="@string/list"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/signout"
+            android:icon="@drawable/ic_signout"
+            android:title="@string/logout"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/car"
+            android:icon="@drawable/ic_car"
+            android:title="@string/car"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/live"
+            android:icon="@drawable/ic_live"
+            android:title="@string/live"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/help"
+            android:icon="@drawable/ic_help"
+            android:title="@string/help"
+            app:showAsAction="always"/>
+    </group>
+</menu>
