@@ -8,13 +8,10 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
-import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.SecureRandom
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManagerFactory
-import javax.net.ssl.X509TrustManager
+import javax.net.ssl.*
 
 
 /*Start Server Function*/
@@ -81,9 +78,34 @@ fun reminderAuto(car:JSONObject){
 }*/
 
 fun confirmFriend(sender:String,receiver:String){
-    var url = URL("http://"+ip+port+"/confirmFriend?"+ URLEncoder.encode("receiver", "UTF-8") + "=" + URLEncoder.encode(receiver, "UTF-8")+"&"+ URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(sender, "UTF-8"))
+    var url = URL("https://"+ip+port+"/confirmFriend?"+ URLEncoder.encode("receiver", "UTF-8") + "=" + URLEncoder.encode(receiver, "UTF-8")+"&"+ URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(sender, "UTF-8"))
 
-    val client = OkHttpClient()
+    // SSL certificate configuration
+    val trustStore = KeyStore.getInstance("BKS")
+    val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance("RSA")
+    keyPairGenerator.initialize(2048)
+    val keyPair = "SistemiContextAware2021@*"
+
+    context.resources.openRawResource(R.raw.mystore).use {
+        trustStore.load(it,keyPair.toCharArray())
+    }
+    val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
+        init(trustStore)
+    }
+    val sslContext = SSLContext.getInstance("TLS").apply {
+        init(null, tmf.trustManagers, SecureRandom())
+    }
+    val trustManager = tmf.trustManagers[0] as X509TrustManager
+
+
+    val hostnameVerifier = HostnameVerifier { first, session ->
+        val hv: HostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
+        hv.verify(ip, session)
+        return@HostnameVerifier true
+    }
+
+    var client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
+
     val request = Request.Builder()
         .url(url)
         .build()
@@ -141,8 +163,13 @@ fun sendFriendRequest(username:String,sender:String){
     val trustManager = tmf.trustManagers[0] as X509TrustManager
 
 
+    val hostnameVerifier = HostnameVerifier { first, session ->
+        val hv: HostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
+        hv.verify(ip, session)
+        return@HostnameVerifier true
+    }
 
-    var client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).build()
+    var client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
         .url(url)
         .build()
