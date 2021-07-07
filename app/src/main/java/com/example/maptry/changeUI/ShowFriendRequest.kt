@@ -1,26 +1,23 @@
 @file:Suppress("DEPRECATED_IDENTITY_EQUALS")
 
-package com.example.maptry
+package com.example.maptry.changeUI
 
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
-import com.example.maptry.MapsActivity
 import androidx.appcompat.app.AppCompatActivity
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.zoom
-import java.io.IOException
-import java.net.URL
-import java.net.URLEncoder
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import com.example.maptry.activity.MapsActivity
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.R
+import com.example.maptry.server.confirmFriend
+import com.example.maptry.switchFrame
+
 class ShowFriendRequest : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
 
@@ -42,7 +39,7 @@ class ShowFriendRequest : AppCompatActivity() {
         switchFrame(friendLayout,drawerLayout,listLayout,homeLayout,splashLayout,listFriendLayout,carLayout,liveLayout,loginLayout)
         var extras = intent?.extras
         var sender = extras?.get("sender") as String
-        var receiver = extras?.get("receiver") as String
+        var receiver = extras.get("receiver") as String
 
         var buttonAccept:Button = findViewById(R.id.acceptFriendRequest)
         var friendTextView:TextView = findViewById(R.id.friendRequestText)
@@ -52,7 +49,7 @@ class ShowFriendRequest : AppCompatActivity() {
             confirmFriend(sender,receiver)
             switchFrame(homeLayout,drawerLayout,listLayout,friendLayout,listFriendLayout,splashLayout,carLayout,liveLayout,loginLayout)
             if(!isRunning) {
-                val main = Intent(context,MapsActivity::class.java)
+                val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
             }
@@ -61,7 +58,7 @@ class ShowFriendRequest : AppCompatActivity() {
         buttonDecline.setOnClickListener {
             switchFrame(homeLayout,drawerLayout,listLayout,friendLayout,listFriendLayout,splashLayout,carLayout,liveLayout,loginLayout)
             if(!isRunning) {
-                val main = Intent(context,MapsActivity::class.java)
+                val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
             }

@@ -1,10 +1,10 @@
-package com.example.maptry
+package com.example.maptry.server
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.example.maptry.NotifyService.Companion.jsonNotifIdFriendRequest
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdFriendRequest
 
 // decline friend request
 class DeclineFriend : BroadcastReceiver() {

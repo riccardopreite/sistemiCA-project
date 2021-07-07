@@ -37,7 +37,7 @@
             </intent-filter>
 
         </receiver>-->
-        <service android:name=".NotifyService"
+        <service android:name=".notification.NotifyService"
             android:enabled="true"
             android:exported="false"/>
         <!--
@@ -53,7 +53,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name=".activity.MapsActivity"
             android:label="@string/title_activity_maps"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden">
@@ -65,7 +65,7 @@
         </activity>
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.LoginActivity"
             android:label="Login"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -77,7 +77,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ShowFriendRequest"
+            android:name=".changeUI.ShowFriendRequest"
             android:label="friendRequest"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -89,7 +89,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ShowFriendList"
+            android:name=".changeUI.ShowFriendList"
             android:label="friendList"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -102,7 +102,7 @@
         </activity>
 
         <activity
-            android:name=".ShowCar"
+            android:name=".changeUI.ShowCar"
             android:label="showcar"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -115,7 +115,7 @@
         </activity>
 
         <activity
-            android:name=".RemindTimer"
+            android:name=".changeUI.RemindTimer"
             android:label="remindtimer"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -128,7 +128,7 @@
         </activity>
 
         <activity
-            android:name=".DeleteTimer"
+            android:name=".server.DeleteTimer"
             android:label="deletetimer"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -140,7 +140,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ShowLiveEvent"
+            android:name=".changeUI.ShowLiveEvent"
             android:label="showLiveEvent"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -164,8 +164,8 @@
         </intent-filter>
     </activity>
 
-        <receiver android:name=".AcceptFriend"/>
-        <receiver android:name=".DeclineFriend"/>
+        <receiver android:name=".notification.AcceptFriend"/>
+        <receiver android:name=".server.DeclineFriend"/>
 
     </application>
 

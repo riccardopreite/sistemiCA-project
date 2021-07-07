@@ -1,5 +1,6 @@
-package com.example.maptry
+package com.example.maptry.activity
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -11,26 +12,28 @@ import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
-import com.example.maptry.MapsActivity.Companion.REQUEST_LOCATION_PERMISSION
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.firebaseAuth
-import com.example.maptry.MapsActivity.Companion.locationCallback
-import com.example.maptry.MapsActivity.Companion.mLocationRequest
-import com.example.maptry.MapsActivity.Companion.newBundy
+import com.example.maptry.R
+import com.example.maptry.activity.MapsActivity.Companion.REQUEST_LOCATION_PERMISSION
+import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
+import com.example.maptry.activity.MapsActivity.Companion.locationCallback
+import com.example.maptry.activity.MapsActivity.Companion.mLocationRequest
+import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.switchFrame
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import java.lang.Exception
-import kotlin.math.sign
 
 class LoginActivity : AppCompatActivity() {
 
@@ -45,7 +48,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_maps)
 
         val x = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-        var google_button = findViewById<Button>(R.id.google_button)
+        var google_but = findViewById<Button>(R.id.google_button)
         var close = x.findViewById<ImageView>(R.id.close)
 
         var imageView = x.findViewById<ImageView>(R.id.imageView)
@@ -67,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
 
         firebaseAuth = FirebaseAuth.getInstance()
 
-        google_button.visibility = View.VISIBLE
+        google_but.visibility = View.VISIBLE
         imageView.visibility = View.GONE
         user.visibility = View.GONE
         email.visibility = View.GONE
@@ -103,8 +106,9 @@ class LoginActivity : AppCompatActivity() {
     /*Start SignIn Function*/
     fun signIn() {
         // intent to sign in
-        var signInIntent : Intent = mGoogleSignInClient.signInIntent;
+        val signInIntent : Intent = mGoogleSignInClient.signInIntent;
         println(signInIntent)
+
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
@@ -150,8 +154,12 @@ class LoginActivity : AppCompatActivity() {
             try {
                 //try to set up map location
                 MapsActivity.mMap.isMyLocationEnabled = true
+//                LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(
+//                    mLocationRequest, locationCallback, Looper.myLooper()
+//                )
+                var loop = Looper.myLooper() as Looper
                 LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(
-                    mLocationRequest, locationCallback, Looper.myLooper()
+                    mLocationRequest as LocationRequest, locationCallback, loop
                 )
             }
             catch (e:Exception){}
@@ -186,6 +194,9 @@ class LoginActivity : AppCompatActivity() {
 /*Start Override Function*/
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+
+
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
             var task:Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data);

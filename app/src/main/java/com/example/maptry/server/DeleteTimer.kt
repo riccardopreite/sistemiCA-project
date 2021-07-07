@@ -1,45 +1,30 @@
-package com.example.maptry
+package com.example.maptry.server
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
-import android.location.Address
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.*
-import com.example.maptry.MapsActivity
+import com.example.maptry.activity.MapsActivity
 import androidx.appcompat.app.AppCompatActivity
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.alertDialog
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.db
-import com.example.maptry.MapsActivity.Companion.geocoder
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.listAddr
-import com.example.maptry.MapsActivity.Companion.mMap
-import com.example.maptry.MapsActivity.Companion.myCar
-import com.example.maptry.MapsActivity.Companion.myList
-import com.example.maptry.MapsActivity.Companion.mymarker
-import com.example.maptry.MapsActivity.Companion.newBundy
-import com.example.maptry.MapsActivity.Companion.zoom
-import com.example.maptry.NotifyService.Companion.jsonNotifIdExpired
-import com.example.maptry.NotifyService.Companion.jsonNotifIdRemind
-import com.google.android.gms.maps.model.LatLng
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.db
+import com.example.maptry.activity.MapsActivity.Companion.geocoder
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.listAddr
+import com.example.maptry.activity.MapsActivity.Companion.myCar
+import com.example.maptry.activity.MapsActivity.Companion.myList
+import com.example.maptry.activity.MapsActivity.Companion.mymarker
+import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdExpired
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdRemind
+import com.example.maptry.reDraw
 import com.google.android.gms.maps.model.Marker
-import com.google.android.material.snackbar.Snackbar
-import java.io.IOException
-import java.net.URL
-import java.net.URLEncoder
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.lang.Exception
 
 @Suppress("DEPRECATED_IDENTITY_EQUALS")
@@ -99,7 +84,7 @@ class DeleteTimer : AppCompatActivity() {
        }
         notificationManager.cancel(notificaionId as Int)
         if(!isRunning) {
-            val main = Intent(context,MapsActivity::class.java)
+            val main = Intent(context, MapsActivity::class.java)
             zoom = 1
             startActivity(main)
 

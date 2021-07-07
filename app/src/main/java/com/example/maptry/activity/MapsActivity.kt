@@ -1,4 +1,4 @@
-package com.example.maptry
+package com.example.maptry.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -21,9 +21,13 @@ import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
-import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
+import com.example.maptry.*
+import com.example.maptry.R
 import com.example.maptry.R.id
+import com.example.maptry.changeUI.CircleTransform
+import com.example.maptry.notification.NotifyService
+import com.example.maptry.server.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
@@ -37,7 +41,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
@@ -112,6 +115,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         var zoom = 1
         var oldPos :Marker? = null
         lateinit var lastLocation: Location
+        @SuppressLint("StaticFieldLeak")
         lateinit var context : Context
         lateinit var alertDialog: AlertDialog
         lateinit var mMap: GoogleMap
@@ -128,6 +132,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lateinit var dataFromfirebase: DataSnapshot
         var account : GoogleSignInAccount? = null
         lateinit var dataFromfirestore :List<DocumentSnapshot>
+        @SuppressLint("StaticFieldLeak")
         lateinit var db :FirebaseFirestore
         private const val REQUEST_CHECK_SETTINGS = 2
         var friendJson = JSONObject() // friend json
@@ -151,7 +156,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         // initialize location service object
         val settingsClient = LocationServices.getSettingsClient(this)
-        settingsClient!!.checkLocationSettings(locationSettingsRequest)
+        settingsClient.checkLocationSettings(locationSettingsRequest)
 
         // call register location listener
         registerLocationListner()
@@ -249,8 +254,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         mainHandler.post(run)
 
         // start intent to log in user
-        val menuIntent : Intent=  Intent(this,LoginActivity::class.java)
-        val component : ComponentName = ComponentName(this,LoginActivity::class.java)
+        val menuIntent =  Intent(this, LoginActivity::class.java)
+        val component = ComponentName(this, LoginActivity::class.java)
         intent.component = component
         startActivityForResult(menuIntent,40);
 
@@ -294,6 +299,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 result.addOnCompleteListener { task ->
                     try {
                         val response: LocationSettingsResponse? =task.getResult(ApiException::class.java)
+                        println(response)
                     } catch (exception: ApiException) {
                         when (exception.getStatusCode()) {
                             LocationSettingsStatusCodes.RESOLUTION_REQUIRED ->                             // Location settings are not satisfied. But could be fixed by showing the
@@ -320,7 +326,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
             else{
                 try{
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lastLocation.latitude,lastLocation.longitude), 20F))
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(
+                        lastLocation.latitude,
+                        lastLocation.longitude), 20F))
                 }
                 catch (e:Exception){}
             }
@@ -356,7 +364,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val header: TextView = dialogView.findViewById(id.headerattr)
         val url: TextView = dialogView.findViewById(id.uri_lblattr)
         val urlCap: TextView = dialogView.findViewById(id.uri_lbl)
-        val text : String =  myList.getJSONObject(p0.position.toString()).get("cont") as String+": "+myList.getJSONObject(p0.position.toString()).get("name") as String
+        val text : String =  myList.getJSONObject(p0.position.toString()).get("cont") as String+": "+ myList.getJSONObject(p0.position.toString()).get("name") as String
         header.text =  text
         address.text = myList.getJSONObject(p0.position.toString()).get("addr") as String
         url.text = myList.getJSONObject(p0.position.toString()).get("url") as String
@@ -385,8 +393,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
             shareIntent.type="text/plain"
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+myList.getJSONObject(p0.position.toString()).get("lat")+","+myList.getJSONObject(p0.position.toString()).get("lon"));
-            startActivity(Intent.createChooser(shareIntent,"Stai condividendo "+myList.getJSONObject(p0.position.toString()).get("name")))
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ myList.getJSONObject(p0.position.toString()).get("lat")+","+ myList.getJSONObject(p0.position.toString()).get("lon"));
+            startActivity(Intent.createChooser(shareIntent,"Stai condividendo "+ myList.getJSONObject(p0.position.toString()).get("name")))
             alertDialog.dismiss()
         }
         val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
@@ -452,7 +460,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         timePicker.hour = 3
         timePicker.minute = 0
         val radioGroup = dialogView.findViewById<RelativeLayout>(R.id.rl_gender)
-        var time = 180
+        var time : Int;
         address.isEnabled = false
 
         val background = object : Runnable {
@@ -671,9 +679,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     myjson.put("url", "da implementare")
                     myjson.put("phone", "da implementare")
                     if(listAddr?.get(0)?.url === null || listAddr?.get(0)?.url === "" || listAddr?.get(0)?.url === " ") myjson.put("url","Url non trovato")
-                    else  myjson.put("url",listAddr?.get(0)?.url)
+                    else  myjson.put("url", listAddr?.get(0)?.url)
                     if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") myjson.put("phone","cellulare non trovato")
-                    else  myjson.put("phone",listAddr?.get(0)?.phone)
+                    else  myjson.put("phone", listAddr?.get(0)?.phone)
                     myList.put(p0.toString(), myjson)
                     id?.let { it1 ->
                         if (marker != null) {
@@ -879,6 +887,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // show menu or home and reDraw all poi
     fun closeDrawer(view: View) {
+        println(view)
         val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
         val listLayout: FrameLayout = findViewById(R.id.list_layout)
         val homeLayout: FrameLayout = findViewById(R.id.homeframe)
@@ -912,7 +921,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val loginLayout: FrameLayout = findViewById(R.id.login_layout)
         switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendRequestLayout,carLayout,splashLayout,liveLayout,loginLayout)
 
-        var  lv:ListView = findViewById<ListView>(R.id.lv)
+        val lv:ListView = findViewById<ListView>(R.id.lv)
         var len = 0
         for (i in myList.keys()){
             if(myList.getJSONObject(i).get("cont") as String != "Macchina" && myList.getJSONObject(i).get("cont") as String != "Live"){
@@ -928,9 +937,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 index++
             }
         }
-        var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList);
+        val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList);
 
-        lv.setOnItemLongClickListener { parent, view, position, id ->
+        lv.setOnItemLongClickListener { parent, view, position, _ -> //last elem was id
 
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
@@ -942,15 +951,15 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
                     if(selectedItem == myList.getJSONObject(i).get("name") as String) {
 
-                        var mark = mymarker[i] as Marker
+                        val mark = mymarker[i] as Marker
                         val removed = myList.getJSONObject(i)
                         mark.remove()
                         mymarker.remove(i)
                         myList.remove(i)
-                        var AC:String
+                        val AC:String
                         AC = "Annulla"
-                        var text = "Rimosso "+selectedItem.toString()
-                        var id = account?.email?.replace("@gmail.com","")
+                        val text = "Rimosso "+selectedItem.toString()
+                        val id = account?.email?.replace("@gmail.com","")
                         // create a Toast to undo the operation of removing
                         val snackbar = Snackbar.make(view, text, 5000)
                             .setAction(AC,View.OnClickListener {
@@ -1003,10 +1012,11 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
             return@setOnItemLongClickListener true
         }
-        lv.setOnItemClickListener { parent, view, position, id ->
+        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val selectedItem = parent.getItemAtPosition(position) as String
             for (i in myList.keys()){
-                if(selectedItem == myList.getJSONObject(i).get("name") as String) onMarkerClick(mymarker[i] as Marker)
+                if(selectedItem == myList.getJSONObject(i).get("name") as String) onMarkerClick(
+                    mymarker[i] as Marker)
             }
         }
         lv.adapter = arrayAdapter;
@@ -1041,10 +1051,11 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList);
 
-        lv.setOnItemClickListener { parent, view, position, id ->
+        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val selectedItem = parent.getItemAtPosition(position) as String
             for (i in myLive.keys()){
-                if(selectedItem == myLive.getJSONObject(i).get("name") as String) onMarkerClick(mymarker[i] as Marker)
+                if(selectedItem == myLive.getJSONObject(i).get("name") as String) onMarkerClick(
+                    mymarker[i] as Marker)
             }
         }
         lv.adapter = arrayAdapter;
@@ -1078,7 +1089,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         }
 
         var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
-        lv.setOnItemLongClickListener { parent, view, position, id ->
+        lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
@@ -1089,20 +1100,20 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
                 for(i in friendJson.keys()){
                     if(selectedItem == friendJson[i] as String) {
-                        var removed = selectedItem
+                        val removed = selectedItem
                         friendJson.remove(i)
-                        var key = i
-                        var AC:String
+                        val key = i
+                        val AC:String
                         AC = "Annulla"
-                        var text = "Rimosso "+selectedItem
-                        var id = account?.email?.replace("@gmail.com","")
+                        val text = "Rimosso $selectedItem"
+                        val id = account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 5000)
                             .setAction(AC,View.OnClickListener {
                                 // Toast to undo operation
-                                id?.let { it1 ->
+                                id?.let { _ -> //it1
                                     friendJson.put(key,removed)
                                     confirmFriend(id,removed)
-                                    Toast.makeText(this,"undo" + selectedItem.toString(),Toast.LENGTH_LONG)
+                                    Toast.makeText(this, "undo$selectedItem",Toast.LENGTH_LONG)
                                     showFriend()
 
                                 }
@@ -1147,23 +1158,25 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             return@setOnItemLongClickListener true
         }
 
-        lv.setOnItemClickListener { parent, view, position, id ->
+        lv.setOnItemClickListener { parent, _, position, _ -> //wiew e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_friend_view, null)
-            var txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
-            var spinner :Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
+            val txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
+            val spinner :Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
             val selectedItem = parent.getItemAtPosition(position) as String
 
-            var context = this
+            val context = this
             txtName.text = selectedItem
             // ask public friend's poi with a server call
-            var url = URL("http://"+ ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
-            var result = JSONObject()
-            val client = OkHttpClient()
+            val url = URL("https://"+ ip + port +"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
+            var result: JSONObject
+            val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
+
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
+//            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
+//                override fun onDismiss(arg0: DialogInterface) { }
+//            })
             dialogBuilder.setView(dialogView)
 
             var alertDialog2 = dialogBuilder.create();
@@ -1174,7 +1187,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    println("something went wrong")
+                    println("something went wrong get poi from friend")
+                    println(e)
                 }
                 override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                     this@MapsActivity.runOnUiThread(Runnable {
@@ -1193,7 +1207,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                     index++
                                 }
                             }
-                            var arrayAdapter2:ArrayAdapter<String> = ArrayAdapter<String>(context,R.layout.support_simple_spinner_dropdown_item,markerList)
+                            var arrayAdapter2:ArrayAdapter<String> = ArrayAdapter<String>(context,
+                                R.layout.support_simple_spinner_dropdown_item,markerList)
                             spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                                 override fun onNothingSelected(parent: AdapterView<*>?) {}
                                 override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -1271,7 +1286,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         }
         var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, carList)
 
-        lv.setOnItemLongClickListener { parent, view, position, id ->
+        lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
@@ -1294,7 +1309,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         val snackbar = Snackbar.make(view, text, 5000)
                             .setAction(AC,View.OnClickListener {
                                 // Toast to undo remove operation
-                                id?.let { it1 ->
+                                id?.let { _ -> //it1
                                     myCar.put(key,removed)
                                     mymarker.put(key,mark)
                                     Toast.makeText(this,"undo" + selectedItem.toString(), Toast.LENGTH_LONG)
@@ -1351,7 +1366,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             return@setOnItemLongClickListener true
         }
 
-        lv.setOnItemClickListener { parent, view, position, id ->
+        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_car_view, null)
             var txtName :TextView = dialogView.findViewById(R.id.car_name_txt)
@@ -1361,7 +1376,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             var key = ""
             val selectedItem = parent.getItemAtPosition(position) as String
 
-            var context = this
             txtName.text = selectedItem
             for (i in myCar.keys()){
                 if(myCar.getJSONObject(i).get("name") as String == selectedItem){
@@ -1396,7 +1410,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     //get email inserted to send a request via server
     fun addFriend(view: View) {
-
+        println(view)
         val inflater: LayoutInflater = this.layoutInflater
         val dialogView: View = inflater.inflate(R.layout.add_friend, null)
         val emailText : EditText = dialogView.findViewById(R.id.friendEmail)
@@ -1411,7 +1425,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                account?.email?.replace("@gmail.com","")?.let { it1 ->sendFriendRequest(emailText.text.toString(),it1)}
+                account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
                 alertDialog.dismiss()
             }
         }

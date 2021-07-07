@@ -1,4 +1,4 @@
-package com.example.maptry
+package com.example.maptry.activity
 
 import android.app.Activity
 import android.view.View

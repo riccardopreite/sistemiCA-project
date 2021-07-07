@@ -1,10 +1,9 @@
 @file:Suppress("DEPRECATED_IDENTITY_EQUALS")
 
-package com.example.maptry
+package com.example.maptry.changeUI
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
@@ -14,7 +13,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
+import com.example.maptry.*
+import com.example.maptry.activity.MapsActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
@@ -26,12 +26,14 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
-import androidx.core.content.ContextCompat.getSystemService
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.ip
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.port
-import com.example.maptry.MapsActivity.Companion.zoom
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.ip
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.server.confirmFriend
+import com.example.maptry.server.removeFriend
+import com.example.maptry.server.sendFriendRequest
 
 
 @SuppressLint("Registered")
@@ -67,7 +69,7 @@ class ShowFriendList : AppCompatActivity() {
 
             addBtn.setOnClickListener {
                 if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != MapsActivity.account?.email && emailText.text.toString() != MapsActivity.account?.email?.replace("@gmail.com","")){
-                    MapsActivity.account?.email?.replace("@gmail.com","")?.let { it1 ->sendFriendRequest(emailText.text.toString(),it1)}
+                    MapsActivity.account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
                     MapsActivity.alertDialog.dismiss()
                 }
             }
@@ -77,7 +79,7 @@ class ShowFriendList : AppCompatActivity() {
         closeDrawer.setOnClickListener {
             switchFrame(homeLayout,listFriendLayout,drawerLayout,listLayout,splashLayout,friendLayout,carLayout,liveLayout,loginLayout)
             if(!isRunning) {
-                val main = Intent(context,MapsActivity::class.java)
+                val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
 
@@ -92,9 +94,6 @@ class ShowFriendList : AppCompatActivity() {
         val len = MapsActivity.friendJson.length()
         var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
-        val inflater: LayoutInflater = this.layoutInflater
-        val id = MapsActivity.account?.email?.replace("@gmail.com","")
-
         val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
         val listLayout: FrameLayout = findViewById(R.id.list_layout)
         val homeLayout: FrameLayout = findViewById(R.id.homeframe)
@@ -107,8 +106,8 @@ class ShowFriendList : AppCompatActivity() {
         switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendRequestLayout,splashLayout,carLayout,liveLayout,loginLayout)
 
 
-        var  lv: ListView = findViewById<ListView>(R.id.fv)
-        val friendList = MutableList<String>(len,{""})
+        var  lv: ListView = findViewById(R.id.fv)
+        val friendList = MutableList(len) { "" }
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in MapsActivity.friendJson.keys()){
@@ -117,7 +116,7 @@ class ShowFriendList : AppCompatActivity() {
         }
 
         var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
-        lv.setOnItemLongClickListener { parent, view, position, id ->
+        lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
@@ -133,15 +132,15 @@ class ShowFriendList : AppCompatActivity() {
                         var key = i
                         var AC:String
                         AC = "Annulla"
-                        var text = "Rimosso "+selectedItem
+                        var text = "Rimosso $selectedItem"
                         var id = MapsActivity.account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 2000)
                             .setAction(AC,View.OnClickListener {
 
-                                id?.let { it1 ->
+                                id?.let { _ -> //
                                     MapsActivity.friendJson.put(key,removed)
                                     confirmFriend(id,removed)
-                                    Toast.makeText(this,"undo" + selectedItem.toString(), Toast.LENGTH_LONG).show()
+                                    Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG).show()
                                     showFriendinActivity()
 
                                 }
@@ -175,7 +174,7 @@ class ShowFriendList : AppCompatActivity() {
         }
 
 
-        lv.setOnItemClickListener { parent, view, position, id ->
+        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_friend_view, null)
             var txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
@@ -185,12 +184,13 @@ class ShowFriendList : AppCompatActivity() {
             var context = this
             txtName.text = selectedItem
             var url = URL("http://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
-            var result = JSONObject()
+            var result: JSONObject
             val client = OkHttpClient()
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
+//            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
+//                override fun onDismiss(arg0: DialogInterface) { }
+//            })
             dialogBuilder.setView(dialogView)
 
             var alertDialog2 = dialogBuilder.create();
@@ -209,7 +209,6 @@ class ShowFriendList : AppCompatActivity() {
 
                     this@ShowFriendList.runOnUiThread(Runnable {
                         try {
-                            var check = 0
                             alertDialog2.show()
                             result = JSONObject(response.body()?.string()!!)
                             val length = result.length()
@@ -220,7 +219,8 @@ class ShowFriendList : AppCompatActivity() {
                                 markerList[index] = result.getJSONObject(i).get("name") as String
                                 index++
                             }
-                            var arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(context,R.layout.support_simple_spinner_dropdown_item,markerList)
+                            var arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(context,
+                                R.layout.support_simple_spinner_dropdown_item,markerList)
                             spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
                                 override fun onNothingSelected(parent: AdapterView<*>?) {
 
@@ -230,7 +230,7 @@ class ShowFriendList : AppCompatActivity() {
                                     if(parent?.getItemAtPosition(position) as String != ""){
                                         var key = ""
                                         val selectedMarker =
-                                            parent?.getItemAtPosition(position) as String
+                                            parent.getItemAtPosition(position) as String
                                         var lat = 0.0
                                         var lon = 0.0
                                         for (i in result.keys()) {
@@ -262,7 +262,7 @@ class ShowFriendList : AppCompatActivity() {
                                         )
 
                                         if(!isRunning) {
-                                            val main = Intent(context,MapsActivity::class.java)
+                                            val main = Intent(context, MapsActivity::class.java)
                                             zoom = 1
                                             startActivity(main)
 

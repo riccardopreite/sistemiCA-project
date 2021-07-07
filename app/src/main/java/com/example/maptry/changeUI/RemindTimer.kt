@@ -1,4 +1,4 @@
-package com.example.maptry
+package com.example.maptry.changeUI
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -12,15 +12,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import com.example.maptry.MapsActivity
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.alertDialog
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.myCar
-import com.example.maptry.MapsActivity.Companion.newBundy
-import com.example.maptry.MapsActivity.Companion.zoom
-import com.example.maptry.NotifyService.Companion.jsonNotifIdRemind
+import com.example.maptry.activity.MapsActivity
+import com.example.maptry.activity.MapsActivity.Companion.alertDialog
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.myCar
+import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.R
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdRemind
+import com.example.maptry.server.resetTimerAuto
+import com.example.maptry.switchFrame
 
 
 @Suppress("DEPRECATED_IDENTITY_EQUALS")
@@ -55,7 +57,7 @@ class RemindTimer : AppCompatActivity() {
         notificationManager.cancel(notificaionId as Int);
         // if activity is not Running start it, else show a popup to remind timer
         if(!isRunning) {
-            val main = Intent(context,MapsActivity::class.java)
+            val main = Intent(context, MapsActivity::class.java)
             zoom = 1
             startActivity(main)
         }

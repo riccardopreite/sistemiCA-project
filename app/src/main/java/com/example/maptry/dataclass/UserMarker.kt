@@ -1,4 +1,4 @@
-package com.example.maptry
+package com.example.maptry.dataclass
 
 data class UserMarker(
     var name: String? = "",

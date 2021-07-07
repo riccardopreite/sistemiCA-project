@@ -1,13 +1,12 @@
-package com.example.maptry
+package com.example.maptry.notification
 
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
-import android.content.res.Configuration
-import android.os.Bundle
-import com.example.maptry.NotifyService.Companion.jsonNotifIdFriendRequest
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdFriendRequest
+import com.example.maptry.server.confirmFriend
 
 class AcceptFriend : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

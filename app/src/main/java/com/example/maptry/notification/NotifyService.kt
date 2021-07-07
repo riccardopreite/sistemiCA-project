@@ -1,4 +1,4 @@
-package com.example.maptry
+package com.example.maptry.notification
 
 
 import android.app.*
@@ -10,21 +10,26 @@ import android.os.*
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.db
-import com.example.maptry.MapsActivity.Companion.myList
-import com.example.maptry.MapsActivity.Companion.myLive
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.dataFromfirestore
-import com.example.maptry.MapsActivity.Companion.geocoder
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.listAddr
-import com.example.maptry.MapsActivity.Companion.myCar
-import com.example.maptry.MapsActivity.Companion.mymarker
+import com.example.maptry.*
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.db
+import com.example.maptry.activity.MapsActivity.Companion.myList
+import com.example.maptry.activity.MapsActivity.Companion.myLive
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
+import com.example.maptry.activity.MapsActivity.Companion.geocoder
+import com.example.maptry.activity.MapsActivity.Companion.listAddr
+import com.example.maptry.activity.MapsActivity.Companion.myCar
+import com.example.maptry.activity.MapsActivity.Companion.mymarker
+import com.example.maptry.changeUI.*
+import com.example.maptry.server.DeclineFriend
+import com.example.maptry.server.DeleteTimer
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import org.json.JSONObject
+import java.util.*
+import kotlin.collections.HashMap
 
 
 class NotifyService : Service() {
@@ -60,7 +65,7 @@ class NotifyService : Service() {
         @RequiresApi(Build.VERSION_CODES.N)
         override fun onCreate() {
             super.onCreate()
-            println("The service has been created".toUpperCase())
+            println("The service has been created".uppercase(Locale.getDefault()))
             var notification = this.createNotification()
             startForeground(1, notification)
 
@@ -69,7 +74,7 @@ class NotifyService : Service() {
 
         override fun onDestroy() {
             super.onDestroy()
-            println("The service has been destroyed".toUpperCase())
+            println("The service has been destroyed".uppercase(Locale.getDefault()))
         }
 
         private fun startService() {
@@ -107,7 +112,7 @@ class NotifyService : Service() {
 
                                         Log.d("TAG", "Current data: ${querySnapshot.documents}")
                                         querySnapshot.documents.forEach { child ->
-                                            var json = JSONObject()
+                                            var json: JSONObject
                                             child.data?.forEach { chi ->
                                                 json = JSONObject(chi.value as HashMap<*, *>)
 
@@ -400,8 +405,8 @@ class NotifyService : Service() {
                                     if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
                                         notificationJson = JSONObject()
                                         dataFromfirestore = querySnapshot.documents
-                                        var key = ""
-                                        var json = JSONObject()
+                                        var key: String
+                                        var json: JSONObject
                                         Log.d(
                                             "TAGnotify",
                                             "Current data: ${querySnapshot.documents}"
@@ -530,8 +535,8 @@ class NotifyService : Service() {
                                     if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
                                         notificationJson = JSONObject()
                                         dataFromfirestore = querySnapshot.documents
-                                        var key = ""
-                                        var json = JSONObject()
+                                        var key: String
+                                        var json: JSONObject
                                         Log.d(
                                             "TAGnotify",
                                             "Current data: ${querySnapshot.documents}"
@@ -701,7 +706,7 @@ class NotifyService : Service() {
                                         notificationJson = JSONObject()
                                         dataFromfirestore = querySnapshot.documents
                                         var key = ""
-                                        var json = JSONObject()
+                                        var json: JSONObject
                                         Log.d(
                                             "TAGnotify",
                                             "Current data: ${querySnapshot.documents}"
@@ -715,7 +720,6 @@ class NotifyService : Service() {
                                                 key =
                                                     json.get("owner") as String + json.get("name") as String
                                                 val name = json.get("name") as String
-                                                val owner = json.get("owner") as String
                                                 val address = json.get("addr") as String
                                                 val id = account?.email?.replace("@gmail.com","")
 
@@ -730,7 +734,6 @@ class NotifyService : Service() {
                                                             )
                                                             setSmallIcon(R.drawable.ic_live)
                                                             setAutoCancel(true)
-                                                            var intent = Intent()
 
                                                             priority =
                                                                 NotificationCompat.PRIORITY_DEFAULT
@@ -782,7 +785,7 @@ class NotifyService : Service() {
                                                         break
                                                     }
                                                 }
-                                                val list = geocoder.getFromLocationName(address,1)
+                                                //val list = geocoder.getFromLocationName(address,1)
                                             }
 
                                             // delete item from db
@@ -793,40 +796,38 @@ class NotifyService : Service() {
                                 }
                         }
         }
-            private fun createNotification(): Notification {
-                //set up foreground notification
-                notificationChannelId = "ENDLESS SERVICE CHANNEL"
-                notificationManager =
-                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    private fun createNotification(): Notification {
+        //set up foreground notification
+        notificationChannelId = "ENDLESS SERVICE CHANNEL"
+        notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
 
-
-                    val channel = NotificationChannel(
-                        notificationChannelId,
-                        "Endless Service notifications channel",
-                        NotificationManager.IMPORTANCE_DEFAULT
-                    ).let {
-                        it.description = "Endless Service channel"
-                        it.enableLights(true)
-                        it.lightColor = Color.RED
-                        it.enableVibration(true)
-                        it.vibrationPattern =
-                            longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
-                        it
-                    }
-                    notificationManager.createNotificationChannel(channel)
-                }
-                val builder: Notification.Builder =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(
-                        this,
-                        notificationChannelId
-                    ) else Notification.Builder(this)
-                var notification =builder
-                    .setContentTitle("Servizio Live")
-                    .setContentText("Rimaniamo in ascolto per tenerti sempre aggiornato!")
-                    .setSmallIcon(R.drawable.ic_location)
-                    .build()
-                return  notification
+            val channel = NotificationChannel(
+                notificationChannelId,
+                "Endless Service notifications channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).let {
+                it.description = "Endless Service channel"
+                it.enableLights(true)
+                it.lightColor = Color.RED
+                it.enableVibration(true)
+                it.vibrationPattern =
+                    longArrayOf(100, 200, 300, 400, 500, 400, 300, 200, 400)
+                it
             }
+            notificationManager.createNotificationChannel(channel)
+        }
+        val builder: Notification.Builder =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(
+                this,
+                notificationChannelId
+            ) else Notification.Builder(this)
+        return builder
+            .setContentTitle("Servizio Live")
+            .setContentText("Rimaniamo in ascolto per tenerti sempre aggiornato!")
+            .setSmallIcon(R.drawable.ic_location)
+            .build()
+    }
 }

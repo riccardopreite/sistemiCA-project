@@ -1,15 +1,13 @@
-package com.example.maptry
+package com.example.maptry.notification
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.widget.Button
-import androidx.core.app.NotificationCompat
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient

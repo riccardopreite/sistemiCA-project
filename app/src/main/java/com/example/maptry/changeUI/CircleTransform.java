@@ -1,4 +1,4 @@
-package com.example.maptry;
+package com.example.maptry.changeUI;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;

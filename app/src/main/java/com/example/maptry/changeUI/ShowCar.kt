@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATED_IDENTITY_EQUALS")
 
-package com.example.maptry
+package com.example.maptry.changeUI
 //DO SAME THING OF SHOW FRIEND REQUEST FOR SHOW CAR AND RIMANDA
 import android.annotation.SuppressLint
 import android.app.AlertDialog
@@ -15,13 +15,16 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.alertDialog
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.myCar
-import com.example.maptry.MapsActivity.Companion.zoom
+import com.example.maptry.activity.MapsActivity
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.alertDialog
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.myCar
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.R
+import com.example.maptry.server.resetTimerAuto
+import com.example.maptry.switchFrame
 import com.google.android.material.snackbar.Snackbar
 
 class ShowCar : AppCompatActivity() {
@@ -53,7 +56,7 @@ class ShowCar : AppCompatActivity() {
 
             switchFrame(homeLayout,carLayout,friendLayout,listLayout,drawerLayout,splashLayout,friendRequestLayout,liveLayout,loginLayout)
             if(!isRunning) {
-                val main = Intent(context,MapsActivity::class.java)
+                val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
             }
@@ -65,6 +68,7 @@ class ShowCar : AppCompatActivity() {
 
 
     }
+    @SuppressLint("ShowToast")
     @RequiresApi(Build.VERSION_CODES.O)
     private fun showCar(){
         val len = myCar.length()
@@ -120,7 +124,7 @@ class ShowCar : AppCompatActivity() {
 
 
 
-        lv.setOnItemLongClickListener { parent, view, position, id ->
+        lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
@@ -136,18 +140,22 @@ class ShowCar : AppCompatActivity() {
                         var key = i
                         var AC:String
                         AC = "Annulla"
-                        var text = "Rimosso "+selectedItem
+                        var text = "Rimosso $selectedItem"
                         var id = account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(AC,View.OnClickListener {
+                            .setAction(AC) {
 
-                                id?.let { it1 ->
-                                    myCar.put(key,removed)
-                                    Toast.makeText(this,"undo" + selectedItem.toString(), Toast.LENGTH_LONG)
+                                id?.let { _ -> // it1
+                                    myCar.put(key, removed)
+                                    Toast.makeText(
+                                        this,
+                                        "undo$selectedItem",
+                                        Toast.LENGTH_LONG
+                                    )
                                     showCar()
 
                                 }
-                            })
+                            }
 
                         snackbar.setActionTextColor(Color.DKGRAY)
                         val snackbarView = snackbar.view
@@ -176,7 +184,7 @@ class ShowCar : AppCompatActivity() {
         }
 
 
-        lv.setOnItemClickListener { parent, view, position, id ->
+        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_car_view, null)
             var txtName :TextView = dialogView.findViewById(R.id.car_name_txt)
@@ -185,7 +193,6 @@ class ShowCar : AppCompatActivity() {
             var remindButton : Button = dialogView.findViewById(R.id.remindButton)
             var key = ""
             val selectedItem = parent.getItemAtPosition(position) as String
-            var context = this
             txtName.text = selectedItem
             for (i in myCar.keys()){
                 if(myCar.getJSONObject(i).get("name") as String == selectedItem){

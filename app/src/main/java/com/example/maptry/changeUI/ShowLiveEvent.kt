@@ -1,37 +1,23 @@
 @file:Suppress("DEPRECATED_IDENTITY_EQUALS")
 
-package com.example.maptry
+package com.example.maptry.changeUI
 
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.alertDialog
-import com.example.maptry.MapsActivity.Companion.context
-import com.example.maptry.MapsActivity.Companion.dataFromfirestore
-import com.example.maptry.MapsActivity.Companion.db
-import com.example.maptry.MapsActivity.Companion.geocoder
-import com.example.maptry.MapsActivity.Companion.isRunning
-import com.example.maptry.MapsActivity.Companion.mMap
-import com.example.maptry.MapsActivity.Companion.myList
-import com.example.maptry.MapsActivity.Companion.myLive
-import com.example.maptry.MapsActivity.Companion.myjson
-import com.example.maptry.MapsActivity.Companion.mymarker
-import com.example.maptry.MapsActivity.Companion.newBundy
-import com.example.maptry.MapsActivity.Companion.zoom
+import com.example.maptry.activity.MapsActivity
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.geocoder
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.mMap
+import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.R
+import com.example.maptry.switchFrame
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import org.json.JSONObject
-import java.lang.Exception
-import java.util.*
-import kotlin.concurrent.schedule
 
 
 class ShowLiveEvent: AppCompatActivity() {
@@ -70,7 +56,7 @@ class ShowLiveEvent: AppCompatActivity() {
         val loginLayout: FrameLayout = findViewById(R.id.login_layout)
         switchFrame(homeLayout,friendLayout,listLayout,carLayout,drawerLayout,splashLayout,friendRequestLayout,liveLayout,loginLayout)
         if(!isRunning) {
-            val main = Intent(context,MapsActivity::class.java)
+            val main = Intent(context, MapsActivity::class.java)
             zoom = 1
             startActivity(main)
 

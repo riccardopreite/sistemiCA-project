@@ -1,38 +1,33 @@
 package com.example.maptry
 
-import android.R
 import android.app.*
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.startActivity
-import com.example.maptry.MapsActivity.Companion.account
-import com.example.maptry.MapsActivity.Companion.addrThread
-import com.example.maptry.MapsActivity.Companion.alertDialog
-import com.example.maptry.MapsActivity.Companion.friendTempPoi
-import com.example.maptry.MapsActivity.Companion.geocoder
-import com.example.maptry.MapsActivity.Companion.lastLocation
-import com.example.maptry.MapsActivity.Companion.listAddr
-import com.example.maptry.MapsActivity.Companion.mAnimation
-import com.example.maptry.MapsActivity.Companion.mMap
-import com.example.maptry.MapsActivity.Companion.myList
-import com.example.maptry.MapsActivity.Companion.mymarker
-import com.example.maptry.MapsActivity.Companion.oldPos
-import com.google.android.gms.maps.CameraUpdateFactory
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.addrThread
+import com.example.maptry.activity.MapsActivity.Companion.alertDialog
+import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
+import com.example.maptry.activity.MapsActivity.Companion.geocoder
+import com.example.maptry.activity.MapsActivity.Companion.lastLocation
+import com.example.maptry.activity.MapsActivity.Companion.listAddr
+import com.example.maptry.activity.MapsActivity.Companion.mAnimation
+import com.example.maptry.activity.MapsActivity.Companion.mMap
+import com.example.maptry.activity.MapsActivity.Companion.myList
+import com.example.maptry.activity.MapsActivity.Companion.mymarker
+import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.firebase.database.DataSnapshot
 import org.json.JSONObject
 import java.io.IOException
 import java.lang.Exception
@@ -64,7 +59,6 @@ fun reDraw(){
             println(e)
         }
     }
-    tmp = JSONObject()
     try{
         val x = LatLng(lastLocation.latitude, lastLocation.longitude)
         oldPos?.remove()
@@ -158,15 +152,13 @@ fun showPOIPreferences(p0 : String,inflater:LayoutInflater,context:Context,mark:
     phone.text = friendTempPoi.getJSONObject(p0).get("phone") as String
     val routebutton: Button = dialogView.findViewById(com.example.maptry.R.id.routeBtn)
     val addbutton: Button = dialogView.findViewById(com.example.maptry.R.id.removeBtnattr)
-    val id = account?.email?.replace("@gmail.com","")
     addbutton.text = "Aggiungi"
     addbutton.setOnClickListener {
 
-        var mark = mymarker.get(p0 as String) as Marker
+        var mark = mymarker.get(p0) as Marker
         myList.put(p0,friendTempPoi.getJSONObject(p0))
 
         added = 1
-        val cont = friendTempPoi.getJSONObject(p0.toString()).get("cont")
         mark.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         alertDialog.dismiss()
     }
@@ -178,15 +170,31 @@ fun showPOIPreferences(p0 : String,inflater:LayoutInflater,context:Context,mark:
     }
 
     val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-    dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-        override fun onDismiss(arg0: DialogInterface) {
-            if(added == 0) {
-                mymarker.remove(p0)
-                mark.remove()
-            }
-            else writeNewPOI(account?.email?.replace("@gmail.com","") as String, friendTempPoi.getJSONObject(p0).get("name") as String,friendTempPoi.getJSONObject(p0).get("addr") as String,friendTempPoi.getJSONObject(p0).get("cont") as String,friendTempPoi.getJSONObject(p0).get("type") as String,mark,friendTempPoi.getJSONObject(p0).get("url") as String,friendTempPoi.getJSONObject(p0).get("phone") as String)
-        }
-    })
+    dialogBuilder.setOnDismissListener {
+        if (added == 0) {
+            mymarker.remove(p0)
+            mark.remove()
+        } else writeNewPOI(
+            account?.email?.replace("@gmail.com", "") as String,
+            friendTempPoi.getJSONObject(p0).get("name") as String,
+            friendTempPoi.getJSONObject(p0).get("addr") as String,
+            friendTempPoi.getJSONObject(p0).get("cont") as String,
+            friendTempPoi.getJSONObject(p0).get("type") as String,
+            mark,
+            friendTempPoi.getJSONObject(p0).get("url") as String,
+            friendTempPoi.getJSONObject(p0).get("phone") as String
+        )
+    }
+//    dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
+//        override fun onDismiss(arg0: DialogInterface) {
+//            if(added == 0) {
+//                mymarker.remove(p0)
+//                mark.remove()
+//            }
+//            else writeNewPOI(account?.email?.replace("@gmail.com","") as String, friendTempPoi.getJSONObject(p0).get("name") as String,friendTempPoi.getJSONObject(p0).get("addr") as String,friendTempPoi.getJSONObject(p0).get("cont") as String,friendTempPoi.getJSONObject(p0).get("type") as String,mark,friendTempPoi.getJSONObject(p0).get("url") as String,friendTempPoi.getJSONObject(p0).get("phone") as String)
+//        }
+//    })
+
     dialogBuilder.setView(dialogView)
 
     alertDialog = dialogBuilder.create();

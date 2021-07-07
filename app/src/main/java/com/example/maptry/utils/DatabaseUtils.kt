@@ -1,20 +1,21 @@
 package com.example.maptry
 
 import android.util.Log
-import com.example.maptry.MapsActivity.Companion.dataFromfirestore
-import com.example.maptry.MapsActivity.Companion.db
-import com.example.maptry.MapsActivity.Companion.drawed
-import com.example.maptry.MapsActivity.Companion.friendJson
-import com.example.maptry.MapsActivity.Companion.mMap
-import com.example.maptry.MapsActivity.Companion.myCar
-import com.example.maptry.MapsActivity.Companion.myList
-import com.example.maptry.MapsActivity.Companion.myLive
-import com.example.maptry.MapsActivity.Companion.myjson
-import com.example.maptry.MapsActivity.Companion.mymarker
+import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
+import com.example.maptry.activity.MapsActivity.Companion.db
+import com.example.maptry.activity.MapsActivity.Companion.drawed
+import com.example.maptry.activity.MapsActivity.Companion.friendJson
+import com.example.maptry.activity.MapsActivity.Companion.myCar
+import com.example.maptry.activity.MapsActivity.Companion.myList
+import com.example.maptry.activity.MapsActivity.Companion.myLive
+import com.example.maptry.activity.MapsActivity.Companion.myjson
+import com.example.maptry.activity.MapsActivity.Companion.mymarker
+import com.example.maptry.dataclass.UserCar
+import com.example.maptry.dataclass.UserLive
+import com.example.maptry.dataclass.UserMarker
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import org.json.JSONObject
 
 /*Start Database Function*/

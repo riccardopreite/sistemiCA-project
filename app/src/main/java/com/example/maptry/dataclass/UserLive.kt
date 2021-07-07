@@ -1,6 +1,6 @@
-package com.example.maptry
+package com.example.maptry.dataclass
 
-data class UserCar(
+data class UserLive(
     var name: String? = "",
     var addr: String? = "",
     var timer: String? = "",
@@ -11,4 +11,6 @@ data class UserCar(
     var phone: String? = "",
     var type: String? = "",
     var cont: String? = ""
+
+
 )
