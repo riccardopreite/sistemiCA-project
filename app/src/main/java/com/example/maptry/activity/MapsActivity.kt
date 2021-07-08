@@ -566,7 +566,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     myjson.put("cont", spinner.selectedItem.toString())
                     myjson.put("url", "da implementare")
                     myjson.put("phone", "da implementare")
-                    reminderAuto(myjson)
+
+                    resetTimerAuto(myjson)
                     myCar.put(p0.toString(), myjson)
                     myList.put(p0.toString(), myjson)
 
@@ -1198,13 +1199,13 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             result = JSONObject(response.body()?.string()!!)
                             val length = result.length()
                             val markerList = MutableList<String>(length+1,{""})
-                            var index = 1
+                            var indexMarkerMap = 1
                             // add this empty item cause a bug with spinner, on init select the first item and trigger the onItemSelected
                             markerList[0] = ""
                             for(i in result.keys()){
                                 if(result.getJSONObject(i).get("type") as String == "Pubblico") {
-                                    markerList[index] = result.getJSONObject(i).get("name") as String
-                                    index++
+                                    markerList[indexMarkerMap] = result.getJSONObject(i).get("name") as String
+                                    indexMarkerMap++
                                 }
                             }
                             var arrayAdapter2:ArrayAdapter<String> = ArrayAdapter<String>(context,

@@ -213,11 +213,11 @@ class ShowFriendList : AppCompatActivity() {
                             result = JSONObject(response.body()?.string()!!)
                             val length = result.length()
                             val markerList = MutableList<String>(length+1,{""})
-                            var index = 1
+                            var indexMarker = 1
                             markerList[0] = ""
                             for(i in result.keys()){
-                                markerList[index] = result.getJSONObject(i).get("name") as String
-                                index++
+                                markerList[indexMarker] = result.getJSONObject(i).get("name") as String
+                                indexMarker++
                             }
                             var arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(context,
                                 R.layout.support_simple_spinner_dropdown_item,markerList)

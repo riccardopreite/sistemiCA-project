@@ -155,11 +155,11 @@ fun showPOIPreferences(p0 : String,inflater:LayoutInflater,context:Context,mark:
     addbutton.text = "Aggiungi"
     addbutton.setOnClickListener {
 
-        var mark = mymarker.get(p0) as Marker
+        var mark_addButton = mymarker.get(p0) as Marker
         myList.put(p0,friendTempPoi.getJSONObject(p0))
 
         added = 1
-        mark.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        mark_addButton.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         alertDialog.dismiss()
     }
     routebutton.setOnClickListener {

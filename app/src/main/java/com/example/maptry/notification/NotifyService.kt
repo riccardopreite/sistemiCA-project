@@ -116,9 +116,9 @@ class NotifyService : Service() {
                                             child.data?.forEach { chi ->
                                                 json = JSONObject(chi.value as HashMap<*, *>)
 
-                                                val nm =
+                                                val nmLive =
                                                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                                                var notification =
+                                                val notificationLive =
                                                     NotificationCompat.Builder(context, "first")
                                                         .apply {
                                                             setContentTitle("Evento Live")
@@ -172,7 +172,7 @@ class NotifyService : Service() {
                                                                     name,
                                                                     importance
                                                                 )
-                                                                nm.createNotificationChannel(mChannel)
+                                                                nmLive.createNotificationChannel(mChannel)
                                                                 setChannelId(CHANNEL_ID)
                                                             }
                                                         }.build()
@@ -182,7 +182,7 @@ class NotifyService : Service() {
                                                 val lat = list[0].latitude
                                                 val lon = list[0].longitude
                                                 val p0 = LatLng(lat,lon)
-                                                nm.notify(notificationId, notification)
+                                                nmLive.notify(notificationId, notificationLive)
                                                 val mark = createMarker(p0)
                                                 mark?.setIcon(
                                                     BitmapDescriptorFactory.defaultMarker(
@@ -419,11 +419,11 @@ class NotifyService : Service() {
                                                 json = JSONObject(chi.value as HashMap<*, *>)
                                                 key =
                                                     json.get("owner") as String + json.get("name") as String
-                                                var name = json.get("name") as String
-                                                var owner = json.get("owner") as String
+                                                val nameTimed = json.get("name") as String
+                                                val owner = json.get("owner") as String
                                                 //check if car was eliminated before timer expired, in this case doesnt show notification
                                                 for (i in myCar.keys()) {
-                                                    if (name == myCar.getJSONObject(i)
+                                                    if (nameTimed == myCar.getJSONObject(i)
                                                             .get("name") as String
                                                     ) {
                                                         exist = true
@@ -453,7 +453,7 @@ class NotifyService : Service() {
                                                                 Intent(context, ShowCar::class.java)
                                                             notificationClickIntent.putExtra(
                                                                 "name",
-                                                                name
+                                                                nameTimed
                                                             )
                                                             setContentIntent(
                                                                 PendingIntent.getActivity(
@@ -473,7 +473,7 @@ class NotifyService : Service() {
                                                                 ) // change intent
                                                             acceptReminderIntent.putExtra(
                                                                 "name",
-                                                                name
+                                                                nameTimed
                                                             )
                                                             acceptReminderIntent.putExtra(
                                                                 "owner",
@@ -500,7 +500,7 @@ class NotifyService : Service() {
                                                                     NotificationManager.IMPORTANCE_HIGH
                                                                 val mChannel = NotificationChannel(
                                                                     CHANNEL_ID,
-                                                                    name,
+                                                                    nameTimed,
                                                                     importance
                                                                 )
                                                                 nm.createNotificationChannel(
@@ -549,12 +549,12 @@ class NotifyService : Service() {
                                                 json = JSONObject(chi.value as HashMap<*, *>)
                                                 key =
                                                     json.get("owner") as String + json.get("name") as String
-                                                val name = json.get("name") as String
+                                                val nameTimedCar = json.get("name") as String
                                                 val owner = json.get("owner") as String
                                                 val address = json.get("addr") as String
                                                 //check if car was eliminated before timer expired, in this case doesnt show notification
                                                 for (i in myCar.keys()) {
-                                                    if (name == myCar.getJSONObject(i)
+                                                    if (nameTimedCar == myCar.getJSONObject(i)
                                                             .get("name") as String
                                                     ) {
                                                         exist = true
@@ -593,7 +593,7 @@ class NotifyService : Service() {
                                                                     Intent(context, ShowCar::class.java)
                                                                 notificationClickIntent.putExtra(
                                                                     "name",
-                                                                    name
+                                                                    nameTimedCar
                                                                 )
                                                                 setContentIntent(
                                                                     PendingIntent.getActivity(
@@ -613,7 +613,7 @@ class NotifyService : Service() {
                                                                     )
                                                                 acceptReminderIntent.putExtra(
                                                                     "name",
-                                                                    name
+                                                                    nameTimedCar
                                                                 )
                                                                 acceptReminderIntent.putExtra(
                                                                     "owner",
@@ -640,7 +640,7 @@ class NotifyService : Service() {
                                                                     ) // change intent
                                                                 deleteReminderIntent.putExtra(
                                                                     "name",
-                                                                    name
+                                                                    nameTimedCar
                                                                 )
                                                                 deleteReminderIntent.putExtra(
                                                                     "owner",
@@ -671,7 +671,7 @@ class NotifyService : Service() {
                                                                         NotificationManager.IMPORTANCE_HIGH
                                                                     val mChannel = NotificationChannel(
                                                                         CHANNEL_ID,
-                                                                        name,
+                                                                        nameTimedCar,
                                                                         importance
                                                                     )
                                                                     nm.createNotificationChannel(
@@ -705,7 +705,7 @@ class NotifyService : Service() {
                                     if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
                                         notificationJson = JSONObject()
                                         dataFromfirestore = querySnapshot.documents
-                                        var key = ""
+//                                        var key = ""
                                         var json: JSONObject
                                         Log.d(
                                             "TAGnotify",
@@ -717,9 +717,8 @@ class NotifyService : Service() {
                                             child.data?.forEach { chi ->
 
                                                 json = JSONObject(chi.value as HashMap<*, *>)
-                                                key =
-                                                    json.get("owner") as String + json.get("name") as String
-                                                val name = json.get("name") as String
+//                                                key = json.get("owner") as String + json.get("name") as String
+                                                val nameLiveExp = json.get("name") as String
                                                 val address = json.get("addr") as String
                                                 val id = account?.email?.replace("@gmail.com","")
 
@@ -744,7 +743,7 @@ class NotifyService : Service() {
                                                                     NotificationManager.IMPORTANCE_HIGH
                                                                 val mChannel = NotificationChannel(
                                                                     CHANNEL_ID,
-                                                                    name,
+                                                                    nameLiveExp,
                                                                     importance
                                                                 )
                                                                 nm.createNotificationChannel(
@@ -759,7 +758,7 @@ class NotifyService : Service() {
                                                 // found and delete marker from map
                                                 listAddr = geocoder.getFromLocationName(address, 1)
                                                 for (i in myLive.keys()){
-                                                    if(myLive.getJSONObject(i).get("name") as String == name){
+                                                    if(myLive.getJSONObject(i).get("name") as String == nameLiveExp){
                                                         myLive.remove(i)
                                                         myList.remove(i)
                                                         val mark = mymarker[i] as Marker
@@ -770,7 +769,7 @@ class NotifyService : Service() {
                                                             .addOnSuccessListener { result ->
                                                                 for (document in result) {
                                                                     val namedb = document.data["name"]
-                                                                    if(namedb == name)  {
+                                                                    if(namedb == nameLiveExp)  {
                                                                         db.document("user/"+id+"/living/"+document.id).delete()
                                                                         return@addOnSuccessListener
                                                                     }

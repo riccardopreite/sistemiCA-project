@@ -48,33 +48,12 @@ fun resetTimerAuto(car:JSONObject){
         .build()
 
     client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
+        override fun onFailure(call: Call, e: IOException) {
             println("something went wrong reset timer auto")
             println(e)
         }
 
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-            println(response.body()?.string())
-        }
-    })
-}
-
-fun reminderAuto(car:JSONObject){
-    val url = URL("https://"+ip+port+"/reminderAuto?"+ URLEncoder.encode("owner", "UTF-8") + "=" + URLEncoder.encode(car.get("owner") as String, "UTF-8")+"&"+ URLEncoder.encode("timer", "UTF-8") + "=" + URLEncoder.encode(car.get("timer").toString(), "UTF-8")+"&"+ URLEncoder.encode("name", "UTF-8") + "=" + URLEncoder.encode(car.get("name") as String, "UTF-8")+"&"+ URLEncoder.encode("addr", "UTF-8") + "=" + URLEncoder.encode(car.get("addr") as String, "UTF-8"))
-
-    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
-    val request = Request.Builder()
-        .url(url)
-        .build()
-
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
-            println("something went wrong reminder auto")
-            println(e)
-
-        }
-
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+        override fun onResponse(call: Call, response: Response) {
             println(response.body()?.string())
         }
     })
@@ -112,13 +91,13 @@ fun confirmFriend(sender:String,receiver:String){
         .build()
 
     client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
+        override fun onFailure(call: Call, e: IOException) {
             println("something went wrong confirm friend")
             println(e)
 
         }
 
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+        override fun onResponse(call: Call, response: Response) {
             println(response.body()?.string())
         }
     })
@@ -132,16 +111,13 @@ fun removeFriend(sender:String,receiver:String){
         .url(url)
         .build()
 
+
     client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
+        override fun onFailure(call: Call, e: IOException) {
             println("something went wrong remove friend")
             println(e)
-
         }
-
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-            println(response.body()?.string())
-        }
+        override fun onResponse(call: Call, response: Response) = println(response.body()?.string())
     })
 }
 
@@ -169,13 +145,13 @@ fun startLive(live:JSONObject){
         .build()
 
     client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
+        override fun onFailure(call: Call, e: IOException) {
             println("something went wrong start live")
             println(e)
 
         }
 
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+        override fun onResponse(call: Call, response: Response) {
             println(response.body()?.string())
         }
     })
