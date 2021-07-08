@@ -22,6 +22,7 @@ import com.example.maptry.activity.MapsActivity.Companion.listAddr
 import com.example.maptry.activity.MapsActivity.Companion.myCar
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.*
+import com.example.maptry.server.AcceptFriend
 import com.example.maptry.server.DeclineFriend
 import com.example.maptry.server.DeleteTimer
 import com.google.android.gms.maps.model.BitmapDescriptorFactory

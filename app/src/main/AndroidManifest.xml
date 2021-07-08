@@ -164,7 +164,7 @@
         </intent-filter>
     </activity>
 
-        <receiver android:name=".notification.AcceptFriend"/>
+        <receiver android:name=".server.AcceptFriend"/>
         <receiver android:name=".server.DeclineFriend"/>
 
     </application>
