@@ -75,7 +75,7 @@ class LoginActivity : AppCompatActivity() {
         user.visibility = View.GONE
         email.visibility = View.GONE
         close.visibility = View.GONE
-        var data : Intent = Intent();
+        var data = Intent();
 
         data.data = Uri.parse("done");
 
@@ -165,6 +165,16 @@ class LoginActivity : AppCompatActivity() {
             catch (e:Exception){}
         }
         if(GoogleSignIn.getLastSignedInAccount(this) != null) {
+            val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
+            val listLayout: FrameLayout = findViewById(R.id.list_layout)
+            val homeLayout: FrameLayout = findViewById(R.id.homeframe)
+            val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
+            val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
+            val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
+            val carLayout: FrameLayout = findViewById(R.id.car_layout)
+            val liveLayout: FrameLayout = findViewById(R.id.live_layout)
+            val loginLayout: FrameLayout = findViewById(R.id.login_layout)
+            switchFrame(splashLayout,loginLayout,drawerLayout, homeLayout,friendLayout,friendRequestLayout,carLayout,liveLayout,listLayout)
             account = GoogleSignIn.getLastSignedInAccount(this)
             account?.let { firebaseAuthWithGoogle(it) }
             // Signed in successfully, show authenticated UI.
