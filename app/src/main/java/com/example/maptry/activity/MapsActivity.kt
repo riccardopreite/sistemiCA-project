@@ -75,22 +75,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationUpdateState = false
-    private var timer = Timer()
     private var mainHandler = Handler()
 
     private var run = object : Runnable {
         override fun run() {
             if(drawed) { // wait firebase to load JSON or 1.5 sec
-                val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-                val listLayout: FrameLayout = findViewById(R.id.list_layout)
-                val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-                val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-                val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-                val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-                val carLayout: FrameLayout = findViewById(R.id.car_layout)
-                val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-                val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendRequestLayout,splashLayout,carLayout,liveLayout,loginLayout)
+                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
                 mainHandler.removeCallbacksAndMessages(null);
             }
             else {
@@ -129,7 +119,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val myCar = JSONObject() // car json
         val myLive = JSONObject() // live json
         lateinit var mAnimation : Animation
-        lateinit var dataFromfirebase: DataSnapshot
+//        lateinit var dataFromfirebase: DataSnapshot
         var account : GoogleSignInAccount? = null
         lateinit var dataFromfirestore :List<DocumentSnapshot>
         @SuppressLint("StaticFieldLeak")
@@ -137,6 +127,25 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         private const val REQUEST_CHECK_SETTINGS = 2
         var friendJson = JSONObject() // friend json
         var friendTempPoi = JSONObject()
+        @SuppressLint("StaticFieldLeak")
+        lateinit var drawerLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var listLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var homeLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var splashLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var friendLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var friendFrame: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var carLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var liveLayout: FrameLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var loginLayout: FrameLayout
+
     }
 
     /*Start Initialize Function*/
@@ -225,6 +234,17 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             return
         }
         setContentView(R.layout.activity_maps)
+
+        drawerLayout = findViewById(id.drawer_layout)
+        listLayout = findViewById(id.list_layout)
+        homeLayout = findViewById(id.homeframe)
+        splashLayout = findViewById(id.splashFrame)
+        friendLayout = findViewById(id.friend_layout)
+        friendFrame = findViewById(id.friendFrame)
+        carLayout = findViewById(id.car_layout)
+        liveLayout = findViewById(id.live_layout)
+        loginLayout = findViewById(id.login_layout)
+
         isRunning = true
         context = this
         val policy: StrictMode.ThreadPolicy = StrictMode.ThreadPolicy.Builder().permitAll().build()
@@ -234,23 +254,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         //create connection
 
-        val drawerLayout: FrameLayout = findViewById(id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(id.list_layout)
-        val homeLayout: FrameLayout = findViewById(id.homeframe)
-        val splashLayout: FrameLayout = findViewById(id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(id.friendFrame)
-        val carLayout: FrameLayout = findViewById(id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
         mAnimation = AnimationUtils.loadAnimation(this, R.anim.enlarge);
         mAnimation.backgroundColor = Color.TRANSPARENT;
 
-        switchFrame(splashLayout,drawerLayout,listLayout,homeLayout,friendLayout,friendRequestLayout,carLayout,liveLayout,loginLayout)
-
-
         mainHandler = Handler(Looper.getMainLooper())
-
         mainHandler.post(run)
 
         // start intent to log in user
@@ -397,15 +404,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             startActivity(Intent.createChooser(shareIntent,"Stai condividendo "+ myList.getJSONObject(p0.position.toString()).get("name")))
             alertDialog.dismiss()
         }
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
+
         if (homeLayout.visibility == View.GONE) {
             routebutton.text = "Visualizza"
             routebutton.setOnClickListener {
@@ -417,7 +416,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         ), 20F
                     )
                 )
-                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendRequestLayout,carLayout,splashLayout,liveLayout,loginLayout)
+                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
                 alertDialog.dismiss()
             }
         }
@@ -795,16 +794,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     .into(menuIcon)
                 // init menu
                 menuIcon.setOnClickListener(View.OnClickListener() {
-                    val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-                    val listLayout: FrameLayout = findViewById(R.id.list_layout)
-                    val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-                    val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-                    val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-                    val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-                    val carLayout: FrameLayout = findViewById(R.id.car_layout)
-                    val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-                    val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-                    switchFrame(drawerLayout, listLayout, homeLayout,friendLayout,friendRequestLayout,carLayout,splashLayout,liveLayout,loginLayout)
+                    switchFrame(drawerLayout, listLayout, homeLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
                 })
                 user.visibility = View.VISIBLE
                 user.text = account?.displayName
@@ -889,20 +879,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // show menu or home and reDraw all poi
     fun closeDrawer(view: View) {
         println(view)
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val listFriendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-
-        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,listFriendLayout,friendLayout,carLayout,liveLayout,loginLayout)
+        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
         else {
             reDraw()
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,listFriendLayout,friendLayout,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
         }
     }
 
@@ -910,17 +890,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     @SuppressLint("WrongViewCast")
     fun showPOI(){
         var index = 0
-        val txt: TextView = findViewById(R.id.nosrc)
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendRequestLayout,carLayout,splashLayout,liveLayout,loginLayout)
+        val txt: TextView = findViewById(id.nosrc)
+        switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
 
         val lv:ListView = findViewById<ListView>(R.id.lv)
         var len = 0
@@ -1028,17 +999,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = myLive.length()
         var index = 0
         val txt: TextView = findViewById(R.id.nolive)
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-
-        switchFrame(liveLayout,listLayout,homeLayout,drawerLayout,friendLayout,friendRequestLayout,carLayout,splashLayout,loginLayout)
+        switchFrame(liveLayout,listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,loginLayout)
 
         var  lv:ListView = findViewById<ListView>(R.id.lvLive)
         val userList = MutableList<String>(len,{""})
@@ -1068,16 +1029,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = friendJson.length()
         var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendRequestLayout,splashLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
 
 
         var  lv:ListView = findViewById<ListView>(R.id.fv)
@@ -1235,7 +1187,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                         var mark = createMarker(pos)
                                         friendTempPoi.put(pos.toString(), result.getJSONObject(key))
                                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat,lon), 20F))
-                                        switchFrame(homeLayout,friendLayout,listLayout,drawerLayout,friendRequestLayout,splashLayout,carLayout,liveLayout,loginLayout)
+                                        switchFrame(homeLayout,friendLayout,listLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
                                         alertDialog2.dismiss()
                                         showPOIPreferences(pos.toString(),inflater,context,mark!!)
                                     }
@@ -1257,19 +1209,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = myCar.length()
         var index = 0
         var indexFull = 0
-        val txt: TextView = findViewById(R.id.nocar)
-
-
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        switchFrame(carLayout,friendLayout,listLayout,homeLayout,drawerLayout,friendRequestLayout,splashLayout,liveLayout,loginLayout)
+        val txt: TextView = findViewById(id.nocar)
+        switchFrame(carLayout,friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout,loginLayout)
 
 
         var  lv: ListView = findViewById<ListView>(R.id.lvCar)

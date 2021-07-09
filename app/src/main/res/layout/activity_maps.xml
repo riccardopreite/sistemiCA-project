@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/friendFrame"
-
+        android:visibility="gone"
         >
         <LinearLayout
             android:id="@+id/friendRequestLinearLayout"
@@ -101,7 +101,10 @@
         android:layout_width="match_parent"
         android:id="@+id/splashFrame"
         android:layout_centerVertical="true"
-        android:background="@color/colorBackground">
+        android:background="@color/colorBackground"
+        android:visibility="visible"
+
+        >
         <ImageView
             android:id="@+id/imagesplashView"
             android:layout_width="match_parent"
@@ -152,6 +155,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
+        android:visibility="gone"
+
         >
 
         <ImageView
@@ -191,6 +196,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
+        android:visibility="gone"
+
         >
 
         <ImageView
@@ -228,6 +235,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
+        android:visibility="gone"
+
         >
 
         <ImageView
@@ -267,6 +276,8 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
+        android:visibility="gone"
+
         >
 
         <ImageView
@@ -310,6 +321,8 @@
         android:layout_width="match_parent"
         android:id="@+id/drawer_layout"
         android:fitsSystemWindows="true"
+        android:visibility="gone"
+
         >
         <com.google.android.material.navigation.NavigationView
 
@@ -337,6 +350,8 @@
         android:paddingBottom="16dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
+        android:visibility="gone"
+
         >
         <Button
             android:id="@+id/google_button"
@@ -362,7 +377,9 @@
     </FrameLayout>
     <FrameLayout android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:id="@+id/homeframe" >
+    android:id="@+id/homeframe"
+    android:visibility="gone"
+        >
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"

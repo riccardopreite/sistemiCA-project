@@ -19,6 +19,17 @@ import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.myCar
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
 import com.example.maptry.activity.MapsActivity.Companion.zoom
+
+import com.example.maptry.activity.MapsActivity.Companion.carLayout
+import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendFrame
+import com.example.maptry.activity.MapsActivity.Companion.friendLayout
+import com.example.maptry.activity.MapsActivity.Companion.homeLayout
+import com.example.maptry.activity.MapsActivity.Companion.listLayout
+import com.example.maptry.activity.MapsActivity.Companion.liveLayout
+import com.example.maptry.activity.MapsActivity.Companion.splashLayout
+import com.example.maptry.activity.MapsActivity.Companion.loginLayout
+
 import com.example.maptry.R
 import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdRemind
 import com.example.maptry.server.resetTimerAuto
@@ -40,17 +51,7 @@ class RemindTimer : AppCompatActivity() {
 
         val close = findViewById<ImageView>(R.id.close_car)
         close.setOnClickListener {
-            val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-            val listLayout: FrameLayout = findViewById(R.id.list_layout)
-            val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-            val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-            val listFriendLayout: FrameLayout = findViewById(R.id.friend_layout)
-            val friendLayout: FrameLayout = findViewById(R.id.friendFrame)
-            val carLayout: FrameLayout = findViewById(R.id.car_layout)
-            val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-            val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-
-            switchFrame(homeLayout,friendLayout,drawerLayout,listLayout,splashLayout,listFriendLayout,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,friendFrame,drawerLayout,listLayout,splashLayout,friendLayout,carLayout,liveLayout,loginLayout)
 
         }
         val notificaionId = jsonNotifIdRemind.get(owner)

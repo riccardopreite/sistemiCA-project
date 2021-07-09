@@ -16,11 +16,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity.Companion.REQUEST_LOCATION_PERMISSION
+
 import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.locationCallback
 import com.example.maptry.activity.MapsActivity.Companion.mLocationRequest
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
-import com.example.maptry.switchFrame
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -46,41 +46,16 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
-
-        val x = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-        var google_but = findViewById<Button>(R.id.google_button)
-        var close = x.findViewById<ImageView>(R.id.close)
-
-        var imageView = x.findViewById<ImageView>(R.id.imageView)
-        var user = x.findViewById<TextView>(R.id.user)
-        var email = x.findViewById<TextView>(R.id.email)
-
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        
-        // show login interface
-        switchFrame(loginLayout,drawerLayout, homeLayout,friendLayout,friendRequestLayout,carLayout,splashLayout,liveLayout,listLayout)
-
         firebaseAuth = FirebaseAuth.getInstance()
 
-        google_but.visibility = View.VISIBLE
-        imageView.visibility = View.GONE
-        user.visibility = View.GONE
-        email.visibility = View.GONE
-        close.visibility = View.GONE
-        var data = Intent();
+
+        val data = Intent();
 
         data.data = Uri.parse("done");
 
         // ask gps permission if not allowed yet
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+
             requestPermissions()
         }
         else{
@@ -165,16 +140,6 @@ class LoginActivity : AppCompatActivity() {
             catch (e:Exception){}
         }
         if(GoogleSignIn.getLastSignedInAccount(this) != null) {
-            val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-            val listLayout: FrameLayout = findViewById(R.id.list_layout)
-            val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-            val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-            val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-            val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-            val carLayout: FrameLayout = findViewById(R.id.car_layout)
-            val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-            val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-            switchFrame(splashLayout,loginLayout,drawerLayout, homeLayout,friendLayout,friendRequestLayout,carLayout,liveLayout,listLayout)
             account = GoogleSignIn.getLastSignedInAccount(this)
             account?.let { firebaseAuthWithGoogle(it) }
             // Signed in successfully, show authenticated UI.
@@ -225,11 +190,12 @@ class LoginActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == 1) {
-            if (permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION ) {
+            if (permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION ) {
                 startAccount()
             }
         }
     }
+
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)

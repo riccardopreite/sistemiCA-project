@@ -31,6 +31,18 @@ import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.port
 import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.switchFrame
+
+import com.example.maptry.activity.MapsActivity.Companion.carLayout
+import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendFrame
+import com.example.maptry.activity.MapsActivity.Companion.friendLayout
+import com.example.maptry.activity.MapsActivity.Companion.homeLayout
+import com.example.maptry.activity.MapsActivity.Companion.listLayout
+import com.example.maptry.activity.MapsActivity.Companion.liveLayout
+import com.example.maptry.activity.MapsActivity.Companion.splashLayout
+import com.example.maptry.activity.MapsActivity.Companion.loginLayout
+
 import com.example.maptry.server.confirmFriend
 import com.example.maptry.server.removeFriend
 import com.example.maptry.server.sendFriendRequest
@@ -43,16 +55,7 @@ class ShowFriendList : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         //create connection
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val listFriendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        var closeDrawer :ImageView = findViewById(R.id.close_listfriend)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
+        val closeDrawer :ImageView = findViewById(R.id.close_listfriend)
         val addfriend: ImageView = findViewById(R.id.add_listfriend)
         addfriend.setOnClickListener {
             val inflater: LayoutInflater = this.layoutInflater
@@ -74,10 +77,10 @@ class ShowFriendList : AppCompatActivity() {
                 }
             }
         }
-        switchFrame(listFriendLayout,homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendLayout,homeLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
 
         closeDrawer.setOnClickListener {
-            switchFrame(homeLayout,listFriendLayout,drawerLayout,listLayout,splashLayout,friendLayout,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
@@ -94,16 +97,7 @@ class ShowFriendList : AppCompatActivity() {
         val len = MapsActivity.friendJson.length()
         var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendRequestLayout,splashLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
 
 
         var  lv: ListView = findViewById(R.id.fv)
@@ -267,7 +261,7 @@ class ShowFriendList : AppCompatActivity() {
                                             startActivity(main)
 
                                         }
-                                        switchFrame(homeLayout,friendLayout,listLayout,drawerLayout,friendRequestLayout,carLayout,splashLayout,liveLayout,loginLayout)
+                                        switchFrame(homeLayout,friendLayout,listLayout,drawerLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
                                         alertDialog2.dismiss()
                                         showPOIPreferences(pos.toString(),inflater,context,mark!!)
                                         finish()

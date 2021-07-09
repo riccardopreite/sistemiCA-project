@@ -22,6 +22,17 @@ import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.myCar
 import com.example.maptry.activity.MapsActivity.Companion.zoom
+
+import com.example.maptry.activity.MapsActivity.Companion.carLayout
+import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendFrame
+import com.example.maptry.activity.MapsActivity.Companion.friendLayout
+import com.example.maptry.activity.MapsActivity.Companion.homeLayout
+import com.example.maptry.activity.MapsActivity.Companion.listLayout
+import com.example.maptry.activity.MapsActivity.Companion.liveLayout
+import com.example.maptry.activity.MapsActivity.Companion.splashLayout
+import com.example.maptry.activity.MapsActivity.Companion.loginLayout
+
 import com.example.maptry.R
 import com.example.maptry.server.resetTimerAuto
 import com.example.maptry.switchFrame
@@ -39,22 +50,12 @@ class ShowCar : AppCompatActivity() {
 
         val extras = intent?.extras
         name = extras?.get("name") as String
-        //refactor to car layout
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        switchFrame(carLayout,friendLayout,listLayout,homeLayout,drawerLayout,splashLayout,friendRequestLayout,liveLayout,loginLayout)
+        switchFrame(carLayout,friendFrame,listLayout,homeLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
 
         var close = findViewById<ImageView>(R.id.close_car)
         close.setOnClickListener {
 
-            switchFrame(homeLayout,carLayout,friendLayout,listLayout,drawerLayout,splashLayout,friendRequestLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,carLayout,friendFrame,listLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
@@ -75,17 +76,7 @@ class ShowCar : AppCompatActivity() {
         var index = 0
         var indexFull = 0
         val txt: TextView = findViewById(R.id.nocar)
-
-        val drawerLayout: FrameLayout = findViewById(R.id.drawer_layout)
-        val listLayout: FrameLayout = findViewById(R.id.list_layout)
-        val homeLayout: FrameLayout = findViewById(R.id.homeframe)
-        val splashLayout: FrameLayout = findViewById(R.id.splashFrame)
-        val friendLayout: FrameLayout = findViewById(R.id.friendFrame)
-        val carLayout: FrameLayout = findViewById(R.id.car_layout)
-        val friendRequestLayout: FrameLayout = findViewById(R.id.friend_layout)
-        val liveLayout: FrameLayout = findViewById(R.id.live_layout)
-        val loginLayout: FrameLayout = findViewById(R.id.login_layout)
-        switchFrame(carLayout,friendLayout,listLayout,homeLayout,drawerLayout,splashLayout,friendRequestLayout,liveLayout,loginLayout)
+        switchFrame(carLayout,friendFrame,listLayout,homeLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
 
 
         var  lv: ListView = findViewById<ListView>(R.id.lvCar)
