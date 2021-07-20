@@ -4,7 +4,6 @@ package com.example.maptry.notification
 import android.app.*
 import android.app.PendingIntent.FLAG_ONE_SHOT
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
@@ -99,7 +98,7 @@ class NotifyService : Service() {
                     }
                 }
 //                        var notification: Notification
-                        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//                        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         val idDB = account?.email?.replace("@gmail.com", "")
                         if (idDB != null) {
                             //Listener for live marker
@@ -130,15 +129,6 @@ class NotifyService : Service() {
                                                 )
                                                 showLiveEvent.flags = FLAG_ACTIVITY_NEW_TASK or
                                                         FLAG_ACTIVITY_CLEAR_TASK
-
-
-//                                                val showLiveEvent =
-//                                                    Intent(
-//                                                        context,
-//                                                        ShowLiveEvent::class.java
-//                                                    )
-//                                                val stackBuilder = TaskStackBuilder.create(context)
-
 
                                                 showLiveEvent.putExtra(
                                                     "owner",
@@ -326,9 +316,13 @@ class NotifyService : Service() {
                                                     name,
                                                     importance
                                                 )
-                                                nm.createNotificationChannel(mChannel)
-
-                                                nm.notify(notificationId, notificationFriendRequest.build())
+//                                                nm.createNotificationChannel(mChannel)
+//
+//                                                nm.notify(notificationId, notificationFriendRequest.build())
+                                                with(NotificationManagerCompat.from(this)) {
+                                                    createNotificationChannel(mChannel)
+                                                    notify(notificationId, notificationFriendRequest.build())
+                                                }
                                                 db.collection("user").document(idDB)
                                                     .collection("friendrequest")
                                                     .document(child.id).delete()
@@ -385,12 +379,10 @@ class NotifyService : Service() {
                                                     name,
                                                     importance
                                                 )
-//                                                nm.createNotificationChannel(mChannel)
                                                 with(NotificationManagerCompat.from(this)) {
                                                     createNotificationChannel(mChannel)
                                                     notify(notificationId, notificationAddedFriend.build())
                                                 }
-//                                                nm.notify(notificationId, notificationAddedFriend.build())
                                                 //delete item from db
                                                 db.collection("user").document(idDB)
                                                     .collection("addedfriend").document(child.id).delete()
@@ -449,9 +441,12 @@ class NotifyService : Service() {
                                                     nameLiveExp,
                                                     importance
                                                 )
-                                                
-                                                nm.createNotificationChannel(mChannel)
-                                                nm.notify(notificationId, notificationLiveExpired.build())
+                                                with(NotificationManagerCompat.from(this)) {
+                                                    createNotificationChannel(mChannel)
+                                                    notify(notificationId, notificationLiveExpired.build())
+                                                }
+//                                                nm.createNotificationChannel(mChannel)
+//                                                nm.notify(notificationId, notificationLiveExpired.build())
 
                                                 // found and delete marker from map
                                                 listAddr = geocoder.getFromLocationName(address, 1)
