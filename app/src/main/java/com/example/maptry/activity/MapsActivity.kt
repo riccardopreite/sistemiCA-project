@@ -7,13 +7,10 @@ import android.app.AlertDialog
 import android.content.*
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
-import android.net.Uri
 import android.os.*
-import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
@@ -23,41 +20,37 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
 import com.example.maptry.*
 import com.example.maptry.R
 import com.example.maptry.R.id
-import com.example.maptry.changeUI.CircleTransform
+import com.example.maptry.changeUI.markerView
+import com.example.maptry.changeUI.showCreateMarkerView
+import com.example.maptry.location.myLocationClick
+import com.example.maptry.location.registerLocationListener
+import com.example.maptry.location.setUpMap
+import com.example.maptry.location.startLocationUpdates
 import com.example.maptry.notification.NotifyService
 import com.example.maptry.server.*
 import com.example.maptry.utils.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.tasks.Task
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
-import com.google.android.material.internal.ContextUtils.getActivity
+import com.google.android.material.internal.ContextUtils
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.squareup.picasso.Picasso
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -84,7 +77,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 switchFrame(homeLayout,listOf(listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
                 mainHandler.removeCallbacksAndMessages(null)
                 if(intent.hasExtra("lat") && intent.hasExtra("lon")){
-                    println("HAS EXTRA")
                     val lat = intent.extras?.get("lat") as Double
                     val lon = intent.extras?.get("lon") as Double
                     val p0 = LatLng(lat,lon)
@@ -111,9 +103,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lateinit var alertDialog: AlertDialog
         lateinit var mMap: GoogleMap
         lateinit var mAnimation : Animation
-        //        lateinit var dataFromfirebase: DataSnapshot
         lateinit var geocoder : Geocoder
         lateinit var dataFromfirestore :List<DocumentSnapshot>
+
         @SuppressLint("StaticFieldLeak")
         lateinit var db :FirebaseFirestore
         @SuppressLint("StaticFieldLeak")
@@ -130,10 +122,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lateinit var friendFrame: FrameLayout
         @SuppressLint("StaticFieldLeak")
         lateinit var liveLayout: FrameLayout
+        lateinit var supportManager: FragmentManager
 
 
-        private const val UPDATE_INTERVAL = (10 * 1000).toLong()  /* 10 secs */
-        private const val FASTEST_INTERVAL: Long = 2000 /* 2 sec */
         private const val REQUEST_CHECK_SETTINGS = 2
         const val REQUEST_LOCATION_PERMISSION = 1
 
@@ -161,78 +152,16 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
 
     /*Start Initialize Function*/
-    private fun startLocationUpdates() {
-        // initialize location request object
-        mLocationRequest = LocationRequest.create()
-        mLocationRequest!!.run {
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            interval = UPDATE_INTERVAL
-            setFastestInterval(FASTEST_INTERVAL)
-        }
-
-        // initialize location setting request builder object
-        builder.addLocationRequest(mLocationRequest!!)
-        builder.setAlwaysShow(true)
-        val locationSettingsRequest = builder.build()
-
-        // initialize location service object
-        val settingsClient = LocationServices.getSettingsClient(this)
-        settingsClient.checkLocationSettings(locationSettingsRequest)
-
-        // call register location listener
-        registerLocationListner()
-    }
-    private fun registerLocationListner() {
-        // initialize location callback object
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                onLocationChanged(locationResult!!.lastLocation)
-            }
-        }
-    }
-    // move position marker
-    private fun onLocationChanged(location: Location) {
-
-        val x = LatLng(location.latitude, location.longitude)
-        try{
-            oldPos?.remove()
-        }
-        catch (e:Exception){
-            println("first time")
-        }
-        oldPos = createMarker(x)
-        mymarker.remove(oldPos?.position.toString())
-
-        if(zoom == 1){
-            lastLocation = location
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(x, 17F))
-            zoom = 0
-        }
-        lastLocation = location
-    }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == 1) {
             if (permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION ) {
-                registerLocationListner()
+                registerLocationListener()
             }
         }
     }
 
-
-    // init Map
-    private fun setUpMap() {
-        Places.initialize(applicationContext, getString(R.string.google_maps_key))
-        val mapFragment =  supportFragmentManager.findFragmentById(id.map) as SupportMapFragment
-        var locationButton : View? = mapFragment.view?.findViewById<LinearLayout>(Integer.parseInt("1"))
-        val prov : View = (locationButton?.parent) as View
-        locationButton = prov.findViewById(Integer.parseInt("2"))
-        val layoutParams = locationButton?.layoutParams as RelativeLayout.LayoutParams
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0)
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
-        layoutParams.setMargins(0, 0, 30, 30)
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -266,7 +195,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         geocoder = Geocoder(this)
 
-        //create connectioni
+        //create connection
         mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post(run)
 
@@ -286,77 +215,26 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
     }
 
-
-
     @SuppressLint("RestrictedApi")
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        supportManager = supportFragmentManager
         mMap.setOnMarkerClickListener(this)
         mMap.setOnMapClickListener(this)
         startLocationUpdates()
-        setUpMap()
-        setUpSearch()
-        // override methode to ask to turn on GPS if is off or to move Camera if is off
+        setUpMap(getString(R.string.google_maps_key))
+        val navMenu: NavigationView = findViewById(id.nav_view)
+        navMenu.setNavigationItemSelectedListener(this)
+//        setUpSearch()
+        // override methode to ask to turn on GPS if is off or to move Camera if is on
         mMap.setOnMyLocationButtonClickListener {
-
-            val provider: String = Settings.Secure.getString(
-                contentResolver,
-                Settings.Secure.LOCATION_PROVIDERS_ALLOWED
-            )
-
-            if (!provider.contains("gps")) { //if gps is disabled
-                val result: Task<LocationSettingsResponse> =
-                    getActivity(context)?.let {
-                        LocationServices.getSettingsClient(it)
-                            .checkLocationSettings(builder.build())
-                    } as Task<LocationSettingsResponse>
-
-
-
-                result.addOnCompleteListener { task ->
-                    try {
-                        val response: LocationSettingsResponse? =task.getResult(ApiException::class.java)
-                        println(response)
-                    } catch (exception: ApiException) {
-                        when (exception.statusCode) {
-                            LocationSettingsStatusCodes.RESOLUTION_REQUIRED ->                             // Location settings are not satisfied. But could be fixed by showing the
-                                try {
-                                    // Cast to a resolvable exception.
-                                    val resolvable: ResolvableApiException =
-                                        exception as ResolvableApiException
-                                    // Show the dialog by calling startResolutionForResult(),
-                                    // and check the result in onActivityResult().
-                                    resolvable.startResolutionForResult(
-                                        getActivity(context),
-                                        LocationRequest.PRIORITY_HIGH_ACCURACY
-                                    )
-                                } catch (e: IntentSender.SendIntentException) {
-                                    // Ignore the error.
-                                } catch (e: ClassCastException) {
-                                    // Ignore, should be an impossible error.
-                                }
-                            LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
-                            }
-                        }
-                    }
-                }
-
-            }
-            else{
-                try{
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(
-                        lastLocation.latitude,
-                        lastLocation.longitude), 20F))
-                }
-                catch (e:Exception){}
-            }
+            myLocationClick(ContextUtils.getActivity(context))
             return@setOnMyLocationButtonClickListener true
         }
 
     }
 
     /*End Initialize Function*/
-
 
     /*Start Map Function*/
 
@@ -376,66 +254,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             println("GPS OFF")
         }
         val inflater: LayoutInflater = this.layoutInflater
-        val dialogView: View = inflater.inflate(R.layout.dialog_custom_view, null)
-        val address: TextView = dialogView.findViewById(id.txt_addressattr)
-        val phone: TextView = dialogView.findViewById(id.phone_contentattr)
-        val phoneCap: TextView = dialogView.findViewById(id.phone_content)
-        val header: TextView = dialogView.findViewById(id.headerattr)
-        val url: TextView = dialogView.findViewById(id.uri_lblattr)
-        val urlCap: TextView = dialogView.findViewById(id.uri_lbl)
-        val text : String =  myList.getJSONObject(p0.position.toString()).get("cont") as String+": "+ myList.getJSONObject(p0.position.toString()).get("name") as String
-        header.text =  text
-        address.text = myList.getJSONObject(p0.position.toString()).get("addr") as String
-        url.text = myList.getJSONObject(p0.position.toString()).get("url") as String
-        phone.text = myList.getJSONObject(p0.position.toString()).get("phone") as String
-        when {
-            myList.getJSONObject(p0.position.toString()).get("cont") as String == "Live" -> {
-                phone.text = myLive.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
-                phoneCap.text = "Timer"
-                url.text = myLive.getJSONObject(p0.position.toString()).get("owner") as String
-                urlCap.text = "Proprietario"
-
-            }
-            else -> {
-                phoneCap.text = "N.cellulare"
-                urlCap.text = "WebSite"
-            }
-        }
-
-        val routebutton: Button = dialogView.findViewById(id.routeBtn)
-        val removebutton: Button = dialogView.findViewById(id.removeBtnattr)
-        removebutton.setOnClickListener {
-            val shareIntent = Intent()
-            shareIntent.action = Intent.ACTION_SEND
-            shareIntent.type="text/plain"
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ myList.getJSONObject(p0.position.toString()).get("lat")+","+ myList.getJSONObject(p0.position.toString()).get("lon"))
-            startActivity(Intent.createChooser(shareIntent,"Stai condividendo "+ myList.getJSONObject(p0.position.toString()).get("name")))
-            alertDialog.dismiss()
-        }
-
-        if (homeLayout.visibility == View.GONE) {
-            routebutton.text = "Visualizza"
-            routebutton.setOnClickListener {
-                mMap.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(
-                        LatLng(
-                            p0.position.latitude,
-                            p0.position.longitude
-                        ), 20F
-                    )
-                )
-                switchFrame(homeLayout,listOf(listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
-                alertDialog.dismiss()
-            }
-        }
-        else{
-            routebutton.setOnClickListener {
-                val intent =
-                    Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + address.text))
-                startActivity(intent)
-                alertDialog.dismiss()
-            }
-        }
+        val dialogView = markerView(inflater,p0)
 
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
         dialogBuilder.setOnDismissListener { }
@@ -450,214 +269,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     @SuppressLint("SetTextI18n")
     override fun onMapClick(p0: LatLng) {
         val inflater: LayoutInflater = this.layoutInflater
-        val dialogView: View = inflater.inflate(R.layout.dialog_list_view, null)
-        val spinner: Spinner = dialogView.findViewById(id.planets_spinner)
-        val lname : EditText = dialogView.findViewById(id.txt_lname)
-        val address :  TextView = dialogView.findViewById(id.txt_address)
-        val publicButton: RadioButton = dialogView.findViewById(id.rb_public)
-        val privateButton: RadioButton = dialogView.findViewById(id.rb_private)
-        val timePickerLayout = dialogView.findViewById<RelativeLayout>(id.timePicker)
-        val timePicker = dialogView.findViewById<TimePicker>(id.timePicker1)
-        val addbutton: Button = dialogView.findViewById(id.addBtn)
-        val removebutton: Button = dialogView.findViewById(id.removeBtn)
-        val id = account?.email?.replace("@gmail.com", "")
-
-        timePicker.hour = 3
-        timePicker.minute = 0
-        val radioGroup = dialogView.findViewById<RelativeLayout>(R.id.rl_gender)
-        var time : Int
-        address.isEnabled = false
-
-        val background = object : Runnable {
-            override fun run() {
-                try {
-                    listAddr = geocoder.getFromLocation(p0.latitude, p0.longitude, 1)
-                    return
-                } catch (e: IOException) {
-                    Log.e("Error", "grpc failed: " + e.message, e)
-                }
-            }
-        }
-        addrThread = Thread(background)
-        addrThread?.start()
-        try {
-            addrThread?.join()
-        } catch (e:InterruptedException) {
-            e.printStackTrace()
-        }
-        address.text = listAddr?.get(0)?.getAddressLine(0)
-        println(listAddr?.get(0))
-        println(listAddr?.get(0)?.phone)
-        println(listAddr?.get(0)?.url)
-
-        ArrayAdapter.createFromResource(
-            this,
-            R.array.planets_array,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinner.adapter = adapter
-        }
-
-
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-            // show timepicker for live
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val type = parent?.getItemAtPosition(position) as String
-                if(type == "Live"){
-                    radioGroup.visibility = View.GONE
-                    timePicker.setIs24HourView(true)
-                    timePickerLayout.visibility = View.VISIBLE
-                }
-                else{
-                    radioGroup.visibility = View.VISIBLE
-                    timePicker.setIs24HourView(true)
-                    timePickerLayout.visibility = View.GONE
-                }
-            }
-        }
-        removebutton.setOnClickListener {
-            alertDialog.dismiss()
-        }
-        addbutton.setOnClickListener {
-            val text = lname.text.toString()
-            if (text == "") {
-                lname.background.setColorFilter(
-                    resources.getColor(R.color.quantum_googred),
-                    PorterDuff.Mode.SRC_ATOP
-                )
-            }
-            else {
-                myjson = JSONObject()
-                var gender = "gen"
-                if (publicButton.isChecked)
-                    gender = publicButton.text.toString()
-                if (privateButton.isChecked)
-                    gender = privateButton.text.toString()
-
-                when {
-                    spinner.selectedItem.toString() == "Live" -> {
-                        for (i: String in myLive.keys()) {
-                            try {
-                                val x: String = myLive.getJSONObject(i).get("name") as String
-                                if (text == x) {
-                                    lname.background.setColorFilter(
-                                        resources.getColor(R.color.quantum_googred),
-                                        PorterDuff.Mode.SRC_ATOP
-                                    )
-                                    return@setOnClickListener
-
-                                }
-                                if (address.text == myLive.getJSONObject(i).get("addr") as String) {
-                                    lname.background.setColorFilter(
-                                        resources.getColor(R.color.quantum_googred),
-                                        PorterDuff.Mode.SRC_ATOP
-                                    )
-                                    return@setOnClickListener
-                                }
-                            } catch (e: java.lang.Exception) {
-                                println("ops")
-                            }
-                        }
-                        time = timePicker.hour * 60 + timePicker.minute
-                        val marker = createMarker(p0)
-                        marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-
-                        myjson.put("type", "Pubblico")
-                        myjson.put("timer", time.toString())
-                        myjson.put("name", text)
-                        myjson.put("addr", address.text.toString())
-                        myjson.put("owner", account?.email?.replace("@gmail.com", ""))
-                        myjson.put("marker", marker)
-                        myjson.put("cont", spinner.selectedItem.toString())
-                        myjson.put("url", "da implementare")
-                        myjson.put("phone", "da implementare")
-                        startLive(myjson)
-                        myLive.put(p0.toString(), myjson)
-                        myList.put(p0.toString(), myjson)
-
-                        id?.let { it1 ->
-                            if (marker != null) {
-                                writeNewLive(
-                                    it1,
-                                    text,
-                                    address.text.toString(),
-                                    time.toString(),
-                                    it1,
-                                    marker,
-                                    "da implementare",
-                                    "da implementare",
-                                    "Pubblico",
-                                    "Live"
-                                )
-                            }
-                        }
-                    }
-                    //                spinner on item selected
-                    else -> {
-                        for (i: String in myList.keys()) {
-                            try {
-                                val x: String = myList.getJSONObject(i).get("name") as String
-                                if (text == x) {
-                                    lname.background.setColorFilter(
-                                        resources.getColor(R.color.quantum_googred),
-                                        PorterDuff.Mode.SRC_ATOP
-                                    )
-                                    return@setOnClickListener
-
-                                }
-                                if (address.text == myList.getJSONObject(i).get("addr") as String) {
-                                    lname.background.setColorFilter(
-                                        resources.getColor(R.color.quantum_googred),
-                                        PorterDuff.Mode.SRC_ATOP
-                                    )
-                                    return@setOnClickListener
-                                }
-                            } catch (e: java.lang.Exception) {
-                                println("ops")
-                            }
-                        }
-                        val marker = createMarker(p0)
-                        marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-
-                        myjson.put("name", text)
-                        myjson.put("addr", address.text.toString())
-                        myjson.put("cont", spinner.selectedItem.toString())
-                        myjson.put("type", gender)
-                        myjson.put("marker", marker)
-                        myjson.put("url", "da implementare")
-                        myjson.put("phone", "da implementare")
-                        if(listAddr?.get(0)?.url === null || listAddr?.get(0)?.url === "" || listAddr?.get(0)?.url === " ") myjson.put("url","Url non trovato")
-                        else  myjson.put("url", listAddr?.get(0)?.url)
-                        if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") myjson.put("phone","cellulare non trovato")
-                        else  myjson.put("phone", listAddr?.get(0)?.phone)
-                        myList.put(p0.toString(), myjson)
-                        id?.let { it1 ->
-                            if (marker != null) {
-                                writeNewPOI(
-                                    it1,
-                                    text,
-                                    address.text.toString(),
-                                    spinner.selectedItem.toString(),
-                                    gender,
-                                    marker,
-                                    "da implementare",
-                                    "da implementare"
-                                )
-                            }
-                        }
-                    }
-                }
-                alertDialog.dismiss()
-            }
-        }
+        val dialogView = showCreateMarkerView(inflater,p0)
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
         dialogBuilder.setOnDismissListener { }
         dialogBuilder.setView(dialogView)
-
         alertDialog = dialogBuilder.create()
         alertDialog.show()
     }
@@ -665,9 +280,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*End Map Function*/
 
 
-
-    /*Start Override Function*/
-    @SuppressLint("ResourceType")
+    /*Start Activity for result Function*/
+    @SuppressLint("ResourceType", "CutPasteId")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CHECK_SETTINGS) {
@@ -727,52 +341,19 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         docRef.document(id).set({})
                     }
                 }
+
                 val intent = Intent(this, NotifyService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startService(intent)
-                }
-                else{
-                    startService(intent)
-                }
+                startService(intent)
+
                 if (id != null) {
                     createPoiList(id)
                     createFriendList(id)
                     createLiveList(id)
                 }
-                val x = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-                val imageView = x.findViewById<ImageView>(R.id.imageView)
-                val user = x.findViewById<TextView>(R.id.user)
-                val email = x.findViewById<TextView>(R.id.email)
-                val close = x.findViewById<ImageView>(R.id.close)
-                val autoCompleteFragment =
-                    supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as? AutocompleteSupportFragment
-                val layout: LinearLayout = autoCompleteFragment?.view as LinearLayout
-                val menuIcon: ImageView = layout.getChildAt(0) as ImageView
-                imageView.visibility = View.VISIBLE
-                // load google photo
-                Picasso.get().load(account?.photoUrl).into(imageView)
-                Picasso.get()
-                    .load(account?.photoUrl)
-                    .transform(CircleTransform())
-                    .resize(100, 100)
-                    .into(menuIcon)
-                // init menu
-                menuIcon.setOnClickListener {
-                    switchFrame(
-                        drawerLayout,
-                        listOf(listLayout,
-                        homeLayout,
-                        friendLayout,
-                        friendFrame,
-                        splashLayout,
-                        liveLayout)
-                    )
-                }
-                user.visibility = View.VISIBLE
-                user.text = account?.displayName
-                email.visibility = View.VISIBLE
-                email.text = account?.email
-                close.visibility = View.VISIBLE
+
+                val navBar = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
+                setHomeLayout(navBar)
+
             }
             else if (resultCode == 40) {
                 println("non loggato")
@@ -788,15 +369,13 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
         }
     }
-    @SuppressLint("RestrictedApi")
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        println("MENU")
         return when (item.itemId) {
             id.list -> {
+                println("showpoi menu")
                 showPOI()
-                return true
-            }
-            id.help ->{
-                Toast.makeText(applicationContext, "help da implementare", Toast.LENGTH_LONG).show()
                 return true
             }
             id.friend ->{
@@ -810,50 +389,35 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             else -> super.onOptionsItemSelected(item)
         }
     }
+  /*  override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        println("MENU")
+        return when (item.itemId) {
+            id.list -> {
+                println("showpoi menu")
 
-
-
-    /*End Override Function*/
-
-    /*Start Utils Function*/
-
-    // init autoComplete fragment to search address
-    @SuppressLint("ResourceType")
-    fun setUpSearch() {
-        val autoCompleteFragment =
-            supportFragmentManager.findFragmentById(id.autocomplete_fragment) as? AutocompleteSupportFragment
-        autoCompleteFragment?.setCountry("IT")
-        autoCompleteFragment?.setPlaceFields(listOf(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG,Place.Field.ADDRESS,Place.Field.PHONE_NUMBER,Place.Field.WEBSITE_URI))
-        val navMenu: NavigationView = findViewById(id.nav_view)
-        navMenu.setNavigationItemSelectedListener(this)
-        autoCompleteFragment?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
-            override fun onPlaceSelected(place: Place) {
-                val lat = place.latLng
-                if (lat != null) {
-                    autoCompleteFragment.setText("")
-                    supportFragmentManager.popBackStack()
-                    onMapClick(lat)
-                }
+                showPOI()
+                return true
             }
-            override fun onError(status: Status) {
-                Log.d("HOY", "An error occurred: ${status.statusMessage}")
+            id.friend ->{
+                showFriend()
+                return true
             }
-        })
-    }
-
-    // show menu or home and reDraw all poi
-    fun closeDrawer(view: View) {
-        println(view)
-        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
-        else {
-            reDraw()
-            switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
+            id.live ->{
+                showLive()
+                return true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
+*/
+    /*End Activity for result Function*/
+
+    /*Start Utils Function*/
 
     // populate ListView with poi list
     @SuppressLint("WrongViewCast")
     fun showPOI(){
+        println("dc")
         var index = 0
         val txt: TextView = findViewById(id.nosrc)
         switchFrame(listLayout,listOf(homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
@@ -899,7 +463,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         // create a Toast to undo the operation of removing
                         val snackbar = Snackbar.make(view, text, 5000)
                             .setAction(cancel) {
-
                                 id?.let { it1 ->
                                     myList.put(mark.position.toString(), removed)
                                     mymarker.put(mark.position.toString(), mark)
@@ -956,7 +519,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         break
                     }
                 }
-
             }
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
             dialogBuilder.setOnDismissListener { }
@@ -1230,6 +792,15 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lv.adapter = arrayAdapter
     }
 
+    // show menu or home and reDraw all poi
+    fun closeDrawer(view: View) {
+        println(view)
+        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
+        else {
+            reDraw()
+            switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
+        }
+    }
     //get email inserted to send a request via server
     fun addFriend(view: View) {
         println(view)
@@ -1271,3 +842,25 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
 
 
+// init autoComplete fragment to search address
+/* @SuppressLint("ResourceType")
+ fun setUpSearch() {
+     val autoCompleteFragment =
+         supportFragmentManager.findFragmentById(id.autocomplete_fragment) as? AutocompleteSupportFragment
+     autoCompleteFragment?.setCountry("IT")
+     autoCompleteFragment?.setPlaceFields(listOf(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG,Place.Field.ADDRESS,Place.Field.PHONE_NUMBER,Place.Field.WEBSITE_URI))
+
+     autoCompleteFragment?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+         override fun onPlaceSelected(place: Place) {
+             val lat = place.latLng
+             if (lat != null) {
+                 autoCompleteFragment.setText("")
+                 supportFragmentManager.popBackStack()
+                 onMapClick(lat)
+             }
+         }
+         override fun onError(status: Status) {
+             Log.d("HOY", "An error occurred: ${status.statusMessage}")
+         }
+     })
+ }*/

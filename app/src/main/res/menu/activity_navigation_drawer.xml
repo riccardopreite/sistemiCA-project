@@ -11,16 +11,11 @@
             android:id="@+id/list"
             android:icon="@drawable/ic_list"
             android:title="@string/list"
-            app:showAsAction="never"/>
+            app:showAsAction="always"/>
         <item
             android:id="@+id/friend"
             android:icon="@drawable/ic_friend_black"
             android:title="@string/friend"
-            app:showAsAction="never"/>
-        <item
-            android:id="@+id/car"
-            android:icon="@drawable/ic_car"
-            android:title="@string/car"
             app:showAsAction="always"/>
         <item
             android:id="@+id/live"

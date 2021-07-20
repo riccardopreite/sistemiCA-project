@@ -8,9 +8,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.core.content.ContextCompat.startActivity
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity
@@ -26,10 +24,15 @@ import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
+import com.example.maptry.activity.MapsActivity.Companion.supportManager
+import com.example.maptry.changeUI.CircleTransform
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.material.navigation.NavigationView
+import com.squareup.picasso.Picasso
 import org.json.JSONObject
 import java.io.IOException
 import java.lang.Exception
@@ -182,4 +185,40 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     alertDialog.show()
 }
 
-
+fun setHomeLayout(navBar : View){
+    val imageView = navBar.findViewById<ImageView>(R.id.imageView)
+    val user = navBar.findViewById<TextView>(R.id.user)
+    val email = navBar.findViewById<TextView>(R.id.email)
+    val close = navBar.findViewById<ImageView>(R.id.close)
+    val autoCompleteFragment =
+        supportManager.findFragmentById(R.id.autocomplete_fragment) as? AutocompleteSupportFragment
+    val layout: LinearLayout = autoCompleteFragment?.view as LinearLayout
+    val menuIcon: ImageView = layout.getChildAt(0) as ImageView
+    imageView.visibility = View.VISIBLE
+    // load google photo
+    Picasso.get().load(account?.photoUrl).into(imageView)
+    Picasso.get()
+        .load(account?.photoUrl)
+        .transform(CircleTransform())
+        .resize(100, 100)
+        .into(menuIcon)
+    // init menu
+    menuIcon.setOnClickListener {
+        switchFrame(
+            MapsActivity.drawerLayout,
+            listOf(
+                MapsActivity.listLayout,
+                MapsActivity.homeLayout,
+                MapsActivity.friendLayout,
+                MapsActivity.friendFrame,
+                MapsActivity.splashLayout,
+                MapsActivity.liveLayout
+            )
+        )
+    }
+    user.visibility = View.VISIBLE
+    user.text = account?.displayName
+    email.visibility = View.VISIBLE
+    email.text = account?.email
+    close.visibility = View.VISIBLE
+}
