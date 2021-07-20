@@ -81,7 +81,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     private var run = object : Runnable {
         override fun run() {
             if(drawed) { // wait firebase to load JSON or 1.5 sec
-                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
+                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout)
                 mainHandler.removeCallbacksAndMessages(null)
                 if(intent.hasExtra("lat") && intent.hasExtra("lon")){
                     println("HAS EXTRA")
@@ -129,11 +129,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         @SuppressLint("StaticFieldLeak")
         lateinit var friendFrame: FrameLayout
         @SuppressLint("StaticFieldLeak")
-        lateinit var carLayout: FrameLayout
-        @SuppressLint("StaticFieldLeak")
         lateinit var liveLayout: FrameLayout
-        @SuppressLint("StaticFieldLeak")
-        lateinit var loginLayout: FrameLayout
 
 
         private const val UPDATE_INTERVAL = (10 * 1000).toLong()  /* 10 secs */
@@ -157,7 +153,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         var myjson = JSONObject() //tmp json
         var mymarker = JSONObject() //marker
         var myList = JSONObject() // POI json
-        val myCar = JSONObject() // car json
         val myLive = JSONObject() // live json
         var account : GoogleSignInAccount? = null
         var friendJson = JSONObject() // friend json
@@ -260,13 +255,11 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         splashLayout = findViewById(id.splashFrame)
         friendLayout = findViewById(id.friend_layout)
         friendFrame = findViewById(id.friendFrame)
-        carLayout = findViewById(id.car_layout)
         liveLayout = findViewById(id.live_layout)
-        loginLayout = findViewById(id.login_layout)
 
         mAnimation = AnimationUtils.loadAnimation(this, R.anim.enlarge)
         mAnimation.backgroundColor = Color.TRANSPARENT
-        switchFrame(splashLayout,homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+        switchFrame(splashLayout,homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,liveLayout)
 
         val policy: StrictMode.ThreadPolicy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -403,12 +396,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 urlCap.text = "Proprietario"
 
             }
-            myList.getJSONObject(p0.position.toString()).get("cont") as String == "Macchina" -> {
-                phone.text = myCar.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
-                phoneCap.text = "Timer"
-                urlCap.text = "Proprietario"
-                url.text = myCar.getJSONObject(p0.position.toString()).get("owner") as String
-            }
             else -> {
                 phoneCap.text = "N.cellulare"
                 urlCap.text = "WebSite"
@@ -437,7 +424,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         ), 20F
                     )
                 )
-                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
+                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout)
                 alertDialog.dismiss()
             }
         }
@@ -517,10 +504,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             override fun onNothingSelected(parent: AdapterView<*>?) {
 
             }
-            // show timepicker for car and live
+            // show timepicker for live
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val type = parent?.getItemAtPosition(position) as String
-                if(type == "Macchina" || type == "Live"){
+                if(type == "Live"){
                     radioGroup.visibility = View.GONE
                     timePicker.setIs24HourView(true)
                     timePickerLayout.visibility = View.VISIBLE
@@ -552,64 +539,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     gender = privateButton.text.toString()
 
                 when {
-                    spinner.selectedItem.toString() == "Macchina" -> {
-                        for (i: String in myCar.keys()) {
-                            try {
-                                val x: String = myCar.getJSONObject(i).get("name") as String
-                                if (text == x) {
-                                    lname.background.setColorFilter(
-                                        resources.getColor(R.color.quantum_googred),
-                                        PorterDuff.Mode.SRC_ATOP
-                                    )
-                                    return@setOnClickListener
-
-                                }
-                                if (address.text == myCar.getJSONObject(i).get("addr") as String) {
-                                    lname.background.setColorFilter(
-                                        resources.getColor(R.color.quantum_googred),
-                                        PorterDuff.Mode.SRC_ATOP
-                                    )
-                                    return@setOnClickListener
-                                }
-                            } catch (e: java.lang.Exception) {
-                                println("ops")
-                            }
-                        }
-                        gender = privateButton.text.toString()
-                        time = timePicker.hour * 60 + timePicker.minute
-                        val marker = createMarker(p0)
-                        marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                        myjson.put("type", "Privato")
-                        myjson.put("timer", time.toString())
-                        myjson.put("name", text)
-                        myjson.put("addr", address.text.toString())
-                        myjson.put("owner", account?.email?.replace("@gmail.com", ""))
-                        myjson.put("marker", marker)
-                        myjson.put("cont", spinner.selectedItem.toString())
-                        myjson.put("url", "da implementare")
-                        myjson.put("phone", "da implementare")
-
-                        resetTimerAuto(myjson)
-                        myCar.put(p0.toString(), myjson)
-                        myList.put(p0.toString(), myjson)
-
-                        id?.let { it1 ->
-                            if (marker != null) {
-                                writeNewCar(
-                                    it1,
-                                    text,
-                                    address.text.toString(),
-                                    time.toString(),
-                                    it1,
-                                    marker,
-                                    "da implementare",
-                                    "da implementare",
-                                    "Privato",
-                                    "Macchina"
-                                )
-                            }
-                        }
-                    }
                     spinner.selectedItem.toString() == "Live" -> {
                         for (i: String in myLive.keys()) {
                             try {
@@ -809,10 +738,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     createPoiList(id)
                     createFriendList(id)
                     createLiveList(id)
-                    createCarList(id)
                 }
                 val x = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-                val googleButton = findViewById<Button>(R.id.google_button)
                 val imageView = x.findViewById<ImageView>(R.id.imageView)
                 val user = x.findViewById<TextView>(R.id.user)
                 val email = x.findViewById<TextView>(R.id.email)
@@ -821,7 +748,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as? AutocompleteSupportFragment
                 val layout: LinearLayout = autoCompleteFragment?.view as LinearLayout
                 val menuIcon: ImageView = layout.getChildAt(0) as ImageView
-                googleButton.visibility = View.GONE
                 imageView.visibility = View.VISIBLE
                 // load google photo
                 Picasso.get().load(account?.photoUrl).into(imageView)
@@ -838,10 +764,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         homeLayout,
                         friendLayout,
                         friendFrame,
-                        carLayout,
                         splashLayout,
-                        liveLayout,
-                        loginLayout
+                        liveLayout
                     )
                 }
                 user.visibility = View.VISIBLE
@@ -853,12 +777,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             else if (resultCode == 40) {
                 println("non loggato")
                 val x = findViewById<NavigationView>(id.nav_view).getHeaderView(0)
-                val googleButton = x.findViewById<Button>(id.google_button)
                 val close = x.findViewById<ImageView>(R.id.close)
                 val user = x.findViewById<TextView>(R.id.user)
                 val email = x.findViewById<TextView>(R.id.email)
                 val imageView = x.findViewById<ImageView>(R.id.imageView)
-                googleButton.visibility = View.VISIBLE
                 close.visibility = View.GONE
                 imageView.visibility = View.GONE
                 user.visibility = View.GONE
@@ -879,10 +801,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
             id.friend ->{
                 showFriend()
-                return true
-            }
-            id.car ->{
-                showCar()
                 return true
             }
             id.live ->{
@@ -926,10 +844,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // show menu or home and reDraw all poi
     fun closeDrawer(view: View) {
         println(view)
-        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
         else {
             reDraw()
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
         }
     }
 
@@ -938,12 +856,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     fun showPOI(){
         var index = 0
         val txt: TextView = findViewById(id.nosrc)
-        switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
+        switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout)
 
         val lv:ListView = findViewById(R.id.lv)
         var len = 0
         for (i in myList.keys()){
-            if(myList.getJSONObject(i).get("cont") as String != "Macchina" && myList.getJSONObject(i).get("cont") as String != "Live"){
+            if(myList.getJSONObject(i).get("cont") as String != "Live"){
                 len++
             }
         }
@@ -951,7 +869,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in myList.keys()){
-            if(myList.getJSONObject(i).get("cont") as String != "Macchina" && myList.getJSONObject(i).get("cont") as String != "Live"){
+            if(myList.getJSONObject(i).get("cont") as String != "Live"){
                 userList[index] = myList.getJSONObject(i).get("name") as String
                 index++
             }
@@ -1065,7 +983,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = myLive.length()
         var index = 0
         val txt: TextView = findViewById(id.nolive)
-        switchFrame(liveLayout,listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,loginLayout)
+        switchFrame(liveLayout,listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout)
 
         val  lv:ListView = findViewById(id.lvLive)
         val userList = MutableList(len) { "" }
@@ -1095,7 +1013,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = friendJson.length()
         var index = 0
         val txt: TextView = findViewById(id.nofriend)
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout)
 
 
         val  lv:ListView = findViewById(id.fv)
@@ -1289,9 +1207,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                                 drawerLayout,
                                                 friendFrame,
                                                 splashLayout,
-                                                carLayout,
-                                                liveLayout,
-                                                loginLayout
+                                                liveLayout
                                             )
                                             alertDialog2.dismiss()
                                             showPOIPreferences(
@@ -1310,156 +1226,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     }
                 }
             })
-        }
-        lv.adapter = arrayAdapter
-    }
-
-    // populate ListView with car list
-    @SuppressLint("ShowToast")
-    fun showCar(){
-        val len = myCar.length()
-        var index = 0
-        var indexFull = 0
-        val txt: TextView = findViewById(id.nocar)
-        switchFrame(carLayout,friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout,loginLayout)
-
-
-        val  lv: ListView = findViewById(id.lvCar)
-        val carList = MutableList(len) { "" }
-        val carListFull = MutableList(len*10) { "" }
-        if(len == 0) txt.visibility = View.VISIBLE
-        else txt.visibility = View.INVISIBLE
-        for (i in myCar.keys()){
-            carList[index] = myCar.getJSONObject(i).get("name") as String
-            index++
-            for (x in myCar.getJSONObject(i).keys()) {
-                carListFull[indexFull] = myCar.getJSONObject(i).get("name") as String
-                indexFull++
-            }
-        }
-        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, carList)
-
-        lv.setOnItemLongClickListener { parent, view, position, _ -> //id
-
-            val inflater: LayoutInflater = this.layoutInflater
-            val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
-            val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)
-
-            eliminateBtn.setOnClickListener {
-                val selectedItem = parent.getItemAtPosition(position) as String
-                for(i in myCar.keys()){
-                    if(selectedItem == myCar.getJSONObject(i).get("name") as String) {
-                        val removed = myCar.getJSONObject(i)
-                        val mark = mymarker[i] as Marker
-                        mark.remove()
-                        myCar.remove(i)
-                        mymarker.remove(i)
-                        val cancel = "Annulla"
-                        val text = "Rimosso $selectedItem"
-                        val id = account?.email?.replace("@gmail.com","")
-                        val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(cancel) {
-                                // Toast to undo remove operation
-                                id?.let { _ -> //it1
-                                    myCar.put(i, removed)
-                                    mymarker.put(i, mark)
-                                    Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG)
-                                    showCar()
-                                }
-                            }
-
-                        snackbar.setActionTextColor(Color.DKGRAY)
-                        val snackbarView = snackbar.view
-                        snackbarView.setBackgroundColor(Color.BLACK)
-                        snackbar.show()
-                        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                            override fun onShown(transientBottomBar: Snackbar?) {
-                                super.onShown(transientBottomBar)
-                            }
-
-                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                                super.onDismissed(transientBottomBar, event)
-                                id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
-                                    .addOnSuccessListener { result ->
-                                        for (document in result) {
-                                            val name = document.data["name"]
-                                            if(name == selectedItem)  {
-                                                db.document("user/"+id+"/marker/"+document.id).delete()
-                                                return@addOnSuccessListener
-                                            }
-                                        }
-                                    }
-                                    .addOnFailureListener { exception ->
-                                        Log.d("FAIL", "Error getting documents: ", exception)
-                                    }
-                                }
-                                //remove from db
-                                id?.let { it1 -> db.collection("user").document(it1).collection("car").get()
-                                    .addOnSuccessListener { result ->
-                                        for (document in result) {
-                                            val name = document.data["name"]
-                                            if(name == selectedItem)  {
-                                                db.document("user/"+id+"/car/"+document.id).delete()
-                                                showCar()
-                                                return@addOnSuccessListener
-                                            }
-                                        }
-                                    }
-                                    .addOnFailureListener { exception ->
-                                        Log.d("FAIL", "Error getting documents: ", exception)
-                                    }
-                                }
-                            }
-                        })
-                        alertDialog.dismiss()
-                        break
-                    }
-                }
-            }
-            val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener { }
-            dialogBuilder.setView(dialogView)
-            alertDialog = dialogBuilder.create()
-            alertDialog.show()
-            return@setOnItemLongClickListener true
-        }
-
-        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
-            val inflater: LayoutInflater = this.layoutInflater
-            val dialogView: View = inflater.inflate(R.layout.dialog_car_view, null)
-            val txtName :TextView = dialogView.findViewById(id.car_name_txt)
-            val address : TextView = dialogView.findViewById(id.carAddressValue)
-            val timer : TimePicker = dialogView.findViewById(id.timePickerView)
-            val remindButton : Button = dialogView.findViewById(R.id.remindButton)
-            var key = ""
-            val selectedItem = parent.getItemAtPosition(position) as String
-
-            txtName.text = selectedItem
-            for (i in myCar.keys()){
-                if(myCar.getJSONObject(i).get("name") as String == selectedItem){
-                    key = i
-                    address.text = myCar.getJSONObject(i).get("addr") as String
-                    val time = (myCar.getJSONObject(i).get("timer").toString()).toInt()
-                    val hour = time/60
-                    val minute = time - hour*60
-                    timer.setIs24HourView(true)
-                    timer.hour = hour
-                    timer.minute = minute
-                }
-            }
-
-            remindButton.setOnClickListener {
-                myCar.getJSONObject(key).put("timer",timer.hour*60 + timer.minute)
-                alertDialog.dismiss()
-                resetTimerAuto(myCar.getJSONObject(key))
-            }
-
-            val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener { }
-            dialogBuilder.setView(dialogView)
-
-            alertDialog = dialogBuilder.create()
-            alertDialog.show()
         }
         lv.adapter = arrayAdapter
     }

@@ -18,7 +18,6 @@ import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.zoom
 
-import com.example.maptry.activity.MapsActivity.Companion.carLayout
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
@@ -26,7 +25,6 @@ import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
-import com.example.maptry.activity.MapsActivity.Companion.loginLayout
 
 import com.example.maptry.R
 import com.example.maptry.server.confirmFriend
@@ -48,12 +46,10 @@ class ShowFriendRequest : AppCompatActivity() {
         splashLayout = findViewById(R.id.splashFrame)
         friendLayout = findViewById(R.id.friend_layout)
         friendFrame = findViewById(R.id.friendFrame)
-        carLayout = findViewById(R.id.car_layout)
         liveLayout = findViewById(R.id.live_layout)
-        loginLayout = findViewById(R.id.login_layout)
 
         println("entrato richiesta")
-        switchFrame(friendFrame,drawerLayout,listLayout,homeLayout,splashLayout,friendLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendFrame,drawerLayout,listLayout,homeLayout,splashLayout,friendLayout,liveLayout)
         val extras = intent?.extras
         val sender = extras?.get("sender") as String
         val receiver = extras.get("receiver") as String
@@ -64,7 +60,7 @@ class ShowFriendRequest : AppCompatActivity() {
         val buttonDecline:Button = findViewById(R.id.cancelFriendRequest)
         buttonAccept.setOnClickListener {
             confirmFriend(sender,receiver)
-            switchFrame(homeLayout,drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout)
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
@@ -73,7 +69,7 @@ class ShowFriendRequest : AppCompatActivity() {
             finish()
         }
         buttonDecline.setOnClickListener {
-            switchFrame(homeLayout,drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout)
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
@@ -108,7 +104,7 @@ class ShowFriendRequest : AppCompatActivity() {
 
         println(view)
         if(drawerLayout.visibility == View.GONE) {
-            switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+            switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
             finish()
         }
         else {
@@ -120,7 +116,7 @@ class ShowFriendRequest : AppCompatActivity() {
                 startActivity(main)
 
             }
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
             finish()
         }
 

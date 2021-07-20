@@ -21,7 +21,6 @@ import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.port
 import com.example.maptry.activity.MapsActivity.Companion.zoom
-import com.example.maptry.activity.MapsActivity.Companion.carLayout
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendJson
@@ -31,7 +30,6 @@ import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
-import com.example.maptry.activity.MapsActivity.Companion.loginLayout
 import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -72,11 +70,9 @@ class ShowFriendList : AppCompatActivity() {
         splashLayout = findViewById(R.id.splashFrame)
         friendLayout = findViewById(R.id.friend_layout)
         friendFrame = findViewById(R.id.friendFrame)
-        carLayout = findViewById(R.id.car_layout)
         liveLayout = findViewById(R.id.live_layout)
-        loginLayout = findViewById(R.id.login_layout)
 
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout)
         //create connection
         val closeDrawer :ImageView = findViewById(R.id.close_listfriend)
         val addfriend: ImageView = findViewById(R.id.add_listfriend)
@@ -98,10 +94,9 @@ class ShowFriendList : AppCompatActivity() {
                 }
             }
         }
-//        switchFrame(friendLayout,homeLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
 
         closeDrawer.setOnClickListener {
-            switchFrame(homeLayout,friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,liveLayout)
             if(!isRunning) {
                 println("STARTO ACTIVITY")
                 val main = Intent(context, MapsActivity::class.java)
@@ -122,7 +117,7 @@ class ShowFriendList : AppCompatActivity() {
         var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
         println("mostro frame")
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
+        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout)
 
 
         val  lv: ListView = findViewById(R.id.fv)
@@ -287,10 +282,8 @@ class ShowFriendList : AppCompatActivity() {
                                         listLayout,
                                         drawerLayout,
                                         friendFrame,
-                                        carLayout,
                                         splashLayout,
-                                        liveLayout,
-                                        loginLayout
+                                        liveLayout
                                     )
                                     alertDialog2.dismiss()
                                     showPOIPreferences(
@@ -360,7 +353,7 @@ class ShowFriendList : AppCompatActivity() {
 
         println(view)
         println("CLOSING VIEW")
-        switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+        switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
         if(!isRunning) {
             println("STARTO ACTIVITY friend list")
             val main = Intent(context, MapsActivity::class.java)

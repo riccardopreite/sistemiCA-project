@@ -38,26 +38,6 @@ val hostnameVerifier = HostnameVerifier { _, session -> //first
 
 /*Start Server Function*/
 
-fun resetTimerAuto(car:JSONObject){
-     val url = URL("https://"+ip+port+"/reminderAuto?"+ URLEncoder.encode("owner", "UTF-8") + "=" + URLEncoder.encode(car.get("owner") as String, "UTF-8")+"&"+ URLEncoder.encode("timer", "UTF-8") + "=" + URLEncoder.encode(car.get("timer").toString(), "UTF-8")+"&"+ URLEncoder.encode("name", "UTF-8") + "=" + URLEncoder.encode(car.get("name") as String, "UTF-8")+"&"+ URLEncoder.encode("addr", "UTF-8") + "=" + URLEncoder.encode(car.get("addr") as String, "UTF-8"))
-
-    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
-    val request = Request.Builder()
-        .url(url)
-        .build()
-
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            println("something went wrong reset timer auto")
-            println(e)
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            println(response.body()?.string())
-        }
-    })
-}
-
 fun getPoiFromFriend(friend:String):JSONObject{
     println("IN GET POI")
     val url = URL("https://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(friend, "UTF-8"))

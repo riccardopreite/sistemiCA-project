@@ -5,12 +5,10 @@ import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
 import com.example.maptry.activity.MapsActivity.Companion.db
 import com.example.maptry.activity.MapsActivity.Companion.drawed
 import com.example.maptry.activity.MapsActivity.Companion.friendJson
-import com.example.maptry.activity.MapsActivity.Companion.myCar
 import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.myjson
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
-import com.example.maptry.dataclass.UserCar
 import com.example.maptry.dataclass.UserLive
 import com.example.maptry.dataclass.UserMarker
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -35,17 +33,6 @@ fun writeNewPOI(userId: String, name:String,addr:String,cont:String,type:String,
 fun writeNewLive(userId: String, name:String,addr:String,timer:String,owner:String,marker:Marker,url:String,phone:String,type: String,cont: String) {
     val user = UserLive(name,addr,timer,owner,marker.position.latitude.toString(),marker.position.longitude.toString(),url,phone,type,cont)
     db.collection("user").document(userId).collection("living").add(user).addOnSuccessListener {
-        Log.d("TAG", "success")
-    }
-        .addOnFailureListener { ex : Exception ->
-            Log.d("TAG", ex.toString())
-
-        }
-}
-
-fun writeNewCar(userId: String, name:String,addr:String,timer:String,owner:String,marker:Marker,url:String,phone:String,type: String,cont: String) {
-    val user = UserCar(name,addr,timer,owner,marker.position.latitude.toString(),marker.position.longitude.toString(),url,phone,type,cont)
-    db.collection("user").document(userId).collection("car").add(user).addOnSuccessListener {
         Log.d("TAG", "success")
     }
         .addOnFailureListener { ex : Exception ->
@@ -106,36 +93,6 @@ fun createPoiList(id:String){
                     mymarker.put(pos.toString(), mark)
                     myList.put(pos.toString(), myjson)
                             mark?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                }
-            }
-            drawed = true
-        }
-}
-
-// retrieve car collection from Firebase
-fun createCarList(id:String){
-
-    db.collection("user").document(id).collection("car")
-        .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-            if (firebaseFirestoreException != null) {
-                Log.w("TAG", "Listen failed.", firebaseFirestoreException)
-            }
-            if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
-                dataFromfirestore = querySnapshot.documents
-                querySnapshot.documents.forEach { child ->
-                    myjson = JSONObject()
-                    child.data?.forEach { chi ->
-                        myjson.put(chi.key, chi.value)
-                    }
-                    val pos = LatLng(
-                        myjson.getString("lat").toDouble(),
-                        myjson.getString("lon").toDouble()
-                    )
-                    val mark = createMarker(pos)
-                    mymarker.put(pos.toString(), mark)
-                    myCar.put(pos.toString(), myjson)
-                    myList.put(pos.toString(), myjson)
-                    mark?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
                 }
             }
             drawed = true

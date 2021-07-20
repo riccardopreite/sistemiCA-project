@@ -19,7 +19,6 @@ import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
 import com.example.maptry.activity.MapsActivity.Companion.zoom
 
-import com.example.maptry.activity.MapsActivity.Companion.carLayout
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
@@ -27,7 +26,6 @@ import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
-import com.example.maptry.activity.MapsActivity.Companion.loginLayout
 
 import com.example.maptry.R
 import com.example.maptry.server.sendFriendRequest
@@ -54,9 +52,7 @@ class ShowLiveEvent: AppCompatActivity() {
         splashLayout = findViewById(R.id.splashFrame)
         friendLayout = findViewById(R.id.friend_layout)
         friendFrame = findViewById(R.id.friendFrame)
-        carLayout = findViewById(R.id.car_layout)
         liveLayout = findViewById(R.id.live_layout)
-        loginLayout = findViewById(R.id.login_layout)
 
         println("in live notify")
         val extras = intent.extras
@@ -71,7 +67,7 @@ class ShowLiveEvent: AppCompatActivity() {
 
 
 
-        switchFrame(homeLayout,friendFrame,listLayout,carLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
+        switchFrame(homeLayout,friendFrame,listLayout,drawerLayout,splashLayout,friendLayout,liveLayout)
         mMap.moveCamera(
             CameraUpdateFactory.newLatLngZoom(
                 p0, 20F
@@ -125,7 +121,7 @@ class ShowLiveEvent: AppCompatActivity() {
 
         println(view)
         if(drawerLayout.visibility == View.GONE) {
-            switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+            switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
             finish()
         }
         else {
@@ -137,7 +133,7 @@ class ShowLiveEvent: AppCompatActivity() {
                 startActivity(main)
 
             }
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
             finish()
         }
     }

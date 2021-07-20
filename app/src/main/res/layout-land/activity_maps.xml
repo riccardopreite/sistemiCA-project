@@ -184,44 +184,6 @@
             android:layout_marginTop="24dp"/>
     </FrameLayout>
 
-
-    <FrameLayout tools:ignore="ExtraText"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:id="@+id/car_layout"
-        android:background="#FAF6F6"
-        android:fitsSystemWindows="true"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        >
-
-        <ImageView
-            android:id="@+id/close_car"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|start"
-            android:contentDescription="@string/back"
-            android:focusable="true"
-            android:onClick="closeDrawer"
-            app:srcCompat="@drawable/ic_signout" />
-        <TextView
-            android:id="@+id/nocar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/nocar"
-            android:textAlignment="center"
-            android:textColor="@color/colorBackground"
-            android:textSize="30sp" />
-        <ListView
-            android:id="@+id/lvCar"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"/>
-    </FrameLayout>
-
     <FrameLayout tools:ignore="ExtraText"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
@@ -331,39 +293,7 @@
         </com.google.android.material.navigation.NavigationView>
 
     </FrameLayout>
-    <FrameLayout tools:ignore="ExtraText"
-        android:layout_height="match_parent"
-        android:layout_width="match_parent"
-        android:id="@+id/login_layout"
-        android:fitsSystemWindows="true"
 
-        android:paddingTop="40dp"
-        android:paddingBottom="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        >
-        <Button
-            android:id="@+id/google_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableStart="@drawable/ic_google"
-            android:background="@drawable/round_google"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#000000"
-            android:drawablePadding="16dp"
-            android:text="@string/sign_in" />
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/ic_logo">
-
-        </ImageView>
-
-    </FrameLayout>
     <FrameLayout android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:id="@+id/homeframe" >

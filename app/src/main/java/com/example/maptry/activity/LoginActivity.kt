@@ -71,12 +71,11 @@ class LoginActivity : AppCompatActivity() {
         mGoogleSignInClient = GoogleSignIn.getClient(this, mGoogleSignInOptions)
          account = GoogleSignIn.getLastSignedInAccount(this)
         setResultLogin(account)
-        findViewById<Button>(R.id.google_button).setOnClickListener { signIn() }
     }
 
 
     /*Start SignIn Function*/
-    fun signIn() {
+    private fun signIn() {
         // intent to sign in
         val signInIntent : Intent = mGoogleSignInClient.signInIntent
         println(signInIntent)

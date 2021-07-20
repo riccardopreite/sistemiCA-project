@@ -51,7 +51,6 @@ fun reDraw(){
             println(cont)
             when (cont) {
                 "Live" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                "Macchina" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
                 else -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
             }
         }
@@ -75,15 +74,13 @@ fun reDraw(){
 
 
 // move Frame of activity_maps layout
-fun switchFrame(toView: FrameLayout, toGone1: FrameLayout, toGone2: FrameLayout, toGone3: FrameLayout, toGone4: FrameLayout,toGone5: FrameLayout,toGone6: FrameLayout,toGone7: FrameLayout,toGone8: FrameLayout){
+fun switchFrame(toView: FrameLayout, toGone1: FrameLayout, toGone2: FrameLayout, toGone3: FrameLayout, toGone4: FrameLayout,toGone5: FrameLayout,toGone6: FrameLayout){
     toGone1.invalidate()
     toGone2.invalidate()
     toGone3.invalidate()
     toGone4.invalidate()
     toGone5.invalidate()
     toGone6.invalidate()
-    toGone7.invalidate()
-    toGone8.invalidate()
 
     toView.visibility = View.VISIBLE
     toGone1.visibility = View.GONE
@@ -92,8 +89,6 @@ fun switchFrame(toView: FrameLayout, toGone1: FrameLayout, toGone2: FrameLayout,
     toGone4.visibility = View.GONE
     toGone5.visibility = View.GONE
     toGone6.visibility = View.GONE
-    toGone7.visibility = View.GONE
-    toGone8.visibility = View.GONE
 
     toView.startAnimation(mAnimation)
     mAnimation.start()
