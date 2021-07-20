@@ -74,22 +74,13 @@ fun reDraw(){
 
 
 // move Frame of activity_maps layout
-fun switchFrame(toView: FrameLayout, toGone1: FrameLayout, toGone2: FrameLayout, toGone3: FrameLayout, toGone4: FrameLayout,toGone5: FrameLayout,toGone6: FrameLayout){
-    toGone1.invalidate()
-    toGone2.invalidate()
-    toGone3.invalidate()
-    toGone4.invalidate()
-    toGone5.invalidate()
-    toGone6.invalidate()
+fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
+    toHide.forEach { frame ->
+        frame.invalidate()
+        frame.visibility = View.GONE
+    }
 
     toView.visibility = View.VISIBLE
-    toGone1.visibility = View.GONE
-    toGone2.visibility = View.GONE
-    toGone3.visibility = View.GONE
-    toGone4.visibility = View.GONE
-    toGone5.visibility = View.GONE
-    toGone6.visibility = View.GONE
-
     toView.startAnimation(mAnimation)
     mAnimation.start()
     toView.bringToFront()
@@ -184,15 +175,6 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
             friendTempPoi.getJSONObject(p0).get("phone") as String
         )
     }
-//    dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-//        override fun onDismiss(arg0: DialogInterface) {
-//            if(added == 0) {
-//                mymarker.remove(p0)
-//                mark.remove()
-//            }
-//            else writeNewPOI(account?.email?.replace("@gmail.com","") as String, friendTempPoi.getJSONObject(p0).get("name") as String,friendTempPoi.getJSONObject(p0).get("addr") as String,friendTempPoi.getJSONObject(p0).get("cont") as String,friendTempPoi.getJSONObject(p0).get("type") as String,mark,friendTempPoi.getJSONObject(p0).get("url") as String,friendTempPoi.getJSONObject(p0).get("phone") as String)
-//        }
-//    })
 
     dialogBuilder.setView(dialogView)
 

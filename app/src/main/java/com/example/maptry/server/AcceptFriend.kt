@@ -17,8 +17,6 @@ class AcceptFriend : BroadcastReceiver() {
         val receiver = extras.get("receiver") as String
         val notificationId = jsonNotifyIdFriendRequest.get(sender)
         notificationManager.cancel(notificationId as Int)
-        confirmFriend(sender,receiver)
+        confirmFriend(sender, receiver)
     }
-
-
 }

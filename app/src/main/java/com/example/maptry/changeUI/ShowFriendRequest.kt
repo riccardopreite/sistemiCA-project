@@ -49,7 +49,7 @@ class ShowFriendRequest : AppCompatActivity() {
         liveLayout = findViewById(R.id.live_layout)
 
         println("entrato richiesta")
-        switchFrame(friendFrame,drawerLayout,listLayout,homeLayout,splashLayout,friendLayout,liveLayout)
+        switchFrame(friendFrame,listOf(drawerLayout,listLayout,homeLayout,splashLayout,friendLayout,liveLayout))
         val extras = intent?.extras
         val sender = extras?.get("sender") as String
         val receiver = extras.get("receiver") as String
@@ -60,7 +60,7 @@ class ShowFriendRequest : AppCompatActivity() {
         val buttonDecline:Button = findViewById(R.id.cancelFriendRequest)
         buttonAccept.setOnClickListener {
             confirmFriend(sender,receiver)
-            switchFrame(homeLayout,drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout)
+            switchFrame(homeLayout,listOf(drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout))
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
@@ -69,7 +69,7 @@ class ShowFriendRequest : AppCompatActivity() {
             finish()
         }
         buttonDecline.setOnClickListener {
-            switchFrame(homeLayout,drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout)
+            switchFrame(homeLayout,listOf(drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout))
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
@@ -81,13 +81,7 @@ class ShowFriendRequest : AppCompatActivity() {
     }
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
-
-            onSaveInstanceState(MapsActivity.newBundy)
-        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
-
-            onSaveInstanceState(MapsActivity.newBundy)
-        }
+        onSaveInstanceState(MapsActivity.newBundy)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -104,7 +98,7 @@ class ShowFriendRequest : AppCompatActivity() {
 
         println(view)
         if(drawerLayout.visibility == View.GONE) {
-            switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+            switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
             finish()
         }
         else {
@@ -116,7 +110,7 @@ class ShowFriendRequest : AppCompatActivity() {
                 startActivity(main)
 
             }
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+            switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
             finish()
         }
 

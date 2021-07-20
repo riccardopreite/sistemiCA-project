@@ -67,7 +67,7 @@ class ShowLiveEvent: AppCompatActivity() {
 
 
 
-        switchFrame(homeLayout,friendFrame,listLayout,drawerLayout,splashLayout,friendLayout,liveLayout)
+        switchFrame(homeLayout,listOf(friendFrame,listLayout,drawerLayout,splashLayout,friendLayout,liveLayout))
         mMap.moveCamera(
             CameraUpdateFactory.newLatLngZoom(
                 p0, 20F
@@ -98,13 +98,7 @@ class ShowLiveEvent: AppCompatActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
-
-            onSaveInstanceState(newBundy)
-        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
-
-            onSaveInstanceState(newBundy)
-        }
+        onSaveInstanceState(newBundy)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -121,7 +115,7 @@ class ShowLiveEvent: AppCompatActivity() {
 
         println(view)
         if(drawerLayout.visibility == View.GONE) {
-            switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+            switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
             finish()
         }
         else {
@@ -133,7 +127,7 @@ class ShowLiveEvent: AppCompatActivity() {
                 startActivity(main)
 
             }
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+            switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
             finish()
         }
     }

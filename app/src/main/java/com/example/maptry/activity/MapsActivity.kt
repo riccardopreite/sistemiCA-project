@@ -81,7 +81,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     private var run = object : Runnable {
         override fun run() {
             if(drawed) { // wait firebase to load JSON or 1.5 sec
-                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout)
+                switchFrame(homeLayout,listOf(listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
                 mainHandler.removeCallbacksAndMessages(null)
                 if(intent.hasExtra("lat") && intent.hasExtra("lon")){
                     println("HAS EXTRA")
@@ -259,7 +259,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         mAnimation = AnimationUtils.loadAnimation(this, R.anim.enlarge)
         mAnimation.backgroundColor = Color.TRANSPARENT
-        switchFrame(splashLayout,homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,liveLayout)
+        switchFrame(splashLayout,listOf(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,liveLayout))
 
         val policy: StrictMode.ThreadPolicy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -424,7 +424,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         ), 20F
                     )
                 )
-                switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout)
+                switchFrame(homeLayout,listOf(listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
                 alertDialog.dismiss()
             }
         }
@@ -760,12 +760,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 menuIcon.setOnClickListener {
                     switchFrame(
                         drawerLayout,
-                        listLayout,
+                        listOf(listLayout,
                         homeLayout,
                         friendLayout,
                         friendFrame,
                         splashLayout,
-                        liveLayout
+                        liveLayout)
                     )
                 }
                 user.visibility = View.VISIBLE
@@ -844,10 +844,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // show menu or home and reDraw all poi
     fun closeDrawer(view: View) {
         println(view)
-        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+        if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         else {
             reDraw()
-            switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+            switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         }
     }
 
@@ -856,7 +856,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     fun showPOI(){
         var index = 0
         val txt: TextView = findViewById(id.nosrc)
-        switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout)
+        switchFrame(listLayout,listOf(homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
 
         val lv:ListView = findViewById(R.id.lv)
         var len = 0
@@ -983,7 +983,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = myLive.length()
         var index = 0
         val txt: TextView = findViewById(id.nolive)
-        switchFrame(liveLayout,listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout)
+        switchFrame(liveLayout,listOf(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout))
 
         val  lv:ListView = findViewById(id.lvLive)
         val userList = MutableList(len) { "" }
@@ -1013,7 +1013,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val len = friendJson.length()
         var index = 0
         val txt: TextView = findViewById(id.nofriend)
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout)
+        switchFrame(friendLayout,listOf(listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout))
 
 
         val  lv:ListView = findViewById(id.fv)
@@ -1202,12 +1202,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                             )
                                             switchFrame(
                                                 homeLayout,
-                                                friendLayout,
+                                                listOf(friendLayout,
                                                 listLayout,
                                                 drawerLayout,
                                                 friendFrame,
                                                 splashLayout,
-                                                liveLayout
+                                                liveLayout)
                                             )
                                             alertDialog2.dismiss()
                                             showPOIPreferences(
@@ -1255,13 +1255,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
-
-            onSaveInstanceState(newBundy)
-        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
-
-            onSaveInstanceState(newBundy)
-        }
+        onSaveInstanceState(newBundy)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

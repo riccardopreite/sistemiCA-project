@@ -52,16 +52,16 @@ class LoginActivity : AppCompatActivity() {
 
         // ask gps permission if not allowed yet
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-
             requestPermissions()
         }
-        else{
+        else {
             // simply get last account
             startAccount()
         }
 
 
     }
+
     private fun configureGoogleSignIn() {
         // set google key and prepare for sign in
         mGoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -177,29 +177,20 @@ class LoginActivity : AppCompatActivity() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            REQUEST_LOCATION_PERMISSION)
+            REQUEST_LOCATION_PERMISSION
+        )
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode == 1) {
-            if (permissions[0] == Manifest.permission.ACCESS_FINE_LOCATION ) {
-                startAccount()
-            }
-        }
+        // Login independently of the result of the permission request
+        startAccount()
     }
 
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        @Suppress("DEPRECATED_IDENTITY_EQUALS")
-        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
-
-            onSaveInstanceState(newBundy)
-        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
-
-            onSaveInstanceState(newBundy)
-        }
+        onSaveInstanceState(newBundy)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

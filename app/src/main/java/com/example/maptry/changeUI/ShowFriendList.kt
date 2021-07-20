@@ -72,7 +72,7 @@ class ShowFriendList : AppCompatActivity() {
         friendFrame = findViewById(R.id.friendFrame)
         liveLayout = findViewById(R.id.live_layout)
 
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout)
+        switchFrame(friendLayout,listOf(listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout))
         //create connection
         val closeDrawer :ImageView = findViewById(R.id.close_listfriend)
         val addfriend: ImageView = findViewById(R.id.add_listfriend)
@@ -96,7 +96,7 @@ class ShowFriendList : AppCompatActivity() {
         }
 
         closeDrawer.setOnClickListener {
-            switchFrame(homeLayout,friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,liveLayout)
+            switchFrame(homeLayout,listOf(friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,liveLayout))
             if(!isRunning) {
                 println("STARTO ACTIVITY")
                 val main = Intent(context, MapsActivity::class.java)
@@ -117,7 +117,7 @@ class ShowFriendList : AppCompatActivity() {
         var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
         println("mostro frame")
-        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout)
+        switchFrame(friendLayout,listOf(listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout))
 
 
         val  lv: ListView = findViewById(R.id.fv)
@@ -278,12 +278,12 @@ class ShowFriendList : AppCompatActivity() {
                                     }
                                     switchFrame(
                                         homeLayout,
-                                        friendLayout,
+                                        listOf(friendLayout,
                                         listLayout,
                                         drawerLayout,
                                         friendFrame,
                                         splashLayout,
-                                        liveLayout
+                                        liveLayout)
                                     )
                                     alertDialog2.dismiss()
                                     showPOIPreferences(
@@ -330,13 +330,7 @@ class ShowFriendList : AppCompatActivity() {
     }
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
-
-            onSaveInstanceState(newBundy)
-        } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
-
-            onSaveInstanceState(newBundy)
-        }
+        onSaveInstanceState(newBundy)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -353,7 +347,7 @@ class ShowFriendList : AppCompatActivity() {
 
         println(view)
         println("CLOSING VIEW")
-        switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout)
+        switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         if(!isRunning) {
             println("STARTO ACTIVITY friend list")
             val main = Intent(context, MapsActivity::class.java)
