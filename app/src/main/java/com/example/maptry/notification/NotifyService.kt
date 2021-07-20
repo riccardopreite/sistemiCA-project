@@ -120,8 +120,8 @@ class NotifyService : Service() {
                                             child.data?.forEach { chi ->
                                                 json = JSONObject(chi.value as HashMap<*, *>)
 
-                                                val nmLive =
-                                                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//                                                val nmLive =
+//                                                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
                                                 val showLiveEvent = Intent(
                                                         context,
@@ -177,9 +177,13 @@ class NotifyService : Service() {
                                                                 name,
                                                                 importance
                                                               )
-                                                nmLive.createNotificationChannel(mChannel)
-
-                                                nmLive.notify(notificationId, notificationLive.build())
+//                                                nmLive.createNotificationChannel(mChannel)
+//
+//                                                nmLive.notify(notificationId, notificationLive.build())
+                                                with(NotificationManagerCompat.from(this)) {
+                                                    createNotificationChannel(mChannel)
+                                                    notify(notificationId, notificationLive.build())
+                                                }
                                                 //create live marker
                                                 val list = geocoder.getFromLocationName(json.get("addr") as String,1)
                                                 val lat = list[0].latitude
