@@ -72,9 +72,22 @@ class ShowLiveEvent: AppCompatActivity() {
 
 
         switchFrame(homeLayout,friendFrame,listLayout,carLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
+        mMap.moveCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                p0, 20F
+            )
+        )
         if(!isRunning) {
             val main = Intent(context, MapsActivity::class.java)
             zoom = 1
+            main.putExtra(
+                "lat",
+                lat
+            )
+            main.putExtra(
+                "lon",
+                lon
+            )
             startActivity(main)
             println("ritornato da activity main")
             mMap.moveCamera(
@@ -83,11 +96,7 @@ class ShowLiveEvent: AppCompatActivity() {
                 )
             )
         }
-        mMap.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                p0, 20F
-            )
-        )
+
         finish()
     }
 

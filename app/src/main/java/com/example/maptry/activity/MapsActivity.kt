@@ -83,6 +83,18 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             if(drawed) { // wait firebase to load JSON or 1.5 sec
                 switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
                 mainHandler.removeCallbacksAndMessages(null)
+                if(intent.hasExtra("lat") && intent.hasExtra("lon")){
+                    println("HAS EXTRA")
+                    val lat = intent.extras?.get("lat") as Double
+                    val lon = intent.extras?.get("lon") as Double
+                    val p0 = LatLng(lat,lon)
+                    println(p0)
+                    mMap.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            p0, 20F
+                        )
+                    )
+                }
             }
             else {
                 mainHandler.postDelayed(this, 1500)
@@ -335,6 +347,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         }
                     }
                 }
+
             }
             else{
                 try{
@@ -836,7 +849,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 email.visibility = View.VISIBLE
                 email.text = account?.email
                 close.visibility = View.VISIBLE
-
             }
             else if (resultCode == 40) {
                 println("non loggato")

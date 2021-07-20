@@ -4,6 +4,7 @@ package com.example.maptry.notification
 import android.app.*
 import android.app.PendingIntent.FLAG_ONE_SHOT
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.*
@@ -14,14 +15,14 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.maptry.*
-import com.example.maptry.activity.MapsActivity.Companion.context
-import com.example.maptry.activity.MapsActivity.Companion.db
-import com.example.maptry.activity.MapsActivity.Companion.myList
-import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
+import com.example.maptry.activity.MapsActivity.Companion.db
 import com.example.maptry.activity.MapsActivity.Companion.geocoder
 import com.example.maptry.activity.MapsActivity.Companion.listAddr
+import com.example.maptry.activity.MapsActivity.Companion.myList
+import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.*
 import com.example.maptry.server.AcceptFriend
@@ -35,7 +36,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import org.json.JSONObject
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.math.abs
 
 
@@ -124,11 +124,22 @@ class NotifyService : Service() {
                                                 val nmLive =
                                                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-                                                val showLiveEvent =
-                                                    Intent(
+                                                val showLiveEvent = Intent(
                                                         context,
                                                         ShowLiveEvent::class.java
-                                                    )
+                                                )
+                                                showLiveEvent.flags = FLAG_ACTIVITY_NEW_TASK or
+                                                        FLAG_ACTIVITY_CLEAR_TASK
+
+
+//                                                val showLiveEvent =
+//                                                    Intent(
+//                                                        context,
+//                                                        ShowLiveEvent::class.java
+//                                                    )
+//                                                val stackBuilder = TaskStackBuilder.create(context)
+
+
                                                 showLiveEvent.putExtra(
                                                     "owner",
                                                     json.get("owner") as String
@@ -145,7 +156,19 @@ class NotifyService : Service() {
                                                     "timer",
                                                     json.get("timer") as String
                                                 )
-
+                                                val clickLiveIntent = PendingIntent.getActivity(
+                                                    context,
+                                                    87,
+                                                    showLiveEvent,
+                                                    FLAG_UPDATE_CURRENT
+                                                )
+//                                                stackBuilder.addParentStack(ShowLiveEvent::class.java)
+//                                                stackBuilder.addNextIntent(showLiveEvent)
+//                                                val clickLiveIntent =
+//                                                    stackBuilder.getPendingIntent(
+//                                                        87,
+//                                                        FLAG_UPDATE_CURRENT
+//                                                    )
                                                 val notificationLive =
                                                     NotificationCompat.Builder(context, "first")
                                                         .setContentTitle("Evento Live")
@@ -156,14 +179,7 @@ class NotifyService : Service() {
                                                         )
                                                         .setSmallIcon(R.drawable.ic_live)
                                                         .setAutoCancel(true)
-                                                        .setContentIntent(
-                                                            PendingIntent.getActivity(
-                                                                context,
-                                                                87,
-                                                                showLiveEvent,
-                                                                FLAG_UPDATE_CURRENT
-                                                            )
-                                                        )
+                                                        .setContentIntent(clickLiveIntent)
                                                         .setChannelId(channel)
                                                 val importance = NotificationManager.IMPORTANCE_HIGH
                                                 val mChannel = NotificationChannel(
@@ -223,12 +239,15 @@ class NotifyService : Service() {
                                                     chi.value as String,
                                                     notificationId
                                                 )
-
                                                 val notificationClickIntent =
                                                     Intent(
                                                         context,
                                                         ShowFriendRequest::class.java
                                                     )
+                                                val stackBuilder = TaskStackBuilder.create(context)
+                                                stackBuilder.addParentStack(ShowFriendList::class.java)
+                                                stackBuilder.addNextIntent(notificationClickIntent)
+
                                                 val acceptFriendIntent =
                                                     Intent(context, AcceptFriend::class.java)
 
@@ -255,12 +274,12 @@ class NotifyService : Service() {
                                                     idDB
                                                 )
 
-                                                val clickPendingIntent = PendingIntent.getActivity(
-                                                    context,
-                                                    88,
-                                                    notificationClickIntent,
-                                                    FLAG_UPDATE_CURRENT
-                                                )
+                                                val clickPendingIntent =
+                                                    stackBuilder.getPendingIntent(
+                                                        88,
+                                                        FLAG_UPDATE_CURRENT
+                                                    )
+
 
                                                 val acceptPendingIntent =
                                                     PendingIntent.getBroadcast(
@@ -337,35 +356,21 @@ class NotifyService : Service() {
                                         querySnapshot.documents.forEach { child ->
                                             child.data?.forEach { chi ->
                                                 val string = "Tu e " + chi.value + " ora siete Amici!"
+
                                                 val notificationClickIntent =
                                                     Intent(
-                                                        this,
+                                                        context,
                                                         ShowFriendList::class.java
                                                     )
-                                                notificationClickIntent.flags =
-                                                    FLAG_ACTIVITY_NEW_TASK
-                                                notificationClickIntent.flags =
-                                                    FLAG_ACTIVITY_CLEAR_TASK
-                                                notificationClickIntent.flags =
-                                                    FLAG_ACTIVITY_CLEAR_TOP
-//                                                        .apply {
-//                                                        flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK or FLAG_ACTIVITY_CLEAR_TOP
-//                                                    }
-                                                val clickPendingIntent = PendingIntent.getActivity(
-                                                    context,
-                                                    92,
-                                                    notificationClickIntent,
-                                                    FLAG_ONE_SHOT
-                                                )
-//                                                val clickPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
-//                                                    // Add the intent, which inflates the back stack
-////                                                    addParentStack(MapsActivity::class.java)
-//                                                    addNextIntentWithParentStack(notificationClickIntent)
-//                                                    // Get the PendingIntent containing the entire back stack
-//                                                    getPendingIntent(92, FLAG_ONE_SHOT )
-//                                                }
-                                                
-                                                val notificationAddedFriend = NotificationCompat.Builder(this, "first")
+                                                val stackBuilder = TaskStackBuilder.create(context)
+                                                stackBuilder.addParentStack(ShowFriendList::class.java)
+                                                stackBuilder.addNextIntent(notificationClickIntent)
+                                                val clickPendingIntent =
+                                                    stackBuilder.getPendingIntent(
+                                                        92,
+                                                        FLAG_UPDATE_CURRENT
+                                                    )
+                                                val notificationAddedFriend = NotificationCompat.Builder(context, "first")
                                                     .setContentTitle("Nuovo Amico!")
                                                     .setContentText(string)
                                                     .setSmallIcon(R.drawable.ic_accessibility)
@@ -419,7 +424,6 @@ class NotifyService : Service() {
                                             child.data?.forEach { chi ->
 
                                                 json = JSONObject(chi.value as HashMap<*, *>)
-//                                                key = json.get("owner") as String + json.get("name") as String
                                                 val nameLiveExp = json.get("name") as String
                                                 val address = json.get("addr") as String
                                                 val id = account?.email?.replace("@gmail.com","")
