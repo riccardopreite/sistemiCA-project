@@ -389,27 +389,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             else -> super.onOptionsItemSelected(item)
         }
     }
-  /*  override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        println("MENU")
-        return when (item.itemId) {
-            id.list -> {
-                println("showpoi menu")
-
-                showPOI()
-                return true
-            }
-            id.friend ->{
-                showFriend()
-                return true
-            }
-            id.live ->{
-                showLive()
-                return true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-*/
+    
     /*End Activity for result Function*/
 
     /*Start Utils Function*/
