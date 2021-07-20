@@ -9,23 +9,22 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
-import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.*
 
 
 // SSL certificate configuration
-val trustStore = KeyStore.getInstance("BKS")
-val keyPair = "SistemiContextAware2021@*"
+val trustStore: KeyStore = KeyStore.getInstance("BKS")
+const val keyPair = "SistemiContextAware2021@*"
 
 val res = context.resources.openRawResource(R.raw.mystore).use {
     trustStore.load(it,keyPair.toCharArray())
 }
-val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
+val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
     init(trustStore)
 }
-val sslContext = SSLContext.getInstance("TLS").apply {
+val sslContext: SSLContext = SSLContext.getInstance("TLS").apply {
     init(null, tmf.trustManagers, SecureRandom())
 }
 val trustManager = tmf.trustManagers[0] as X509TrustManager
@@ -59,28 +58,22 @@ fun resetTimerAuto(car:JSONObject){
     })
 }
 
-/*fun getPoiFromFriend(friend:String):JSONObject{
+fun getPoiFromFriend(friend:String):JSONObject{
     println("IN GET POI")
-    var url = URL("https://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(friend, "UTF-8"))
+    val url = URL("https://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(friend, "UTF-8"))
     var result = JSONObject()
-    val client = OkHttpClient()
+    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
+
     val request = Request.Builder()
         .url(url)
         .build()
-
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: okhttp3.Call, e: IOException) {
-            println("something went wrong")
-        }
-
-        override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-
-            val x:String = response.body()?.string()!!
-            result = JSONObject(x)
-        }
-    })
+    val response = client.newCall(request).execute()
+    if (response.isSuccessful){
+        result = JSONObject(response.body()?.string()!!)
+        println(result)
+    }
     return result
-}*/
+}
 
 fun confirmFriend(sender:String,receiver:String){
     val url = URL("https://"+ip+port+"/confirmFriend?"+ URLEncoder.encode("receiver", "UTF-8") + "=" + URLEncoder.encode(receiver, "UTF-8")+"&"+ URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(sender, "UTF-8"))

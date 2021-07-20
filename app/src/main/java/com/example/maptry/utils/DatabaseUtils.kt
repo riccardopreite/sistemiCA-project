@@ -1,4 +1,4 @@
-package com.example.maptry
+package com.example.maptry.utils
 
 import android.util.Log
 import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
@@ -57,6 +57,7 @@ fun writeNewCar(userId: String, name:String,addr:String,timer:String,owner:Strin
 // retrieve friends collection from Firebase
 fun createFriendList(id:String){
     var count = 0
+    friendJson = JSONObject()
     db.collection("user").document(id).collection("friend")
         .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             if (firebaseFirestoreException != null) {
@@ -64,20 +65,27 @@ fun createFriendList(id:String){
                 return@addSnapshotListener
             }
             if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
+                println("ricreo amici")
                 dataFromfirestore = querySnapshot.documents
                 friendJson = JSONObject()
                 querySnapshot.documents.forEach { child ->
                     child.data?.forEach { chi ->
+                        println(chi.value)
                         friendJson.put(count.toString(),chi.value)
                         count++
                     }
                 }
+            }
+            else if (querySnapshot != null && querySnapshot.documents.isEmpty()) {
+                println("ricreo amici vuoto")
+                friendJson = JSONObject()
             }
         }
 }
 
 // retrieve poi collection from Firebase
 fun createPoiList(id:String){
+
     db.collection("user").document(id).collection("marker")
         .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             if (firebaseFirestoreException != null) {
@@ -90,11 +98,11 @@ fun createPoiList(id:String){
                     child.data?.forEach     { chi ->
                         myjson.put(chi.key, chi.value)
                     }
-                    var pos: LatLng = LatLng(
+                    val pos = LatLng(
                         myjson.getString("lat").toDouble(),
                         myjson.getString("lon").toDouble()
                     )
-                    var mark = createMarker(pos)
+                    val mark = createMarker(pos)
                     mymarker.put(pos.toString(), mark)
                     myList.put(pos.toString(), myjson)
                             mark?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
@@ -106,6 +114,7 @@ fun createPoiList(id:String){
 
 // retrieve car collection from Firebase
 fun createCarList(id:String){
+
     db.collection("user").document(id).collection("car")
         .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             if (firebaseFirestoreException != null) {
@@ -118,11 +127,11 @@ fun createCarList(id:String){
                     child.data?.forEach { chi ->
                         myjson.put(chi.key, chi.value)
                     }
-                    var pos: LatLng = LatLng(
+                    val pos = LatLng(
                         myjson.getString("lat").toDouble(),
                         myjson.getString("lon").toDouble()
                     )
-                    var mark = createMarker(pos)
+                    val mark = createMarker(pos)
                     mymarker.put(pos.toString(), mark)
                     myCar.put(pos.toString(), myjson)
                     myList.put(pos.toString(), myjson)
@@ -147,11 +156,11 @@ fun createLiveList(id:String){
                     child.data?.forEach { chi ->
                         myjson.put(chi.key, chi.value)
                     }
-                    var pos: LatLng = LatLng(
+                    val pos = LatLng(
                         myjson.getString("lat").toDouble(),
                         myjson.getString("lon").toDouble()
                     )
-                    var mark = createMarker(pos)
+                    val mark = createMarker(pos)
                     mymarker.put(pos.toString(), mark)
                     myLive.put(pos.toString(), myjson)
                     myList.put(pos.toString(), myjson)

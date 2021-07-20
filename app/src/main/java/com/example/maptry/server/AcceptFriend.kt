@@ -5,18 +5,18 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
-import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdFriendRequest
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifyIdFriendRequest
 
 class AcceptFriend : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        var notificationManager :NotificationManager = context?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        var extras = intent?.extras
+        val notificationManager :NotificationManager = context?.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val extras = intent?.extras
 
 
-        var sender = extras?.get("sender") as String
-        var receiver = extras.get("receiver") as String
-        var notificaionId = jsonNotifIdFriendRequest.get(sender)
-        notificationManager.cancel(notificaionId as Int);
+        val sender = extras?.get("sender") as String
+        val receiver = extras.get("receiver") as String
+        val notificationId = jsonNotifyIdFriendRequest.get(sender)
+        notificationManager.cancel(notificationId as Int)
         confirmFriend(sender,receiver)
     }
 

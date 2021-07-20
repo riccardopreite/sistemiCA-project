@@ -1,5 +1,6 @@
 package com.example.maptry.activity
 
+import android.accounts.AccountManager
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
@@ -28,6 +29,7 @@ import com.example.maptry.R.id
 import com.example.maptry.changeUI.CircleTransform
 import com.example.maptry.notification.NotifyService
 import com.example.maptry.server.*
+import com.example.maptry.utils.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
@@ -50,9 +52,9 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.android.material.internal.ContextUtils.getActivity
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
@@ -65,7 +67,6 @@ import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
 import java.util.*
-import java.util.Arrays.asList
 
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
     "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"
@@ -76,12 +77,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationUpdateState = false
     private var mainHandler = Handler()
-
+    private var error = Runnable { println("error") }
     private var run = object : Runnable {
         override fun run() {
             if(drawed) { // wait firebase to load JSON or 1.5 sec
                 switchFrame(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
-                mainHandler.removeCallbacksAndMessages(null);
+                mainHandler.removeCallbacksAndMessages(null)
             }
             else {
                 mainHandler.postDelayed(this, 1500)
@@ -90,43 +91,19 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
 
     companion object {
-        var builder = LocationSettingsRequest.Builder()
         lateinit var locationCallback: LocationCallback
-        var newBundy = Bundle()
-        var mLocationRequest: LocationRequest? = null
-        private val UPDATE_INTERVAL = (10 * 1000).toLong()  /* 10 secs */
-        private val FASTEST_INTERVAL: Long = 2000 /* 2 sec */
-        val REQUEST_LOCATION_PERMISSION = 1
-        var ip = "casadiso.ddns.net"
-//        var port = port+"" //oldport
-        var port = ""
-        var isRunning : Boolean = false
         lateinit var firebaseAuth: FirebaseAuth
-        var zoom = 1
-        var oldPos :Marker? = null
         lateinit var lastLocation: Location
         @SuppressLint("StaticFieldLeak")
         lateinit var context : Context
         lateinit var alertDialog: AlertDialog
         lateinit var mMap: GoogleMap
-        var addrThread:Thread? = null
-        lateinit var geocoder : Geocoder
-        var listAddr:MutableList<Address>? = null
-        var drawed = false
-        var myjson = JSONObject() //tmp json
-        var mymarker = JSONObject() //marker
-        val myList = JSONObject() // POI json
-        val myCar = JSONObject() // car json
-        val myLive = JSONObject() // live json
         lateinit var mAnimation : Animation
-//        lateinit var dataFromfirebase: DataSnapshot
-        var account : GoogleSignInAccount? = null
+        //        lateinit var dataFromfirebase: DataSnapshot
+        lateinit var geocoder : Geocoder
         lateinit var dataFromfirestore :List<DocumentSnapshot>
         @SuppressLint("StaticFieldLeak")
         lateinit var db :FirebaseFirestore
-        private const val REQUEST_CHECK_SETTINGS = 2
-        var friendJson = JSONObject() // friend json
-        var friendTempPoi = JSONObject()
         @SuppressLint("StaticFieldLeak")
         lateinit var drawerLayout: FrameLayout
         @SuppressLint("StaticFieldLeak")
@@ -146,10 +123,38 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         @SuppressLint("StaticFieldLeak")
         lateinit var loginLayout: FrameLayout
 
+
+        private const val UPDATE_INTERVAL = (10 * 1000).toLong()  /* 10 secs */
+        private const val FASTEST_INTERVAL: Long = 2000 /* 2 sec */
+        private const val REQUEST_CHECK_SETTINGS = 2
+        const val REQUEST_LOCATION_PERMISSION = 1
+
+
+        var builder = LocationSettingsRequest.Builder()
+        var newBundy = Bundle()
+        var mLocationRequest: LocationRequest? = null
+        var ip = "casadiso.ddns.net"
+//        var port = port+"" //oldport
+        var port = ""
+        var isRunning : Boolean = false
+        var zoom = 1
+        var oldPos :Marker? = null
+        var addrThread:Thread? = null
+        var listAddr:MutableList<Address>? = null
+        var drawed = false
+        var myjson = JSONObject() //tmp json
+        var mymarker = JSONObject() //marker
+        var myList = JSONObject() // POI json
+        val myCar = JSONObject() // car json
+        val myLive = JSONObject() // live json
+        var account : GoogleSignInAccount? = null
+        var friendJson = JSONObject() // friend json
+        var friendTempPoi = JSONObject()
+
     }
 
     /*Start Initialize Function*/
-    protected fun startLocationUpdates() {
+    private fun startLocationUpdates() {
         // initialize location request object
         mLocationRequest = LocationRequest.create()
         mLocationRequest!!.run {
@@ -212,11 +217,11 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // init Map
     private fun setUpMap() {
         Places.initialize(applicationContext, getString(R.string.google_maps_key))
-        val mapFragment =  supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment =  supportFragmentManager.findFragmentById(id.map) as SupportMapFragment
         var locationButton : View? = mapFragment.view?.findViewById<LinearLayout>(Integer.parseInt("1"))
-        val prov : View? = (locationButton?.parent) as View
-        locationButton = prov?.findViewById(Integer.parseInt("2"))
-        val layoutParams = locationButton?.getLayoutParams() as RelativeLayout.LayoutParams
+        val prov : View = (locationButton?.parent) as View
+        locationButton = prov.findViewById(Integer.parseInt("2"))
+        val layoutParams = locationButton?.layoutParams as RelativeLayout.LayoutParams
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0)
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
         layoutParams.setMargins(0, 0, 30, 30)
@@ -224,17 +229,19 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onDestroy() {
         super.onDestroy()
-        println("onDestroy")
+        println("onDestroy distrutto")
         isRunning = false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        println("onCreate")
         if(isRunning) {
             return
         }
         setContentView(R.layout.activity_maps)
-
+        isRunning = true
+        context = this
         drawerLayout = findViewById(id.drawer_layout)
         listLayout = findViewById(id.list_layout)
         homeLayout = findViewById(id.homeframe)
@@ -245,18 +252,16 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         liveLayout = findViewById(id.live_layout)
         loginLayout = findViewById(id.login_layout)
 
-        isRunning = true
-        context = this
+        mAnimation = AnimationUtils.loadAnimation(this, R.anim.enlarge)
+        mAnimation.backgroundColor = Color.TRANSPARENT
+        switchFrame(splashLayout,homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+
         val policy: StrictMode.ThreadPolicy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
         geocoder = Geocoder(this)
 
-        //create connection
-
-        mAnimation = AnimationUtils.loadAnimation(this, R.anim.enlarge);
-        mAnimation.backgroundColor = Color.TRANSPARENT;
-
+        //create connectioni
         mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post(run)
 
@@ -264,7 +269,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val menuIntent =  Intent(this, LoginActivity::class.java)
         val component = ComponentName(this, LoginActivity::class.java)
         intent.component = component
-        startActivityForResult(menuIntent,40);
+        startActivityForResult(menuIntent,40)
 
         val displayMetrics = DisplayMetrics()
 
@@ -308,7 +313,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         val response: LocationSettingsResponse? =task.getResult(ApiException::class.java)
                         println(response)
                     } catch (exception: ApiException) {
-                        when (exception.getStatusCode()) {
+                        when (exception.statusCode) {
                             LocationSettingsStatusCodes.RESOLUTION_REQUIRED ->                             // Location settings are not satisfied. But could be fixed by showing the
                                 try {
                                     // Cast to a resolvable exception.
@@ -350,6 +355,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*Start Map Function*/
 
     /*This Function open a dialog with the information of the marker which was clicked*/
+    @SuppressLint("SetTextI18n")
     override fun onMarkerClick(p0: Marker): Boolean {
 
         try {
@@ -376,22 +382,24 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         address.text = myList.getJSONObject(p0.position.toString()).get("addr") as String
         url.text = myList.getJSONObject(p0.position.toString()).get("url") as String
         phone.text = myList.getJSONObject(p0.position.toString()).get("phone") as String
-        if(myList.getJSONObject(p0.position.toString()).get("cont") as String == "Live"){
-            phone.text = myLive.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
-            phoneCap.text = "Timer"
-            url.text = myLive.getJSONObject(p0.position.toString()).get("owner") as String
-            urlCap.text = "Proprietario"
+        when {
+            myList.getJSONObject(p0.position.toString()).get("cont") as String == "Live" -> {
+                phone.text = myLive.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
+                phoneCap.text = "Timer"
+                url.text = myLive.getJSONObject(p0.position.toString()).get("owner") as String
+                urlCap.text = "Proprietario"
 
-        }
-        else if( myList.getJSONObject(p0.position.toString()).get("cont") as String == "Macchina"){
-            phone.text = myCar.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
-            phoneCap.text = "Timer"
-            urlCap.text = "Proprietario"
-            url.text = myCar.getJSONObject(p0.position.toString()).get("owner") as String
-        }
-        else{
-            phoneCap.text = "N.cellulare"
-            urlCap.text = "WebSite"
+            }
+            myList.getJSONObject(p0.position.toString()).get("cont") as String == "Macchina" -> {
+                phone.text = myCar.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
+                phoneCap.text = "Timer"
+                urlCap.text = "Proprietario"
+                url.text = myCar.getJSONObject(p0.position.toString()).get("owner") as String
+            }
+            else -> {
+                phoneCap.text = "N.cellulare"
+                urlCap.text = "WebSite"
+            }
         }
 
         val routebutton: Button = dialogView.findViewById(id.routeBtn)
@@ -400,7 +408,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             val shareIntent = Intent()
             shareIntent.action = Intent.ACTION_SEND
             shareIntent.type="text/plain"
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ myList.getJSONObject(p0.position.toString()).get("lat")+","+ myList.getJSONObject(p0.position.toString()).get("lon"));
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ myList.getJSONObject(p0.position.toString()).get("lat")+","+ myList.getJSONObject(p0.position.toString()).get("lon"))
             startActivity(Intent.createChooser(shareIntent,"Stai condividendo "+ myList.getJSONObject(p0.position.toString()).get("name")))
             alertDialog.dismiss()
         }
@@ -422,7 +430,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         }
         else{
             routebutton.setOnClickListener {
-                var intent =
+                val intent =
                     Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + address.text))
                 startActivity(intent)
                 alertDialog.dismiss()
@@ -430,12 +438,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         }
 
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-            override fun onDismiss(arg0: DialogInterface) { }
-        })
+        dialogBuilder.setOnDismissListener { }
         dialogBuilder.setView(dialogView)
 
-        alertDialog = dialogBuilder.create();
+        alertDialog = dialogBuilder.create()
         alertDialog.show()
         return false
     }
@@ -450,8 +456,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val address :  TextView = dialogView.findViewById(id.txt_address)
         val publicButton: RadioButton = dialogView.findViewById(id.rb_public)
         val privateButton: RadioButton = dialogView.findViewById(id.rb_private)
-        val timePickerLayout = dialogView.findViewById<RelativeLayout>(R.id.timePicker)
-        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker1)
+        val timePickerLayout = dialogView.findViewById<RelativeLayout>(id.timePicker)
+        val timePicker = dialogView.findViewById<TimePicker>(id.timePicker1)
         val addbutton: Button = dialogView.findViewById(id.addBtn)
         val removebutton: Button = dialogView.findViewById(id.removeBtn)
         val id = account?.email?.replace("@gmail.com", "")
@@ -459,7 +465,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         timePicker.hour = 3
         timePicker.minute = 0
         val radioGroup = dialogView.findViewById<RelativeLayout>(R.id.rl_gender)
-        var time : Int;
+        var time : Int
         address.isEnabled = false
 
         val background = object : Runnable {
@@ -480,6 +486,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             e.printStackTrace()
         }
         address.text = listAddr?.get(0)?.getAddressLine(0)
+        println(listAddr?.get(0))
+        println(listAddr?.get(0)?.phone)
+        println(listAddr?.get(0)?.url)
 
         ArrayAdapter.createFromResource(
             this,
@@ -514,7 +523,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             alertDialog.dismiss()
         }
         addbutton.setOnClickListener {
-            var text = lname.text.toString()
+            val text = lname.text.toString()
             if (text == "") {
                 lname.background.setColorFilter(
                     resources.getColor(R.color.quantum_googred),
@@ -529,191 +538,191 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 if (privateButton.isChecked)
                     gender = privateButton.text.toString()
 
-                if (spinner.selectedItem.toString() == "Macchina") {
-                    for (i: String in myCar.keys()) {
-                        try {
-                            var x: String = myCar.getJSONObject(i).get("name") as String
-                            if (text == x) {
-                                lname.background.setColorFilter(
-                                    resources.getColor(R.color.quantum_googred),
-                                    PorterDuff.Mode.SRC_ATOP
-                                )
-                                return@setOnClickListener
+                when {
+                    spinner.selectedItem.toString() == "Macchina" -> {
+                        for (i: String in myCar.keys()) {
+                            try {
+                                val x: String = myCar.getJSONObject(i).get("name") as String
+                                if (text == x) {
+                                    lname.background.setColorFilter(
+                                        resources.getColor(R.color.quantum_googred),
+                                        PorterDuff.Mode.SRC_ATOP
+                                    )
+                                    return@setOnClickListener
 
+                                }
+                                if (address.text == myCar.getJSONObject(i).get("addr") as String) {
+                                    lname.background.setColorFilter(
+                                        resources.getColor(R.color.quantum_googred),
+                                        PorterDuff.Mode.SRC_ATOP
+                                    )
+                                    return@setOnClickListener
+                                }
+                            } catch (e: java.lang.Exception) {
+                                println("ops")
                             }
-                            if (address.text == myCar.getJSONObject(i).get("addr") as String) {
-                                lname.background.setColorFilter(
-                                    resources.getColor(R.color.quantum_googred),
-                                    PorterDuff.Mode.SRC_ATOP
+                        }
+                        gender = privateButton.text.toString()
+                        time = timePicker.hour * 60 + timePicker.minute
+                        val marker = createMarker(p0)
+                        marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                        myjson.put("type", "Privato")
+                        myjson.put("timer", time.toString())
+                        myjson.put("name", text)
+                        myjson.put("addr", address.text.toString())
+                        myjson.put("owner", account?.email?.replace("@gmail.com", ""))
+                        myjson.put("marker", marker)
+                        myjson.put("cont", spinner.selectedItem.toString())
+                        myjson.put("url", "da implementare")
+                        myjson.put("phone", "da implementare")
+
+                        resetTimerAuto(myjson)
+                        myCar.put(p0.toString(), myjson)
+                        myList.put(p0.toString(), myjson)
+
+                        id?.let { it1 ->
+                            if (marker != null) {
+                                writeNewCar(
+                                    it1,
+                                    text,
+                                    address.text.toString(),
+                                    time.toString(),
+                                    it1,
+                                    marker,
+                                    "da implementare",
+                                    "da implementare",
+                                    "Privato",
+                                    "Macchina"
                                 )
-                                return@setOnClickListener
                             }
-                        } catch (e: java.lang.Exception) {
-                            println("ops")
                         }
                     }
-                    gender = privateButton.text.toString()
-                    time = timePicker.hour * 60 + timePicker.minute
-                    var marker = createMarker(p0)
-                    marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                    myjson.put("type", "Privato")
-                    myjson.put("timer", time.toString())
-                    myjson.put("name", text)
-                    myjson.put("addr", address.text.toString())
-                    myjson.put("owner", account?.email?.replace("@gmail.com", ""))
-                    myjson.put("marker", marker)
-                    myjson.put("cont", spinner.selectedItem.toString())
-                    myjson.put("url", "da implementare")
-                    myjson.put("phone", "da implementare")
+                    spinner.selectedItem.toString() == "Live" -> {
+                        for (i: String in myLive.keys()) {
+                            try {
+                                val x: String = myLive.getJSONObject(i).get("name") as String
+                                if (text == x) {
+                                    lname.background.setColorFilter(
+                                        resources.getColor(R.color.quantum_googred),
+                                        PorterDuff.Mode.SRC_ATOP
+                                    )
+                                    return@setOnClickListener
 
-                    resetTimerAuto(myjson)
-                    myCar.put(p0.toString(), myjson)
-                    myList.put(p0.toString(), myjson)
+                                }
+                                if (address.text == myLive.getJSONObject(i).get("addr") as String) {
+                                    lname.background.setColorFilter(
+                                        resources.getColor(R.color.quantum_googred),
+                                        PorterDuff.Mode.SRC_ATOP
+                                    )
+                                    return@setOnClickListener
+                                }
+                            } catch (e: java.lang.Exception) {
+                                println("ops")
+                            }
+                        }
+                        time = timePicker.hour * 60 + timePicker.minute
+                        val marker = createMarker(p0)
+                        marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
 
-                    id?.let { it1 ->
-                        if (marker != null) {
-                            writeNewCar(
-                                it1,
-                                text,
-                                address.text.toString(),
-                                time.toString(),
-                                it1,
-                                marker,
-                                "da implementare",
-                                "da implementare",
-                                "Privato",
-                                "Macchina"
-                            )
+                        myjson.put("type", "Pubblico")
+                        myjson.put("timer", time.toString())
+                        myjson.put("name", text)
+                        myjson.put("addr", address.text.toString())
+                        myjson.put("owner", account?.email?.replace("@gmail.com", ""))
+                        myjson.put("marker", marker)
+                        myjson.put("cont", spinner.selectedItem.toString())
+                        myjson.put("url", "da implementare")
+                        myjson.put("phone", "da implementare")
+                        startLive(myjson)
+                        myLive.put(p0.toString(), myjson)
+                        myList.put(p0.toString(), myjson)
+
+                        id?.let { it1 ->
+                            if (marker != null) {
+                                writeNewLive(
+                                    it1,
+                                    text,
+                                    address.text.toString(),
+                                    time.toString(),
+                                    it1,
+                                    marker,
+                                    "da implementare",
+                                    "da implementare",
+                                    "Pubblico",
+                                    "Live"
+                                )
+                            }
+                        }
+                    }
+                    //                spinner on item selected
+                    else -> {
+                        for (i: String in myList.keys()) {
+                            try {
+                                val x: String = myList.getJSONObject(i).get("name") as String
+                                if (text == x) {
+                                    lname.background.setColorFilter(
+                                        resources.getColor(R.color.quantum_googred),
+                                        PorterDuff.Mode.SRC_ATOP
+                                    )
+                                    return@setOnClickListener
+
+                                }
+                                if (address.text == myList.getJSONObject(i).get("addr") as String) {
+                                    lname.background.setColorFilter(
+                                        resources.getColor(R.color.quantum_googred),
+                                        PorterDuff.Mode.SRC_ATOP
+                                    )
+                                    return@setOnClickListener
+                                }
+                            } catch (e: java.lang.Exception) {
+                                println("ops")
+                            }
+                        }
+                        val marker = createMarker(p0)
+                        marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+
+                        myjson.put("name", text)
+                        myjson.put("addr", address.text.toString())
+                        myjson.put("cont", spinner.selectedItem.toString())
+                        myjson.put("type", gender)
+                        myjson.put("marker", marker)
+                        myjson.put("url", "da implementare")
+                        myjson.put("phone", "da implementare")
+                        if(listAddr?.get(0)?.url === null || listAddr?.get(0)?.url === "" || listAddr?.get(0)?.url === " ") myjson.put("url","Url non trovato")
+                        else  myjson.put("url", listAddr?.get(0)?.url)
+                        if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") myjson.put("phone","cellulare non trovato")
+                        else  myjson.put("phone", listAddr?.get(0)?.phone)
+                        myList.put(p0.toString(), myjson)
+                        id?.let { it1 ->
+                            if (marker != null) {
+                                writeNewPOI(
+                                    it1,
+                                    text,
+                                    address.text.toString(),
+                                    spinner.selectedItem.toString(),
+                                    gender,
+                                    marker,
+                                    "da implementare",
+                                    "da implementare"
+                                )
+                            }
                         }
                     }
                 }
-                else if(spinner.selectedItem.toString() == "Live"){
-                    for (i: String in myLive.keys()) {
-                        try {
-                            var x: String = myLive.getJSONObject(i).get("name") as String
-                            if (text == x) {
-                                lname.background.setColorFilter(
-                                    resources.getColor(R.color.quantum_googred),
-                                    PorterDuff.Mode.SRC_ATOP
-                                )
-                                return@setOnClickListener
-
-                            }
-                            if (address.text == myLive.getJSONObject(i).get("addr") as String) {
-                                lname.background.setColorFilter(
-                                    resources.getColor(R.color.quantum_googred),
-                                    PorterDuff.Mode.SRC_ATOP
-                                )
-                                return@setOnClickListener
-                            }
-                        } catch (e: java.lang.Exception) {
-                            println("ops")
-                        }
-                    }
-                    time = timePicker.hour * 60 + timePicker.minute
-                    val marker = createMarker(p0)
-                    marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-
-                    myjson.put("type", "Pubblico")
-                    myjson.put("timer", time.toString())
-                    myjson.put("name", text)
-                    myjson.put("addr", address.text.toString())
-                    myjson.put("owner", account?.email?.replace("@gmail.com", ""))
-                    myjson.put("marker", marker)
-                    myjson.put("cont", spinner.selectedItem.toString())
-                    myjson.put("url", "da implementare")
-                    myjson.put("phone", "da implementare")
-                    startLive(myjson)
-                    myLive.put(p0.toString(), myjson)
-                    myList.put(p0.toString(), myjson)
-
-                    id?.let { it1 ->
-                        if (marker != null) {
-                            writeNewLive(
-                                it1,
-                                text,
-                                address.text.toString(),
-                                time.toString(),
-                                it1,
-                                marker,
-                                "da implementare",
-                                "da implementare",
-                                "Pubblico",
-                                "Live"
-                            )
-                        }
-                    }
-                }
-                //                spinner on item selected
-                else{
-                    for (i: String in myList.keys()) {
-                        try {
-                            var x: String = myList.getJSONObject(i).get("name") as String
-                            if (text == x) {
-                                lname.background.setColorFilter(
-                                    resources.getColor(R.color.quantum_googred),
-                                    PorterDuff.Mode.SRC_ATOP
-                                )
-                                return@setOnClickListener
-
-                            }
-                            if (address.text == myList.getJSONObject(i).get("addr") as String) {
-                                lname.background.setColorFilter(
-                                    resources.getColor(R.color.quantum_googred),
-                                    PorterDuff.Mode.SRC_ATOP
-                                )
-                                return@setOnClickListener
-                            }
-                        } catch (e: java.lang.Exception) {
-                            println("ops")
-                        }
-                    }
-                    var marker = createMarker(p0)
-                    marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-
-                    myjson.put("name", text)
-                    myjson.put("addr", address.text.toString())
-                    myjson.put("cont", spinner.selectedItem.toString())
-                    myjson.put("type", gender)
-                    myjson.put("marker", marker)
-                    myjson.put("url", "da implementare")
-                    myjson.put("phone", "da implementare")
-                    if(listAddr?.get(0)?.url === null || listAddr?.get(0)?.url === "" || listAddr?.get(0)?.url === " ") myjson.put("url","Url non trovato")
-                    else  myjson.put("url", listAddr?.get(0)?.url)
-                    if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") myjson.put("phone","cellulare non trovato")
-                    else  myjson.put("phone", listAddr?.get(0)?.phone)
-                    myList.put(p0.toString(), myjson)
-                    id?.let { it1 ->
-                        if (marker != null) {
-                            writeNewPOI(
-                                it1,
-                                text,
-                                address.text.toString(),
-                                spinner.selectedItem.toString(),
-                                gender,
-                                marker,
-                                "da implementare",
-                                "da implementare"
-                            )
-                        }
-                    }
-            }
                 alertDialog.dismiss()
             }
         }
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-            override fun onDismiss(arg0: DialogInterface) {
-
-            }
-        })
+        dialogBuilder.setOnDismissListener { }
         dialogBuilder.setView(dialogView)
 
-        alertDialog = dialogBuilder.create();
+        alertDialog = dialogBuilder.create()
         alertDialog.show()
     }
 
     /*End Map Function*/
+
+
 
     /*Start Override Function*/
     @SuppressLint("ResourceType")
@@ -734,14 +743,15 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         }
         else if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
-                val place = data?.let { Autocomplete.getPlaceFromIntent(it) };
-                Log.i("OK", "Place: " + place?.getName() + ", " + place?.getId());
+                val place = data?.let { Autocomplete.getPlaceFromIntent(it) }
+                Log.i("OK", "Place: " + place?.name + ", " + place?.id)
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                val status = data?.let { Autocomplete.getStatusFromIntent(it) };
+                val status = data?.let { Autocomplete.getStatusFromIntent(it) }
                 if (status != null) {
-                    Log.i("errpr", status.getStatusMessage())
-                };
+                    Log.i("error", status.statusMessage)
+                }
             } else if (resultCode == RESULT_CANCELED) {
+                println("Result canceled")
                 // The user canceled the operation.
             }
         }
@@ -750,17 +760,32 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 println("loggato")
                 // user logged, init structure, create user in firebase if not exist
                 account = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
-                var id: String? = account?.email?.replace("@gmail.com", "")
+                val id: String? = account?.email?.replace("@gmail.com", "")
+                val am: AccountManager = AccountManager.get(this)
+                val options = Bundle()
+                val new = account?.account
+                val letHandler = Handler(Looper.getMainLooper())
+                letHandler.post(error)
+
+                am.getAuthToken(
+                    new,                     // Account retrieved using getAccountsByType()
+                    "Manage your tasks",            // Auth scope
+                    options,                        // Authenticator-specific options
+                    this,                           // Your activity
+                    OnTokenAcquired(),              // Callback called when a token is successfully acquired
+                    letHandler            // Callback called if an error occurs
+                )
                 isRunning = true
+                // QUA SI USA FIREBASE
                 FirebaseFirestore.setLoggingEnabled(true)
                 db = FirebaseFirestore.getInstance()
-                var docRef = db.collection("user")
+                val docRef = db.collection("user")
                 if (id != null) {
-                    if (!db.document("user/" + id).get().isSuccessful) {
+                    if (!db.document("user/$id").get().isSuccessful) {
                         docRef.document(id).set({})
                     }
                 }
-                val intent: Intent = Intent(this, NotifyService::class.java)
+                val intent = Intent(this, NotifyService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startService(intent)
                 }
@@ -774,7 +799,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     createCarList(id)
                 }
                 val x = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-                val google_button = findViewById<Button>(R.id.google_button)
+                val googleButton = findViewById<Button>(R.id.google_button)
                 val imageView = x.findViewById<ImageView>(R.id.imageView)
                 val user = x.findViewById<TextView>(R.id.user)
                 val email = x.findViewById<TextView>(R.id.email)
@@ -783,7 +808,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as? AutocompleteSupportFragment
                 val layout: LinearLayout = autoCompleteFragment?.view as LinearLayout
                 val menuIcon: ImageView = layout.getChildAt(0) as ImageView
-                google_button.visibility = View.GONE
+                googleButton.visibility = View.GONE
                 imageView.visibility = View.VISIBLE
                 // load google photo
                 Picasso.get().load(account?.photoUrl).into(imageView)
@@ -793,9 +818,19 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     .resize(100, 100)
                     .into(menuIcon)
                 // init menu
-                menuIcon.setOnClickListener(View.OnClickListener() {
-                    switchFrame(drawerLayout, listLayout, homeLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
-                })
+                menuIcon.setOnClickListener {
+                    switchFrame(
+                        drawerLayout,
+                        listLayout,
+                        homeLayout,
+                        friendLayout,
+                        friendFrame,
+                        carLayout,
+                        splashLayout,
+                        liveLayout,
+                        loginLayout
+                    )
+                }
                 user.visibility = View.VISIBLE
                 user.text = account?.displayName
                 email.visibility = View.VISIBLE
@@ -805,13 +840,13 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
             else if (resultCode == 40) {
                 println("non loggato")
-                var x = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-                var google_button = x.findViewById<Button>(R.id.google_button)
-                var close = x.findViewById<ImageView>(R.id.close)
-                var user = x.findViewById<TextView>(R.id.user)
-                var email = x.findViewById<TextView>(R.id.email)
-                var imageView = x.findViewById<ImageView>(R.id.imageView)
-                google_button.visibility = View.VISIBLE
+                val x = findViewById<NavigationView>(id.nav_view).getHeaderView(0)
+                val googleButton = x.findViewById<Button>(id.google_button)
+                val close = x.findViewById<ImageView>(R.id.close)
+                val user = x.findViewById<TextView>(R.id.user)
+                val email = x.findViewById<TextView>(R.id.email)
+                val imageView = x.findViewById<ImageView>(R.id.imageView)
+                googleButton.visibility = View.VISIBLE
                 close.visibility = View.GONE
                 imageView.visibility = View.GONE
                 user.visibility = View.GONE
@@ -858,15 +893,15 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val autoCompleteFragment =
             supportFragmentManager.findFragmentById(id.autocomplete_fragment) as? AutocompleteSupportFragment
         autoCompleteFragment?.setCountry("IT")
-        autoCompleteFragment?.setPlaceFields(asList(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG,Place.Field.ADDRESS,Place.Field.PHONE_NUMBER,Place.Field.WEBSITE_URI))
-        val navMenu: NavigationView = findViewById(R.id.nav_view)
+        autoCompleteFragment?.setPlaceFields(listOf(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG,Place.Field.ADDRESS,Place.Field.PHONE_NUMBER,Place.Field.WEBSITE_URI))
+        val navMenu: NavigationView = findViewById(id.nav_view)
         navMenu.setNavigationItemSelectedListener(this)
         autoCompleteFragment?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
-                var lat = place.latLng
+                val lat = place.latLng
                 if (lat != null) {
                     autoCompleteFragment.setText("")
-                    supportFragmentManager.popBackStack();
+                    supportFragmentManager.popBackStack()
                     onMapClick(lat)
                 }
             }
@@ -893,15 +928,15 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val txt: TextView = findViewById(id.nosrc)
         switchFrame(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
 
-        val lv:ListView = findViewById<ListView>(R.id.lv)
+        val lv:ListView = findViewById(R.id.lv)
         var len = 0
         for (i in myList.keys()){
             if(myList.getJSONObject(i).get("cont") as String != "Macchina" && myList.getJSONObject(i).get("cont") as String != "Live"){
                 len++
             }
         }
-        val userList = MutableList<String>(len,{""})
-        if(len == 0) txt.visibility = View.VISIBLE;
+        val userList = MutableList(len) { "" }
+        if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in myList.keys()){
             if(myList.getJSONObject(i).get("cont") as String != "Macchina" && myList.getJSONObject(i).get("cont") as String != "Live"){
@@ -909,7 +944,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 index++
             }
         }
-        val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList);
+        val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList)
 
         lv.setOnItemLongClickListener { parent, view, position, _ -> //last elem was id
 
@@ -928,44 +963,65 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         mark.remove()
                         mymarker.remove(i)
                         myList.remove(i)
-                        val AC:String
-                        AC = "Annulla"
-                        val text = "Rimosso "+selectedItem.toString()
+                        val cancel = "Annulla"
+                        val text = "Rimosso $selectedItem"
                         val id = account?.email?.replace("@gmail.com","")
                         // create a Toast to undo the operation of removing
                         val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(AC,View.OnClickListener {
+                            .setAction(cancel) {
 
                                 id?.let { it1 ->
-                                    myList.put(mark.position.toString(),removed)
-                                    mymarker.put(mark.position.toString(),mark)
-                                    writeNewPOI(it1,removed.get("name").toString(),removed.get("addr").toString(),removed.get("cont").toString(),removed.get("type").toString(),mark,"da implementare","da implementare")
-                                    Toast.makeText(this,"undo" + selectedItem.toString(),Toast.LENGTH_LONG).show()
+                                    myList.put(mark.position.toString(), removed)
+                                    mymarker.put(mark.position.toString(), mark)
+                                    writeNewPOI(
+                                        it1,
+                                        removed.get("name").toString(),
+                                        removed.get("addr").toString(),
+                                        removed.get("cont").toString(),
+                                        removed.get("type").toString(),
+                                        mark,
+                                        "da implementare",
+                                        "da implementare"
+                                    )
+                                    Toast.makeText(
+                                        this,
+                                        "undo$selectedItem",
+                                        Toast.LENGTH_LONG
+                                    ).show()
 
                                     showPOI()
                                 }
-                            })
+                            }
                         snackbar.setActionTextColor(Color.DKGRAY)
                         val snackbarView = snackbar.view
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
 
-                        //remove from db the poi
-                        id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
-                               .addOnSuccessListener { result ->
-                                   for (document in result) {
-                                       val name = document.data["name"]
-                                       if(name == selectedItem)  {
-                                           db.document("user/"+id+"/marker/"+document.id).delete()
-                                           showPOI()
-                                           return@addOnSuccessListener
-                                       }
-                                   }
-                               }
-                               .addOnFailureListener { exception ->
-                                   Log.d("FAIL", "Error getting documents: ", exception)
-                               }
-                        }
+
+                        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            override fun onShown(transientBottomBar: Snackbar?) {
+                                super.onShown(transientBottomBar)
+                            }
+                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                super.onDismissed(transientBottomBar, event)
+                                //remove from db the poi
+                                id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
+                                    .addOnSuccessListener { result ->
+                                        for (document in result) {
+                                            val name = document.data["name"]
+                                            if(name == selectedItem)  {
+                                                db.document("user/"+id+"/marker/"+document.id).delete()
+                                                showPOI()
+                                                return@addOnSuccessListener
+                                            }
+                                        }
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.d("FAIL", "Error getting documents: ", exception)
+                                    }
+                                }
+                            }
+                        })
                         alertDialog.dismiss()
                         break
                     }
@@ -973,12 +1029,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
             }
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
-            alertDialog = dialogBuilder.create();
+            alertDialog = dialogBuilder.create()
             alertDialog.show()
 
 
@@ -991,27 +1045,27 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     mymarker[i] as Marker)
             }
         }
-        lv.adapter = arrayAdapter;
+        lv.adapter = arrayAdapter
     }
 
     // populate ListView with live list
     fun showLive(){
         val len = myLive.length()
         var index = 0
-        val txt: TextView = findViewById(R.id.nolive)
+        val txt: TextView = findViewById(id.nolive)
         switchFrame(liveLayout,listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,carLayout,splashLayout,loginLayout)
 
-        var  lv:ListView = findViewById<ListView>(R.id.lvLive)
-        val userList = MutableList<String>(len,{""})
-        if(len == 0) txt.visibility = View.VISIBLE;
-        else txt.visibility = View.INVISIBLE;
+        val  lv:ListView = findViewById(id.lvLive)
+        val userList = MutableList(len) { "" }
+        if(len == 0) txt.visibility = View.VISIBLE
+        else txt.visibility = View.INVISIBLE
         for (i in myLive.keys()){
             userList[index] = myLive.getJSONObject(i).get("name") as String
             index++
         }
 
 
-        var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList);
+        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList)
 
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val selectedItem = parent.getItemAtPosition(position) as String
@@ -1020,20 +1074,20 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     mymarker[i] as Marker)
             }
         }
-        lv.adapter = arrayAdapter;
+        lv.adapter = arrayAdapter
     }
 
     // populate ListView with friend list
     @SuppressLint("ShowToast")
-    private fun showFriend(){
+    fun showFriend(){
         val len = friendJson.length()
         var index = 0
-        val txt: TextView = findViewById(R.id.nofriend)
+        val txt: TextView = findViewById(id.nofriend)
         switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
 
 
-        var  lv:ListView = findViewById<ListView>(R.id.fv)
-        val friendList = MutableList<String>(len,{""})
+        val  lv:ListView = findViewById(id.fv)
+        val friendList = MutableList(len) { "" }
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in friendJson.keys()){
@@ -1041,7 +1095,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             index++
         }
 
-        var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
+        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
         lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
             val inflater: LayoutInflater = this.layoutInflater
@@ -1053,38 +1107,47 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
                 for(i in friendJson.keys()){
                     if(selectedItem == friendJson[i] as String) {
-                        val removed = selectedItem
                         friendJson.remove(i)
-                        val key = i
-                        val AC:String
-                        AC = "Annulla"
+                        val cancel = "Annulla"
                         val text = "Rimosso $selectedItem"
                         val id = account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(AC,View.OnClickListener {
+                            snackbar.setAction(cancel) {
                                 // Toast to undo operation
                                 id?.let { _ -> //it1
-                                    friendJson.put(key,removed)
-                                    confirmFriend(id,removed)
-                                    Toast.makeText(this, "undo$selectedItem",Toast.LENGTH_LONG)
+                                    friendJson.put(i, selectedItem)
+                                    confirmFriend(id, selectedItem)
+                                    Toast.makeText(this, "undo $selectedItem", Toast.LENGTH_LONG)
                                     showFriend()
 
                                 }
-                            })
+                            }
+                        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            override fun onShown(transientBottomBar: Snackbar?) {
+                                super.onShown(transientBottomBar)
+                            }
 
+                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                super.onDismissed(transientBottomBar, event)
+                                if (id != null) {
+                                    removeFriend(id, selectedItem)
+                                }
+                            }
+                        })
                         snackbar.setActionTextColor(Color.DKGRAY)
                         val snackbarView = snackbar.view
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
-
+                        showFriend()
                         // remove item from db
-                        id?.let { it1 -> db.collection("user").document(it1).collection("friend").get()
+                        /* id?.let { it1 -> db.collection("user").document(it1).collection("friend").get()
                             .addOnSuccessListener { result ->
                                 for (document in result) {
                                     val name = document.data["friend"]
-                                    if(name == removed)  {
-                                        db.document("user/"+id+"/friend/"+document.id).delete()
-                                        removeFriend(id,removed)
+                                    if (name == selectedItem) {
+                                        db.document("user/" + id + "/friend/" + document.id)
+                                            .delete()
+                                        removeFriend(id, selectedItem)
                                         showFriend()
                                         return@addOnSuccessListener
                                     }
@@ -1093,7 +1156,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             .addOnFailureListener { exception ->
                                 Log.d("FAIL", "Error getting documents: ", exception)
                             }
-                        }
+                        }*/
                         alertDialog.dismiss()
                         break
                     }
@@ -1101,12 +1164,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
             }
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
-            alertDialog = dialogBuilder.create();
+            alertDialog = dialogBuilder.create()
             alertDialog.show()
             return@setOnItemLongClickListener true
         }
@@ -1114,25 +1175,24 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lv.setOnItemClickListener { parent, _, position, _ -> //wiew e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_friend_view, null)
-            val txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
-            val spinner :Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
+            val txtName :TextView = dialogView.findViewById(id.friendNameTxt)
+            val spinner :Spinner = dialogView.findViewById(id.planets_spinner_POI)
             val selectedItem = parent.getItemAtPosition(position) as String
 
             val context = this
             txtName.text = selectedItem
             // ask public friend's poi with a server call
+
+
             val url = URL("https://"+ ip + port +"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
             var result: JSONObject
             val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
             dialogBuilder.setOnDismissListener { }
-//            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-//                override fun onDismiss(arg0: DialogInterface) { }
-//            })
             dialogBuilder.setView(dialogView)
 
-            var alertDialog2 = dialogBuilder.create();
+            val alertDialog2 = dialogBuilder.create()
 
             val request = Request.Builder()
                 .url(url)
@@ -1144,68 +1204,107 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     println(e)
                 }
                 override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    this@MapsActivity.runOnUiThread(Runnable {
+                    this@MapsActivity.runOnUiThread {
                         // retrieve results in a thread to read more time
                         try {
                             alertDialog2.show()
                             result = JSONObject(response.body()?.string()!!)
                             val length = result.length()
-                            val markerList = MutableList<String>(length+1,{""})
+                            val markerList = MutableList(length + 1) { "" }
                             var indexMarkerMap = 1
                             // add this empty item cause a bug with spinner, on init select the first item and trigger the onItemSelected
                             markerList[0] = ""
-                            for(i in result.keys()){
-                                if(result.getJSONObject(i).get("type") as String == "Pubblico") {
-                                    markerList[indexMarkerMap] = result.getJSONObject(i).get("name") as String
+                            for (i in result.keys()) {
+                                if (result.getJSONObject(i).get("type") as String == "Pubblico") {
+                                    markerList[indexMarkerMap] =
+                                        result.getJSONObject(i).get("name") as String
                                     indexMarkerMap++
                                 }
                             }
-                            var arrayAdapter2:ArrayAdapter<String> = ArrayAdapter<String>(context,
-                                R.layout.support_simple_spinner_dropdown_item,markerList)
-                            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                                override fun onNothingSelected(parent: AdapterView<*>?) {}
-                                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                                    if(parent?.getItemAtPosition(position) as String != "") {
-                                        var key = ""
-                                        val selectedMarker =
-                                            parent.getItemAtPosition(position) as String
-                                        var lat = 0.0
-                                        var lon = 0.0
-                                        for (i in result.keys()) {
-                                            if (result.getJSONObject(i).get("name") == selectedMarker) {
-                                                key = i
-                                                lat = result.getJSONObject(i).get("lat").toString()
-                                                    .toDouble()
-                                                lon = result.getJSONObject(i).get("lon").toString()
-                                                    .toDouble()
+                            val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
+                                context,
+                                R.layout.support_simple_spinner_dropdown_item, markerList
+                            )
+                            spinner.onItemSelectedListener =
+                                object : AdapterView.OnItemSelectedListener {
+                                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                                    override fun onItemSelected(
+                                        parent: AdapterView<*>?,
+                                        view: View?,
+                                        position: Int,
+                                        id: Long
+                                    ) {
+                                        if (parent?.getItemAtPosition(position) as String != "") {
+                                            var key = ""
+                                            val selectedMarker =
+                                                parent.getItemAtPosition(position) as String
+                                            var lat = 0.0
+                                            var lon = 0.0
+                                            for (i in result.keys()) {
+                                                if (result.getJSONObject(i)
+                                                        .get("name") == selectedMarker
+                                                ) {
+                                                    key = i
+                                                    lat = result.getJSONObject(i).get("lat")
+                                                        .toString()
+                                                        .toDouble()
+                                                    lon = result.getJSONObject(i).get("lon")
+                                                        .toString()
+                                                        .toDouble()
+                                                }
                                             }
+                                            val pos = LatLng(
+                                                lat,
+                                                lon
+                                            )
+                                            val mark = createMarker(pos)
+                                            friendTempPoi.put(
+                                                pos.toString(),
+                                                result.getJSONObject(key)
+                                            )
+                                            mMap.moveCamera(
+                                                CameraUpdateFactory.newLatLngZoom(
+                                                    LatLng(
+                                                        lat,
+                                                        lon
+                                                    ), 20F
+                                                )
+                                            )
+                                            switchFrame(
+                                                homeLayout,
+                                                friendLayout,
+                                                listLayout,
+                                                drawerLayout,
+                                                friendFrame,
+                                                splashLayout,
+                                                carLayout,
+                                                liveLayout,
+                                                loginLayout
+                                            )
+                                            alertDialog2.dismiss()
+                                            showPOIPreferences(
+                                                pos.toString(),
+                                                inflater,
+                                                context,
+                                                mark!!
+                                            )
                                         }
-                                        var pos: LatLng = LatLng(
-                                            lat,
-                                            lon
-                                        )
-                                        var mark = createMarker(pos)
-                                        friendTempPoi.put(pos.toString(), result.getJSONObject(key))
-                                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat,lon), 20F))
-                                        switchFrame(homeLayout,friendLayout,listLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
-                                        alertDialog2.dismiss()
-                                        showPOIPreferences(pos.toString(),inflater,context,mark!!)
                                     }
                                 }
-                            }
-                            spinner.adapter = arrayAdapter2;
+                            spinner.adapter = arrayAdapter2
                         } catch (e: JSONException) {
                             e.printStackTrace()
                         }
-                    })
+                    }
                 }
             })
         }
-        lv.adapter = arrayAdapter;
+        lv.adapter = arrayAdapter
     }
 
     // populate ListView with car list
-    private fun showCar(){
+    @SuppressLint("ShowToast")
+    fun showCar(){
         val len = myCar.length()
         var index = 0
         var indexFull = 0
@@ -1213,9 +1312,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         switchFrame(carLayout,friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout,loginLayout)
 
 
-        var  lv: ListView = findViewById<ListView>(R.id.lvCar)
-        val carList = MutableList<String>(len,{""})
-        val carListFull = MutableList<String>(len*10,{""})
+        val  lv: ListView = findViewById(id.lvCar)
+        val carList = MutableList(len) { "" }
+        val carListFull = MutableList(len*10) { "" }
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in myCar.keys()){
@@ -1226,7 +1325,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 indexFull++
             }
         }
-        var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, carList)
+        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, carList)
 
         lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
@@ -1238,72 +1337,77 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 val selectedItem = parent.getItemAtPosition(position) as String
                 for(i in myCar.keys()){
                     if(selectedItem == myCar.getJSONObject(i).get("name") as String) {
-                        var removed = myCar.getJSONObject(i)
-                        var mark = mymarker[i] as Marker
+                        val removed = myCar.getJSONObject(i)
+                        val mark = mymarker[i] as Marker
                         mark.remove()
                         myCar.remove(i)
                         mymarker.remove(i)
-                        var key = i
-                        var AC:String
-                        AC = "Annulla"
-                        var text = "Rimosso "+ selectedItem
-                        var id = account?.email?.replace("@gmail.com","")
+                        val cancel = "Annulla"
+                        val text = "Rimosso $selectedItem"
+                        val id = account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(AC,View.OnClickListener {
+                            .setAction(cancel) {
                                 // Toast to undo remove operation
                                 id?.let { _ -> //it1
-                                    myCar.put(key,removed)
-                                    mymarker.put(key,mark)
-                                    Toast.makeText(this,"undo" + selectedItem.toString(), Toast.LENGTH_LONG)
+                                    myCar.put(i, removed)
+                                    mymarker.put(i, mark)
+                                    Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG)
                                     showCar()
                                 }
-                            })
+                            }
 
                         snackbar.setActionTextColor(Color.DKGRAY)
                         val snackbarView = snackbar.view
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
-                        id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
-                            .addOnSuccessListener { result ->
-                                for (document in result) {
-                                    val name = document.data["name"]
-                                    if(name == selectedItem)  {
-                                        db.document("user/"+id+"/marker/"+document.id).delete()
-                                        return@addOnSuccessListener
+                        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            override fun onShown(transientBottomBar: Snackbar?) {
+                                super.onShown(transientBottomBar)
+                            }
+
+                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                super.onDismissed(transientBottomBar, event)
+                                id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
+                                    .addOnSuccessListener { result ->
+                                        for (document in result) {
+                                            val name = document.data["name"]
+                                            if(name == selectedItem)  {
+                                                db.document("user/"+id+"/marker/"+document.id).delete()
+                                                return@addOnSuccessListener
+                                            }
+                                        }
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.d("FAIL", "Error getting documents: ", exception)
+                                    }
+                                }
+                                //remove from db
+                                id?.let { it1 -> db.collection("user").document(it1).collection("car").get()
+                                    .addOnSuccessListener { result ->
+                                        for (document in result) {
+                                            val name = document.data["name"]
+                                            if(name == selectedItem)  {
+                                                db.document("user/"+id+"/car/"+document.id).delete()
+                                                showCar()
+                                                return@addOnSuccessListener
+                                            }
+                                        }
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.d("FAIL", "Error getting documents: ", exception)
                                     }
                                 }
                             }
-                            .addOnFailureListener { exception ->
-                                Log.d("FAIL", "Error getting documents: ", exception)
-                            }
-                        }
-                        //remove from db
-                        id?.let { it1 -> db.collection("user").document(it1).collection("car").get()
-                            .addOnSuccessListener { result ->
-                                for (document in result) {
-                                    val name = document.data["name"]
-                                    if(name == selectedItem)  {
-                                        db.document("user/"+id+"/car/"+document.id).delete()
-                                        showCar()
-                                        return@addOnSuccessListener
-                                    }
-                                }
-                            }
-                            .addOnFailureListener { exception ->
-                                Log.d("FAIL", "Error getting documents: ", exception)
-                            }
-                        }
+                        })
                         alertDialog.dismiss()
                         break
                     }
                 }
             }
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
-            alertDialog = dialogBuilder.create();
+            alertDialog = dialogBuilder.create()
             alertDialog.show()
             return@setOnItemLongClickListener true
         }
@@ -1311,10 +1415,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_car_view, null)
-            var txtName :TextView = dialogView.findViewById(R.id.car_name_txt)
-            var address : TextView = dialogView.findViewById(R.id.carAddressValue)
-            var timer : TimePicker = dialogView.findViewById(R.id.timePickerView)
-            var remindButton : Button = dialogView.findViewById(R.id.remindButton)
+            val txtName :TextView = dialogView.findViewById(id.car_name_txt)
+            val address : TextView = dialogView.findViewById(id.carAddressValue)
+            val timer : TimePicker = dialogView.findViewById(id.timePickerView)
+            val remindButton : Button = dialogView.findViewById(R.id.remindButton)
             var key = ""
             val selectedItem = parent.getItemAtPosition(position) as String
 
@@ -1323,9 +1427,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 if(myCar.getJSONObject(i).get("name") as String == selectedItem){
                     key = i
                     address.text = myCar.getJSONObject(i).get("addr") as String
-                    var time = (myCar.getJSONObject(i).get("timer").toString()).toInt()
-                    var hour = time/60
-                    var minute = time - hour*60
+                    val time = (myCar.getJSONObject(i).get("timer").toString()).toInt()
+                    val hour = time/60
+                    val minute = time - hour*60
                     timer.setIs24HourView(true)
                     timer.hour = hour
                     timer.minute = minute
@@ -1339,15 +1443,13 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
 
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
-            alertDialog = dialogBuilder.create();
+            alertDialog = dialogBuilder.create()
             alertDialog.show()
         }
-        lv.adapter = arrayAdapter;
+        lv.adapter = arrayAdapter
     }
 
     //get email inserted to send a request via server
@@ -1355,14 +1457,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         println(view)
         val inflater: LayoutInflater = this.layoutInflater
         val dialogView: View = inflater.inflate(R.layout.add_friend, null)
-        val emailText : EditText = dialogView.findViewById(R.id.friendEmail)
-        val addBtn: Button = dialogView.findViewById(R.id.friendBtn)
+        val emailText : EditText = dialogView.findViewById(id.friendEmail)
+        val addBtn: Button = dialogView.findViewById(id.friendBtn)
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-        dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-            override fun onDismiss(arg0: DialogInterface) { }
-        })
+        dialogBuilder.setOnDismissListener { }
         dialogBuilder.setView(dialogView)
-        alertDialog = dialogBuilder.create();
+        alertDialog = dialogBuilder.create()
         alertDialog.show()
 
         addBtn.setOnClickListener {

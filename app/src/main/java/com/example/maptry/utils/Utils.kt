@@ -1,8 +1,8 @@
-package com.example.maptry
+package com.example.maptry.utils
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -12,6 +12,8 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat.startActivity
+import com.example.maptry.R
+import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
@@ -32,16 +34,13 @@ import org.json.JSONObject
 import java.io.IOException
 import java.lang.Exception
 
-
-var jsonNotifId = JSONObject()
 var notificationJson = JSONObject()
-var newFriendJson = JSONObject()
 
 
 // re draw all poi
 fun reDraw(){
     mMap.clear()
-    var tmp = mymarker
+    val tmp = mymarker
     mymarker = JSONObject()
     for(i in tmp.keys()){
         //control in myList for color
@@ -50,9 +49,11 @@ fun reDraw(){
         try{
             val cont = myList.getJSONObject(i).get("cont")
             println(cont)
-            if(cont == "Live") marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-            else if(cont == "Macchina") marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-            else marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+            when (cont) {
+                "Live" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                "Macchina" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                else -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+            }
         }
         catch(e: Exception){
             println("some error")
@@ -71,7 +72,9 @@ fun reDraw(){
     mymarker.remove(oldPos?.position.toString())
 }
 
-// move Frame of actuvuty_maps layout
+
+
+// move Frame of activity_maps layout
 fun switchFrame(toView: FrameLayout, toGone1: FrameLayout, toGone2: FrameLayout, toGone3: FrameLayout, toGone4: FrameLayout,toGone5: FrameLayout,toGone6: FrameLayout,toGone7: FrameLayout,toGone8: FrameLayout){
     toGone1.invalidate()
     toGone2.invalidate()
@@ -100,7 +103,7 @@ fun switchFrame(toView: FrameLayout, toGone1: FrameLayout, toGone2: FrameLayout,
 // simply create a marker, return it and add it to mymarker
 fun createMarker(p0: LatLng): Marker? {
 
-    var background = object : Runnable {
+    val background = object : Runnable {
         override fun run() {
             try {
                 listAddr = geocoder.getFromLocation(p0.latitude, p0.longitude, 1)
@@ -122,9 +125,9 @@ fun createMarker(p0: LatLng): Marker? {
     }
 
 
-    var text = "Indirizzo:" + listAddr?.get(0)?.getAddressLine(0)+"\nGeoLocalita:" +  listAddr?.get(0)?.getLocality() + "\nAdminArea: " + listAddr?.get(0)?.getAdminArea() + "\nCountryName: " + listAddr?.get(0)?.getCountryName()+ "\nPostalCode: " + listAddr?.get(0)?.getPostalCode() + "\nFeatureName: " + listAddr?.get(0)?.getFeatureName();
+    val text = "Indirizzo:" + listAddr?.get(0)?.getAddressLine(0)+"\nGeoLocalita:" +  listAddr?.get(0)?.locality + "\nAdminArea: " + listAddr?.get(0)?.adminArea + "\nCountryName: " + listAddr?.get(0)?.countryName + "\nPostalCode: " + listAddr?.get(0)?.postalCode + "\nFeatureName: " + listAddr?.get(0)?.featureName
 
-    var x = mMap.addMarker(
+    val x = mMap.addMarker(
         MarkerOptions()
             .position(p0)
             .title(text)
@@ -136,34 +139,35 @@ fun createMarker(p0: LatLng): Marker? {
     return x
 }
 
-// show a dialog with infromation of friend's poi selected, can be add to user's poi
-fun showPOIPreferences(p0 : String,inflater:LayoutInflater,context:Context,mark:Marker){
+// show a dialog with information of friend's poi selected, can be add to user's poi
+@SuppressLint("SetTextI18n")
+fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, mark:Marker){
 
-    val dialogView: View = inflater.inflate(com.example.maptry.R.layout.dialog_custom_friend_poi, null)
+    val dialogView: View = inflater.inflate(R.layout.dialog_custom_friend_poi, null)
     var added = 0
-    val address: TextView = dialogView.findViewById(com.example.maptry.R.id.txt_addressattr)
-    val phone: TextView = dialogView.findViewById(com.example.maptry.R.id.phone_contentattr)
-    val header: TextView = dialogView.findViewById(com.example.maptry.R.id.headerattr)
-    val url: TextView = dialogView.findViewById(com.example.maptry.R.id.uri_lblattr)
+    val address: TextView = dialogView.findViewById(R.id.txt_addressattr)
+    val phone: TextView = dialogView.findViewById(R.id.phone_contentattr)
+    val header: TextView = dialogView.findViewById(R.id.headerattr)
+    val url: TextView = dialogView.findViewById(R.id.uri_lblattr)
     val text : String =  friendTempPoi.getJSONObject(p0).get("type") as String+": "+ friendTempPoi.getJSONObject(p0).get("name") as String
     header.text =  text
     address.text = friendTempPoi.getJSONObject(p0).get("addr") as String
     url.text = friendTempPoi.getJSONObject(p0).get("url") as String
     phone.text = friendTempPoi.getJSONObject(p0).get("phone") as String
-    val routebutton: Button = dialogView.findViewById(com.example.maptry.R.id.routeBtn)
-    val addbutton: Button = dialogView.findViewById(com.example.maptry.R.id.removeBtnattr)
+    val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
+    val addbutton: Button = dialogView.findViewById(R.id.removeBtnattr)
     addbutton.text = "Aggiungi"
     addbutton.setOnClickListener {
 
-        var mark_addButton = mymarker.get(p0) as Marker
+        val markAddButton = mymarker.get(p0) as Marker
         myList.put(p0,friendTempPoi.getJSONObject(p0))
 
         added = 1
-        mark_addButton.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        markAddButton.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         alertDialog.dismiss()
     }
     routebutton.setOnClickListener {
-        var intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + address.text))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + address.text))
         added = 0
         startActivity(context,intent,null)
         alertDialog.dismiss()
@@ -197,7 +201,7 @@ fun showPOIPreferences(p0 : String,inflater:LayoutInflater,context:Context,mark:
 
     dialogBuilder.setView(dialogView)
 
-    alertDialog = dialogBuilder.create();
+    alertDialog = dialogBuilder.create()
     alertDialog.show()
 }
 

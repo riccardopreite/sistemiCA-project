@@ -1,6 +1,5 @@
 package com.example.maptry.activity
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity.Companion.REQUEST_LOCATION_PERMISSION
@@ -30,7 +28,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import java.lang.Exception
@@ -38,8 +35,8 @@ import java.lang.Exception
 class LoginActivity : AppCompatActivity() {
 
     //Login
-    val RC_SIGN_IN: Int = 1
-    lateinit var mGoogleSignInClient: GoogleSignInClient
+    private val rcSignIn: Int = 1
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
     private var account: GoogleSignInAccount? = null
@@ -49,9 +46,9 @@ class LoginActivity : AppCompatActivity() {
         firebaseAuth = FirebaseAuth.getInstance()
 
 
-        val data = Intent();
+        val data = Intent()
 
-        data.data = Uri.parse("done");
+        data.data = Uri.parse("done")
 
         // ask gps permission if not allowed yet
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
@@ -73,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, mGoogleSignInOptions)
          account = GoogleSignIn.getLastSignedInAccount(this)
-        setResultLogin(account);
+        setResultLogin(account)
         findViewById<Button>(R.id.google_button).setOnClickListener { signIn() }
     }
 
@@ -81,22 +78,22 @@ class LoginActivity : AppCompatActivity() {
     /*Start SignIn Function*/
     fun signIn() {
         // intent to sign in
-        val signInIntent : Intent = mGoogleSignInClient.signInIntent;
+        val signInIntent : Intent = mGoogleSignInClient.signInIntent
         println(signInIntent)
 
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        startActivityForResult(signInIntent, rcSignIn)
     }
 
     private fun setResultLogin( account: GoogleSignInAccount?){
         if(account != null){
-            var data : Intent = Intent();
-            data.data = Uri.parse("done");
-            setResult(50, data);
+            val data = Intent()
+            data.data = Uri.parse("done")
+            setResult(50, data)
 
         }else {
-            var data : Intent = Intent();
-            data.data = Uri.parse("Not logged");
-            setResult(40, data);
+            val data = Intent()
+            data.data = Uri.parse("Not logged")
+            setResult(40, data)
         }
     }
 
@@ -105,10 +102,10 @@ class LoginActivity : AppCompatActivity() {
             account  = completedTask.getResult(ApiException::class.java)
             // connection with firebase
             account?.let { firebaseAuthWithGoogle(it) }
-            account?.let { setResultLogin(it) };
+            account?.let { setResultLogin(it) }
         } catch (e: ApiException) {
-            Log.w("INFAIL", "signInResult:failed code=" + e.getStatusCode());
-            setResultLogin(null);
+            Log.w("IN FAIL", "signInResult:failed code=" + e.statusCode)
+            setResultLogin(null)
         }
     }
 
@@ -129,10 +126,7 @@ class LoginActivity : AppCompatActivity() {
             try {
                 //try to set up map location
                 MapsActivity.mMap.isMyLocationEnabled = true
-//                LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(
-//                    mLocationRequest, locationCallback, Looper.myLooper()
-//                )
-                var loop = Looper.myLooper() as Looper
+                val loop = Looper.myLooper() as Looper
                 LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(
                     mLocationRequest as LocationRequest, locationCallback, loop
                 )
@@ -143,7 +137,7 @@ class LoginActivity : AppCompatActivity() {
             account = GoogleSignIn.getLastSignedInAccount(this)
             account?.let { firebaseAuthWithGoogle(it) }
             // Signed in successfully, show authenticated UI.
-            account?.let { setResultLogin(it) };
+            account?.let { setResultLogin(it) }
         }
         else{
             configureGoogleSignIn()
@@ -151,7 +145,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    fun checkPermission() : Boolean {
+    private fun checkPermission() : Boolean {
         return if (ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             true
         } else {
@@ -172,10 +166,10 @@ class LoginActivity : AppCompatActivity() {
 
 
 
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SIGN_IN) {
-            var task:Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == rcSignIn) {
+            val task:Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
+            handleSignInResult(task)
         }
     }
     override fun onBackPressed() { }
@@ -183,7 +177,7 @@ class LoginActivity : AppCompatActivity() {
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
             this,
-            arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
             REQUEST_LOCATION_PERMISSION)
     }
 
@@ -218,6 +212,9 @@ class LoginActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         savedInstanceState.getBundle("newBundy")
     }
+
+    fun closeDrawer(view: View) {}
+    fun addFriend(view: View) {}
 
 /*End Override Function*/
 }

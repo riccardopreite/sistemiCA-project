@@ -1,10 +1,8 @@
 @file:Suppress("DEPRECATED_IDENTITY_EQUALS")
 
 package com.example.maptry.changeUI
-//DO SAME THING OF SHOW FRIEND REQUEST FOR SHOW CAR AND RIMANDA
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -35,7 +33,7 @@ import com.example.maptry.activity.MapsActivity.Companion.loginLayout
 
 import com.example.maptry.R
 import com.example.maptry.server.resetTimerAuto
-import com.example.maptry.switchFrame
+import com.example.maptry.utils.switchFrame
 import com.google.android.material.snackbar.Snackbar
 
 class ShowCar : AppCompatActivity() {
@@ -52,7 +50,7 @@ class ShowCar : AppCompatActivity() {
         name = extras?.get("name") as String
         switchFrame(carLayout,friendFrame,listLayout,homeLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
 
-        var close = findViewById<ImageView>(R.id.close_car)
+        val close = findViewById<ImageView>(R.id.close_car)
         close.setOnClickListener {
 
             switchFrame(homeLayout,carLayout,friendFrame,listLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
@@ -79,9 +77,9 @@ class ShowCar : AppCompatActivity() {
         switchFrame(carLayout,friendFrame,listLayout,homeLayout,drawerLayout,splashLayout,friendLayout,liveLayout,loginLayout)
 
 
-        var  lv: ListView = findViewById<ListView>(R.id.lvCar)
-        val carList = MutableList<String>(len,{""})
-        val carListFull = MutableList<String>(len*10,{""})
+        val  lv: ListView = findViewById(R.id.lvCar)
+        val carList = MutableList(len) { "" }
+        val carListFull = MutableList(len*10) { "" }
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in myCar.keys()){
@@ -96,15 +94,14 @@ class ShowCar : AppCompatActivity() {
         println(carList)
         var pos = 0
 
-        var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, carList)
-        lv.adapter = arrayAdapter;
+        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, carList)
+        lv.adapter = arrayAdapter
         for (i in myCar.keys()) {
 
             if (myCar.getJSONObject(i).get("name") as String == name) {
 
                 lv.itemsCanFocus = true
                 lv.setSelection(pos)
-                println("PORC")
                 println(lv.getItemAtPosition(pos))
                 println(lv.selectedView)
                 lv.setItemChecked(pos,true)
@@ -126,18 +123,16 @@ class ShowCar : AppCompatActivity() {
 
                 for(i in myCar.keys()){
                     if(selectedItem == myCar.getJSONObject(i).get("name") as String) {
-                        var removed = myCar.getJSONObject(i)
+                        val removed = myCar.getJSONObject(i)
                         myCar.remove(i)
-                        var key = i
-                        var AC:String
-                        AC = "Annulla"
-                        var text = "Rimosso $selectedItem"
-                        var id = account?.email?.replace("@gmail.com","")
+                        val cancelString = "Annulla"
+                        val text = "Rimosso $selectedItem"
+                        val id = account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(AC) {
+                            .setAction(cancelString) {
 
                                 id?.let { _ -> // it1
-                                    myCar.put(key, removed)
+                                    myCar.put(i, removed)
                                     Toast.makeText(
                                         this,
                                         "undo$selectedItem",
@@ -162,12 +157,10 @@ class ShowCar : AppCompatActivity() {
 
             }
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
-            alertDialog = dialogBuilder.create();
+            alertDialog = dialogBuilder.create()
             alertDialog.show()
 
 
@@ -178,10 +171,10 @@ class ShowCar : AppCompatActivity() {
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_car_view, null)
-            var txtName :TextView = dialogView.findViewById(R.id.car_name_txt)
-            var address : TextView = dialogView.findViewById(R.id.carAddressValue)
-            var timer : TimePicker = dialogView.findViewById(R.id.timePickerView)
-            var remindButton : Button = dialogView.findViewById(R.id.remindButton)
+            val txtName :TextView = dialogView.findViewById(R.id.car_name_txt)
+            val address : TextView = dialogView.findViewById(R.id.carAddressValue)
+            val timer : TimePicker = dialogView.findViewById(R.id.timePickerView)
+            val remindButton : Button = dialogView.findViewById(R.id.remindButton)
             var key = ""
             val selectedItem = parent.getItemAtPosition(position) as String
             txtName.text = selectedItem
@@ -189,9 +182,9 @@ class ShowCar : AppCompatActivity() {
                 if(myCar.getJSONObject(i).get("name") as String == selectedItem){
                     key = i
                     address.text = myCar.getJSONObject(i).get("addr") as String
-                    var time = (myCar.getJSONObject(i).get("timer").toString()).toInt()
-                    var hour = time/60
-                    var minute = time - hour*60
+                    val time = (myCar.getJSONObject(i).get("timer").toString()).toInt()
+                    val hour = time/60
+                    val minute = time - hour*60
                     timer.setIs24HourView(true)
                     timer.hour = hour
                     timer.minute = minute
@@ -206,12 +199,10 @@ class ShowCar : AppCompatActivity() {
             }
 
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
-            alertDialog = dialogBuilder.create();
+            alertDialog = dialogBuilder.create()
             alertDialog.show()
         }
 
@@ -236,5 +227,8 @@ class ShowCar : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         savedInstanceState.getBundle("newBundy")
     }
+
+    fun closeDrawer(view: View) {}
+    fun addFriend(view: View) {}
 
 }

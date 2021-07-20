@@ -11,6 +11,4 @@ data class UserLive(
     var phone: String? = "",
     var type: String? = "",
     var cont: String? = ""
-
-
 )

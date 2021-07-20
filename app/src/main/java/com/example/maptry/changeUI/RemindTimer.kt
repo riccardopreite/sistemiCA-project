@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -31,9 +30,9 @@ import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.loginLayout
 
 import com.example.maptry.R
-import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdRemind
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifyIdRemind
 import com.example.maptry.server.resetTimerAuto
-import com.example.maptry.switchFrame
+import com.example.maptry.utils.switchFrame
 
 
 @Suppress("DEPRECATED_IDENTITY_EQUALS")
@@ -43,7 +42,7 @@ class RemindTimer : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var notificationManager : NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager : NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         setContentView(R.layout.activity_maps)
         val extras = intent?.extras
         name = extras?.get("name") as String
@@ -54,8 +53,8 @@ class RemindTimer : AppCompatActivity() {
             switchFrame(homeLayout,friendFrame,drawerLayout,listLayout,splashLayout,friendLayout,carLayout,liveLayout,loginLayout)
 
         }
-        val notificaionId = jsonNotifIdRemind.get(owner)
-        notificationManager.cancel(notificaionId as Int);
+        val notificationId = jsonNotifyIdRemind.get(owner)
+        notificationManager.cancel(notificationId as Int)
         // if activity is not Running start it, else show a popup to remind timer
         if(!isRunning) {
             val main = Intent(context, MapsActivity::class.java)
@@ -96,9 +95,7 @@ class RemindTimer : AppCompatActivity() {
                 timer.hour = hour
                 timer.minute = minute
                 val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-                dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                    override fun onDismiss(arg0: DialogInterface) { }
-                })
+                dialogBuilder.setOnDismissListener { }
                 dialogBuilder.setView(dialogView)
                 try{
                     alertDialog.dismiss()
@@ -109,12 +106,10 @@ class RemindTimer : AppCompatActivity() {
 
                 }
 
-                alertDialog = dialogBuilder.create();
-                // need to be runned on UIThread
-                runOnUiThread(Runnable {
+                alertDialog = dialogBuilder.create()
+                runOnUiThread {
                     alertDialog.show()
-                })
-
+                }
 
 
             }
@@ -141,6 +136,9 @@ class RemindTimer : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         savedInstanceState.getBundle("newBundy")
     }
+
+    fun addFriend(view: View) {}
+    fun closeDrawer(view: View) {}
 
 
 }

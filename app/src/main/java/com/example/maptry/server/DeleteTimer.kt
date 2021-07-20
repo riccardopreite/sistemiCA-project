@@ -21,9 +21,9 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
 import com.example.maptry.activity.MapsActivity.Companion.zoom
-import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdExpired
-import com.example.maptry.notification.NotifyService.Companion.jsonNotifIdRemind
-import com.example.maptry.reDraw
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifyIdExpired
+import com.example.maptry.notification.NotifyService.Companion.jsonNotifyIdRemind
+import com.example.maptry.utils.reDraw
 import com.google.android.gms.maps.model.Marker
 import java.lang.Exception
 
@@ -44,8 +44,6 @@ class DeleteTimer : AppCompatActivity() {
         name = extras.get("name") as String
 
         listAddr = geocoder.getFromLocationName(extras.get("address") as String, 1)
-        //val location = (listAddr)?.get(0);
-        //val p0 = location?.latitude?.let { LatLng(it, location.longitude) }
 
         for (i in myCar.keys()){
             if(myCar.getJSONObject(i).get("name") as String == name){
@@ -58,8 +56,8 @@ class DeleteTimer : AppCompatActivity() {
                 id?.let { it1 -> db.collection("user").document(it1).collection("car").get()
                     .addOnSuccessListener { result ->
                         for (document in result) {
-                            val namedb = document.data["name"]
-                            if(namedb == name)  {
+                            val nameDatabase = document.data["name"]
+                            if(nameDatabase == name)  {
                                 db.document("user/"+id+"/car/"+document.id).delete()
                                 return@addOnSuccessListener
                             }
@@ -73,16 +71,16 @@ class DeleteTimer : AppCompatActivity() {
                 break
             }
         }
-        val notificaionId = jsonNotifIdExpired.get(owner)
+        val notificationId = jsonNotifyIdExpired.get(owner)
        try{
-           val notificaionId2 = jsonNotifIdRemind.get(owner)
-           notificationManager.cancel(notificaionId2 as Int)
+           val notificationId2 = jsonNotifyIdRemind.get(owner)
+           notificationManager.cancel(notificationId2 as Int)
 
        }
        catch (e:Exception){
 
        }
-        notificationManager.cancel(notificaionId as Int)
+        notificationManager.cancel(notificationId as Int)
         if(!isRunning) {
             val main = Intent(context, MapsActivity::class.java)
             zoom = 1

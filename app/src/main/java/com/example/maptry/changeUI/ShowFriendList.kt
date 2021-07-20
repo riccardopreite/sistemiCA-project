@@ -4,7 +4,6 @@ package com.example.maptry.changeUI
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -15,6 +14,26 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.maptry.*
 import com.example.maptry.activity.MapsActivity
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.activity.MapsActivity.Companion.alertDialog
+import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.ip
+import com.example.maptry.activity.MapsActivity.Companion.isRunning
+import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.activity.MapsActivity.Companion.zoom
+import com.example.maptry.activity.MapsActivity.Companion.carLayout
+import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendFrame
+import com.example.maptry.activity.MapsActivity.Companion.friendJson
+import com.example.maptry.activity.MapsActivity.Companion.friendLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
+import com.example.maptry.activity.MapsActivity.Companion.homeLayout
+import com.example.maptry.activity.MapsActivity.Companion.listLayout
+import com.example.maptry.activity.MapsActivity.Companion.liveLayout
+import com.example.maptry.activity.MapsActivity.Companion.splashLayout
+import com.example.maptry.activity.MapsActivity.Companion.loginLayout
+import com.example.maptry.activity.MapsActivity.Companion.mMap
+import com.example.maptry.activity.MapsActivity.Companion.newBundy
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
@@ -26,26 +45,16 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
-import com.example.maptry.activity.MapsActivity.Companion.context
-import com.example.maptry.activity.MapsActivity.Companion.ip
-import com.example.maptry.activity.MapsActivity.Companion.isRunning
-import com.example.maptry.activity.MapsActivity.Companion.port
-import com.example.maptry.activity.MapsActivity.Companion.zoom
-import com.example.maptry.switchFrame
 
-import com.example.maptry.activity.MapsActivity.Companion.carLayout
-import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
-import com.example.maptry.activity.MapsActivity.Companion.friendFrame
-import com.example.maptry.activity.MapsActivity.Companion.friendLayout
-import com.example.maptry.activity.MapsActivity.Companion.homeLayout
-import com.example.maptry.activity.MapsActivity.Companion.listLayout
-import com.example.maptry.activity.MapsActivity.Companion.liveLayout
-import com.example.maptry.activity.MapsActivity.Companion.splashLayout
-import com.example.maptry.activity.MapsActivity.Companion.loginLayout
 
+
+import com.example.maptry.utils.switchFrame
 import com.example.maptry.server.confirmFriend
+import com.example.maptry.server.getPoiFromFriend
 import com.example.maptry.server.removeFriend
 import com.example.maptry.server.sendFriendRequest
+import com.example.maptry.utils.createMarker
+import com.example.maptry.utils.showPOIPreferences
 
 
 @SuppressLint("Registered")
@@ -53,7 +62,21 @@ class ShowFriendList : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        println("inizio")
         setContentView(R.layout.activity_maps)
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        listLayout = findViewById(R.id.list_layout)
+        homeLayout = findViewById(R.id.homeframe)
+        splashLayout = findViewById(R.id.splashFrame)
+        friendLayout = findViewById(R.id.friend_layout)
+        friendFrame = findViewById(R.id.friendFrame)
+        carLayout = findViewById(R.id.car_layout)
+        liveLayout = findViewById(R.id.live_layout)
+        loginLayout = findViewById(R.id.login_layout)
+
+        switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
         //create connection
         val closeDrawer :ImageView = findViewById(R.id.close_listfriend)
         val addfriend: ImageView = findViewById(R.id.add_listfriend)
@@ -63,53 +86,55 @@ class ShowFriendList : AppCompatActivity() {
             val emailText : EditText = dialogView.findViewById(R.id.friendEmail)
             val addBtn: Button = dialogView.findViewById(R.id.friendBtn)
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
-            MapsActivity.alertDialog = dialogBuilder.create();
-            MapsActivity.alertDialog.show()
+            alertDialog = dialogBuilder.create()
+            alertDialog.show()
 
             addBtn.setOnClickListener {
-                if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != MapsActivity.account?.email && emailText.text.toString() != MapsActivity.account?.email?.replace("@gmail.com","")){
-                    MapsActivity.account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
-                    MapsActivity.alertDialog.dismiss()
+                if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
+                    account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+                    alertDialog.dismiss()
                 }
             }
         }
-        switchFrame(friendLayout,homeLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
+//        switchFrame(friendLayout,homeLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
 
         closeDrawer.setOnClickListener {
             switchFrame(homeLayout,friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,carLayout,liveLayout,loginLayout)
             if(!isRunning) {
+                println("STARTO ACTIVITY")
                 val main = Intent(context, MapsActivity::class.java)
                 zoom = 1
+
                 startActivity(main)
 
             }
             finish()
 
         }
-        showFriendinActivity()
+
+        showFriendActivity()
     }
 
-    fun showFriendinActivity(){
-        val len = MapsActivity.friendJson.length()
+    private fun showFriendActivity(){
+        val len = friendJson.length()
         var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
+        println("mostro frame")
         switchFrame(friendLayout,listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,carLayout,liveLayout,loginLayout)
 
 
-        var  lv: ListView = findViewById(R.id.fv)
+        val  lv: ListView = findViewById(R.id.fv)
         val friendList = MutableList(len) { "" }
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
-        for (i in MapsActivity.friendJson.keys()){
-            friendList[index] = MapsActivity.friendJson[i] as String
+        for (i in friendJson.keys()){
+            friendList[index] = friendJson[i] as String
             index++
         }
 
-        var  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
+        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
         lv.setOnItemLongClickListener { parent, view, position, _ -> //id
 
             val inflater: LayoutInflater = this.layoutInflater
@@ -119,35 +144,33 @@ class ShowFriendList : AppCompatActivity() {
 
                 val selectedItem = parent.getItemAtPosition(position) as String
 
-                for(i in MapsActivity.friendJson.keys()){
-                    if(selectedItem == MapsActivity.friendJson[i] as String) {
-                        var removed = selectedItem
-                        MapsActivity.friendJson.remove(i)
-                        var key = i
-                        var AC:String
-                        AC = "Annulla"
-                        var text = "Rimosso $selectedItem"
-                        var id = MapsActivity.account?.email?.replace("@gmail.com","")
+                for(i in friendJson.keys()){
+                    if(selectedItem == friendJson[i] as String) {
+                        friendJson.remove(i)
+                        val cancelString = "Annulla"
+                        val text = "Rimosso $selectedItem"
+                        val id = account?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 2000)
-                            .setAction(AC,View.OnClickListener {
+                            .setAction(cancelString) {
 
-                                id?.let { _ -> //
-                                    MapsActivity.friendJson.put(key,removed)
-                                    confirmFriend(id,removed)
-                                    Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG).show()
-                                    showFriendinActivity()
+                                id?.let { _ ->
+                                    friendJson.put(i, selectedItem)
+                                    confirmFriend(id, selectedItem)
+                                    Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG)
+                                        .show()
+                                    showFriendActivity()
 
                                 }
-                            })
+                            }
 
                         snackbar.setActionTextColor(Color.DKGRAY)
                         val snackbarView = snackbar.view
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
                         if (id != null) {
-                            removeFriend(id,removed)
-                            showFriendinActivity()
-                            MapsActivity.alertDialog.dismiss()
+                            removeFriend(id, selectedItem)
+                            showFriendActivity()
+                            alertDialog.dismiss()
                             return@setOnClickListener
                         }
                     }
@@ -155,13 +178,11 @@ class ShowFriendList : AppCompatActivity() {
 
             }
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-                override fun onDismiss(arg0: DialogInterface) { }
-            })
+            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
-            MapsActivity.alertDialog = dialogBuilder.create();
-            MapsActivity.alertDialog.show()
+            alertDialog = dialogBuilder.create()
+            alertDialog.show()
 
 
             return@setOnItemLongClickListener true
@@ -171,133 +192,202 @@ class ShowFriendList : AppCompatActivity() {
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_friend_view, null)
-            var txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
-            var spinner : Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
+            val txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
+            val spinner : Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
             val selectedItem = parent.getItemAtPosition(position) as String
 
-            var context = this
+            val context = this
             txtName.text = selectedItem
-            var url = URL("http://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
+            //try to replace with function call
             var result: JSONObject
-            val client = OkHttpClient()
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
             dialogBuilder.setOnDismissListener { }
-//            dialogBuilder.setOnDismissListener(object : DialogInterface.OnDismissListener {
-//                override fun onDismiss(arg0: DialogInterface) { }
-//            })
             dialogBuilder.setView(dialogView)
 
-            var alertDialog2 = dialogBuilder.create();
+            val alertDialog2 = dialogBuilder.create()
+            result = getPoiFromFriend(selectedItem)
+            this@ShowFriendList.runOnUiThread {
+                try {
+                    alertDialog2.show()
+                    val length = result.length()
+                    val markerList = MutableList(length + 1) { "" }
+                    var indexMarker = 1
+                    markerList[0] = ""
+                    for (i in result.keys()) {
+                        markerList[indexMarker] =
+                            result.getJSONObject(i).get("name") as String
+                        indexMarker++
+                    }
+                    val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
+                        context,
+                        R.layout.support_simple_spinner_dropdown_item, markerList
+                    )
+                    spinner.onItemSelectedListener =
+                        object : AdapterView.OnItemSelectedListener {
+                            override fun onNothingSelected(parent: AdapterView<*>?) {
 
-            val request = Request.Builder()
-                .url(url)
-                .build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    println("something went wrong")
-                }
-
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    println("ON RESPONSEEEEEEE")
-
-                    this@ShowFriendList.runOnUiThread(Runnable {
-                        try {
-                            alertDialog2.show()
-                            result = JSONObject(response.body()?.string()!!)
-                            val length = result.length()
-                            val markerList = MutableList<String>(length+1,{""})
-                            var indexMarker = 1
-                            markerList[0] = ""
-                            for(i in result.keys()){
-                                markerList[indexMarker] = result.getJSONObject(i).get("name") as String
-                                indexMarker++
                             }
-                            var arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(context,
-                                R.layout.support_simple_spinner_dropdown_item,markerList)
-                            spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                                override fun onNothingSelected(parent: AdapterView<*>?) {
 
-                                }
+                            override fun onItemSelected(
+                                parent: AdapterView<*>?,
+                                view: View?,
+                                position: Int,
+                                id: Long
+                            ) {
+                                if (parent?.getItemAtPosition(position) as String != "") {
+                                    var key = ""
+                                    val selectedMarker =
+                                        parent.getItemAtPosition(position) as String
+                                    var lat = 0.0
+                                    var lon = 0.0
+                                    for (i in result.keys()) {
 
-                                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                                    if(parent?.getItemAtPosition(position) as String != ""){
-                                        var key = ""
-                                        val selectedMarker =
-                                            parent.getItemAtPosition(position) as String
-                                        var lat = 0.0
-                                        var lon = 0.0
-                                        for (i in result.keys()) {
-
-                                            if (result.getJSONObject(i).get("name") == selectedMarker) {
-                                                key = i
-                                                lat = result.getJSONObject(i).get("lat").toString()
-                                                    .toDouble()
-                                                lon = result.getJSONObject(i).get("lon").toString()
-                                                    .toDouble()
-                                            }
-
+                                        if (result.getJSONObject(i)
+                                                .get("name") == selectedMarker
+                                        ) {
+                                            key = i
+                                            lat = result.getJSONObject(i).get("lat")
+                                                .toString()
+                                                .toDouble()
+                                            lon = result.getJSONObject(i).get("lon")
+                                                .toString()
+                                                .toDouble()
                                         }
 
-                                        var pos: LatLng = LatLng(
-                                            lat,
-                                            lon
-                                        )
-
-                                        var mark = createMarker(pos)
-                                        MapsActivity.friendTempPoi.put(pos.toString(), result.getJSONObject(key))
-                                        MapsActivity.mMap.moveCamera(
-                                            CameraUpdateFactory.newLatLngZoom(
-                                                LatLng(
-                                                    lat,
-                                                    lon
-                                                ), 20F
-                                            )
-                                        )
-
-                                        if(!isRunning) {
-                                            val main = Intent(context, MapsActivity::class.java)
-                                            zoom = 1
-                                            startActivity(main)
-
-                                        }
-                                        switchFrame(homeLayout,friendLayout,listLayout,drawerLayout,friendFrame,carLayout,splashLayout,liveLayout,loginLayout)
-                                        alertDialog2.dismiss()
-                                        showPOIPreferences(pos.toString(),inflater,context,mark!!)
-                                        finish()
                                     }
+
+                                    val pos = LatLng(
+                                        lat,
+                                        lon
+                                    )
+
+                                    val mark = createMarker(pos)
+                                    friendTempPoi.put(
+                                        pos.toString(),
+                                        result.getJSONObject(key)
+                                    )
+                                    mMap.moveCamera(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                            LatLng(
+                                                lat,
+                                                lon
+                                            ), 20F
+                                        )
+                                    )
+
+                                    if (!isRunning) {
+                                        val main = Intent(context, MapsActivity::class.java)
+                                        zoom = 1
+                                        startActivity(main)
+
+                                    }
+                                    switchFrame(
+                                        homeLayout,
+                                        friendLayout,
+                                        listLayout,
+                                        drawerLayout,
+                                        friendFrame,
+                                        carLayout,
+                                        splashLayout,
+                                        liveLayout,
+                                        loginLayout
+                                    )
+                                    alertDialog2.dismiss()
+                                    showPOIPreferences(
+                                        pos.toString(),
+                                        inflater,
+                                        context,
+                                        mark!!
+                                    )
+                                    finish()
                                 }
-
                             }
-                            spinner.adapter = arrayAdapter2;
 
-                        } catch (e: JSONException) {
-                            e.printStackTrace()
                         }
-                    })
+                    spinner.adapter = arrayAdapter2
+
+                } catch (e: JSONException) {
+                    e.printStackTrace()
                 }
-            })
+            }
+
+
+//            val url = URL("https://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
+//
+//            val client = OkHttpClient()
+//
+//
+//            val request = Request.Builder()
+//                .url(url)
+//                .build()
+//
+//            client.newCall(request).enqueue(object : Callback {
+//                override fun onFailure(call: okhttp3.Call, e: IOException) {
+//                    println("something went wrong")
+//                }
+//
+//                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+//                    println("ON RESPONSE")
+//
+//
+//                }
+//            })
         }
-        lv.adapter = arrayAdapter;
+        lv.adapter = arrayAdapter
     }
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (newConfig.orientation === Configuration.ORIENTATION_LANDSCAPE) {
 
-            onSaveInstanceState(MapsActivity.newBundy)
+            onSaveInstanceState(newBundy)
         } else if (newConfig.orientation === Configuration.ORIENTATION_PORTRAIT) {
 
-            onSaveInstanceState(MapsActivity.newBundy)
+            onSaveInstanceState(newBundy)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBundle("newBundy", MapsActivity.newBundy)
+        outState.putBundle("newBundy", newBundy)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         savedInstanceState.getBundle("newBundy")
     }
+
+    fun closeDrawer(view: View) {
+
+        println(view)
+        println("CLOSING VIEW")
+        switchFrame(homeLayout,drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,carLayout,liveLayout,loginLayout)
+        if(!isRunning) {
+            println("STARTO ACTIVITY friend list")
+            val main = Intent(context, MapsActivity::class.java)
+            zoom = 1
+            startActivity(main)
+        }
+
+    }
+
+    fun addFriend(view: View) {
+        println(view)
+        val inflater: LayoutInflater = this.layoutInflater
+        val dialogView: View = inflater.inflate(R.layout.add_friend, null)
+        val emailText : EditText = dialogView.findViewById(R.id.friendEmail)
+        val addBtn: Button = dialogView.findViewById(R.id.friendBtn)
+        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+        dialogBuilder.setOnDismissListener { }
+        dialogBuilder.setView(dialogView)
+        alertDialog = dialogBuilder.create()
+        alertDialog.show()
+
+        addBtn.setOnClickListener {
+            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
+                account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+                alertDialog.dismiss()
+            }
+        }
+    }
+
 }

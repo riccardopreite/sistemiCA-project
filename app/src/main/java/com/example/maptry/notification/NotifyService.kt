@@ -2,14 +2,17 @@ package com.example.maptry.notification
 
 
 import android.app.*
+import android.app.PendingIntent.FLAG_ONE_SHOT
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.*
 import android.graphics.Color
 import android.os.*
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.example.maptry.*
 import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.activity.MapsActivity.Companion.db
@@ -19,30 +22,32 @@ import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
 import com.example.maptry.activity.MapsActivity.Companion.geocoder
 import com.example.maptry.activity.MapsActivity.Companion.listAddr
-import com.example.maptry.activity.MapsActivity.Companion.myCar
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.*
 import com.example.maptry.server.AcceptFriend
 import com.example.maptry.server.DeclineFriend
-import com.example.maptry.server.DeleteTimer
+import com.example.maptry.utils.createMarker
+import com.example.maptry.utils.notificationJson
+import com.example.maptry.utils.reDraw
+import com.example.maptry.utils.writeNewLive
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import org.json.JSONObject
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.math.abs
 
 
 class NotifyService : Service() {
     companion object {
-        var jsonNotifIdLive = JSONObject()
-        var jsonNotifIdFriendRequest = JSONObject()
-        var jsonNotifIdRemind = JSONObject()
-        var jsonNotifIdExpired = JSONObject()
+        var jsonNotifyIdFriendRequest = JSONObject()
+        var jsonNotifyIdRemind = JSONObject()
+        var jsonNotifyIdExpired = JSONObject()
     }
 
-        lateinit var notificationManager : NotificationManager
-        var notificationChannelId : String = ""
+        private lateinit var notificationManager : NotificationManager
+        private var notificationChannelId : String = ""
         private var wakeLock: PowerManager.WakeLock? = null
         private var isServiceStarted = false
 
@@ -67,7 +72,7 @@ class NotifyService : Service() {
         override fun onCreate() {
             super.onCreate()
             println("The service has been created".uppercase(Locale.getDefault()))
-            var notification = this.createNotification()
+            val notification = this.createNotification()
             startForeground(1, notification)
 
 
@@ -79,7 +84,7 @@ class NotifyService : Service() {
         }
 
         private fun startService() {
-            val CHANNEL_ID =
+            val channel =
                 "findMyCarChannel"
             val name: CharSequence =
                 "findMyCar"
@@ -90,18 +95,17 @@ class NotifyService : Service() {
             wakeLock =
                 (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
                         newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "EndlessService::lock").apply {
-                        acquire()
+                        acquire(10*60*1000L /*10 minutes*/)
                     }
                 }
-                        var notification: Notification
-                        val nm =
-                            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                        var idDB = account?.email?.replace("@gmail.com", "")
+//                        var notification: Notification
+                        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        val idDB = account?.email?.replace("@gmail.com", "")
                         if (idDB != null) {
-                            //Listner for live marker
+                            //Listener for live marker
                             db.collection("user").document(idDB).collection("live")
                                 .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                                    var notificationId = Math.abs(System.nanoTime().toInt())
+                                    val notificationId = abs(System.nanoTime().toInt())
                                     if (firebaseFirestoreException != null) {
                                         Log.w("TAG", "Listen failed.", firebaseFirestoreException)
                                         return@addSnapshotListener
@@ -119,71 +123,63 @@ class NotifyService : Service() {
 
                                                 val nmLive =
                                                     context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+                                                val showLiveEvent =
+                                                    Intent(
+                                                        context,
+                                                        ShowLiveEvent::class.java
+                                                    )
+                                                showLiveEvent.putExtra(
+                                                    "owner",
+                                                    json.get("owner") as String
+                                                )
+                                                showLiveEvent.putExtra(
+                                                    "address",
+                                                    json.get("addr") as String
+                                                )
+                                                showLiveEvent.putExtra(
+                                                    "name",
+                                                    json.get("name") as String
+                                                )
+                                                showLiveEvent.putExtra(
+                                                    "timer",
+                                                    json.get("timer") as String
+                                                )
+
                                                 val notificationLive =
                                                     NotificationCompat.Builder(context, "first")
-                                                        .apply {
-                                                            setContentTitle("Evento Live")
-                                                            setContentText(
-                                                                json.getString(
-                                                                    "owner"
-                                                                ) + ": Ha aggiunto un nuovo POI live!"
+                                                        .setContentTitle("Evento Live")
+                                                        .setContentText(
+                                                            json.getString(
+                                                                "owner"
+                                                            ) + ": Ha aggiunto un nuovo POI live!"
+                                                        )
+                                                        .setSmallIcon(R.drawable.ic_live)
+                                                        .setAutoCancel(true)
+                                                        .setContentIntent(
+                                                            PendingIntent.getActivity(
+                                                                context,
+                                                                87,
+                                                                showLiveEvent,
+                                                                FLAG_UPDATE_CURRENT
                                                             )
-                                                            setSmallIcon(R.drawable.ic_live)
-                                                            setAutoCancel(true)
-                                                            // set up intent for on click
-                                                                val showLiveEvent: Intent =
-                                                                    Intent(
-                                                                        context,
-                                                                        ShowLiveEvent::class.java
-                                                                    )
-                                                                showLiveEvent.putExtra(
-                                                                    "owner",
-                                                                    json.get("owner") as String
-                                                                )
-                                                                showLiveEvent.putExtra(
-                                                                    "address",
-                                                                    json.get("addr") as String
-                                                                )
-                                                                showLiveEvent.putExtra(
-                                                                    "name",
-                                                                    json.get("name") as String
-                                                                )
-                                                                showLiveEvent.putExtra(
-                                                                    "timer",
-                                                                    json.get("timer") as String
-                                                                )
-                                                                setContentIntent(
-                                                                    PendingIntent.getActivity(
-                                                                        context,
-                                                                        87,
-                                                                        showLiveEvent,
-                                                                        FLAG_UPDATE_CURRENT
-                                                                    )
-                                                                )
-                                                         priority =
-                                                                NotificationCompat.PRIORITY_DEFAULT
+                                                        )
+                                                        .setChannelId(channel)
+                                                val importance = NotificationManager.IMPORTANCE_HIGH
+                                                val mChannel = NotificationChannel(
+                                                                channel,
+                                                                name,
+                                                                importance
+                                                              )
+                                                nmLive.createNotificationChannel(mChannel)
 
-                                                            // channel for android O
-                                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-                                                                val importance =
-                                                                    NotificationManager.IMPORTANCE_HIGH
-                                                                val mChannel = NotificationChannel(
-                                                                    CHANNEL_ID,
-                                                                    name,
-                                                                    importance
-                                                                )
-                                                                nmLive.createNotificationChannel(mChannel)
-                                                                setChannelId(CHANNEL_ID)
-                                                            }
-                                                        }.build()
-
+                                                nmLive.notify(notificationId, notificationLive.build())
                                                 //create live marker
                                                 val list = geocoder.getFromLocationName(json.get("addr") as String,1)
                                                 val lat = list[0].latitude
                                                 val lon = list[0].longitude
                                                 val p0 = LatLng(lat,lon)
-                                                nmLive.notify(notificationId, notificationLive)
+
                                                 val mark = createMarker(p0)
                                                 mark?.setIcon(
                                                     BitmapDescriptorFactory.defaultMarker(
@@ -200,12 +196,11 @@ class NotifyService : Service() {
                                                 }
                                             }
                                             // eliminate item from db
-                                            db.collection("user").document(idDB)
-                                                .collection("live").document(child.id).delete()
+                                            db.collection("user").document(idDB) .collection("live").document(child.id).delete()
                                         }
                                     }
                                 }
-                            //Listner for friend Request
+                            //Listener for friend Request
                             db.collection("user").document(idDB).collection("friendrequest")
                                 .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                                     if (firebaseFirestoreException != null) {
@@ -223,102 +218,98 @@ class NotifyService : Service() {
                                         )
                                         querySnapshot.documents.forEach { child ->
                                             child.data?.forEach {    chi ->
-                                                var notificationId = Math.abs(System.nanoTime().toInt())
-                                                jsonNotifIdFriendRequest.put(
+                                                val notificationId = abs(System.nanoTime().toInt())
+                                                jsonNotifyIdFriendRequest.put(
                                                     chi.value as String,
                                                     notificationId
                                                 )
-                                                notification =
-                                                    NotificationCompat.Builder(context, "first").apply {
-                                                        setContentTitle("Richiesta d'amicizia")
-                                                        setContentText(chi.value as String + ": Ti ha inviato una richiesta di amicizia!")
-                                                        setSmallIcon(R.drawable.ic_addfriend)
-                                                        setAutoCancel(true)
+
+                                                val notificationClickIntent =
+                                                    Intent(
+                                                        context,
+                                                        ShowFriendRequest::class.java
+                                                    )
+                                                val acceptFriendIntent =
+                                                    Intent(context, AcceptFriend::class.java)
+
+                                                val declineFriendIntent =
+                                                    Intent(context, DeclineFriend::class.java)
+
+                                                acceptFriendIntent.putExtra(
+                                                    "sender",
+                                                    chi.value as String
+                                                )
+                                                acceptFriendIntent.putExtra("receiver", idDB)
+                                                
+                                                declineFriendIntent.putExtra(
+                                                    "sender",
+                                                    chi.value as String
+                                                )
+
+                                                notificationClickIntent.putExtra(
+                                                    "sender",
+                                                    chi.value as String
+                                                )
+                                                notificationClickIntent.putExtra(
+                                                    "receiver",
+                                                    idDB
+                                                )
+
+                                                val clickPendingIntent = PendingIntent.getActivity(
+                                                    context,
+                                                    88,
+                                                    notificationClickIntent,
+                                                    FLAG_UPDATE_CURRENT
+                                                )
+
+                                                val acceptPendingIntent =
+                                                    PendingIntent.getBroadcast(
+                                                        context,
+                                                        90,
+                                                        acceptFriendIntent,
+                                                        FLAG_ONE_SHOT
+                                                    )
+
+                                                val declinePendingIntent =
+                                                    PendingIntent.getBroadcast(
+                                                        context,
+                                                        91,
+                                                        declineFriendIntent,
+                                                        FLAG_ONE_SHOT
+                                                    )
 
 
-                                                        // on click intent
-                                                            val notificationClickIntent: Intent =
-                                                                Intent(
-                                                                    context,
-                                                                    ShowFriendRequest::class.java
-                                                                )
-                                                            notificationClickIntent.putExtra(
-                                                                "sender",
-                                                                chi.value as String
-                                                            )
-                                                            notificationClickIntent.putExtra(
-                                                                "receiver",
-                                                                idDB
-                                                            )
-                                                            setContentIntent(
-                                                                PendingIntent.getActivity(
-                                                                    context,
-                                                                    88,
-                                                                    notificationClickIntent,
-                                                                    FLAG_UPDATE_CURRENT
-                                                                )
-                                                            )
-
-                                                        priority = NotificationCompat.PRIORITY_DEFAULT
-
-                                                        // first button click intent
-                                                        val acceptFriendIntent: Intent =
-                                                            Intent(context, AcceptFriend::class.java)
-                                                        acceptFriendIntent.putExtra(
-                                                            "sender",
-                                                            chi.value as String
+                                                val notificationFriendRequest =
+                                                    NotificationCompat.Builder(context, "first")
+                                                        .setContentTitle("Richiesta d'amicizia")
+                                                        .setContentText(chi.value as String + ": Ti ha inviato una richiesta di amicizia!")
+                                                        .setSmallIcon(R.drawable.ic_addfriend)
+                                                        .setAutoCancel(true)
+                                                        .setContentIntent(
+                                                            clickPendingIntent
                                                         )
-                                                        acceptFriendIntent.putExtra("receiver", idDB);
-
-
-                                                        val acceptPendingIntent =
-                                                            PendingIntent.getBroadcast(
-                                                                context,
-                                                                90,
-                                                                acceptFriendIntent,
-                                                                PendingIntent.FLAG_ONE_SHOT
-                                                            )
-
-                                                        addAction(
+                                                        .addAction(
                                                             R.drawable.ic_add,
                                                             "Accetta",
                                                             acceptPendingIntent
                                                         )
-
                                                         // second button click intent
-                                                        val declineFriendIntent: Intent =
-                                                            Intent(context, DeclineFriend::class.java)
-                                                        declineFriendIntent.putExtra(
-                                                            "sender",
-                                                            chi.value as String
-                                                        )
-                                                        val declinePendingIntent =
-                                                            PendingIntent.getBroadcast(
-                                                                context,
-                                                                91,
-                                                                declineFriendIntent,
-                                                                PendingIntent.FLAG_ONE_SHOT
-                                                            )
-                                                        addAction(
+                                                        .addAction(
                                                             R.drawable.ic_close,
-                                                            "Rifiuta",
+                                                        "Rifiuta",
                                                             declinePendingIntent
                                                         )
-                                                        // channel for android O
-                                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                            val importance =
-                                                                NotificationManager.IMPORTANCE_HIGH
-                                                            val mChannel = NotificationChannel(
-                                                                CHANNEL_ID,
-                                                                name,
-                                                                importance
-                                                            )
-                                                            nm.createNotificationChannel(mChannel)
-                                                            setChannelId(CHANNEL_ID)
-                                                        }
+                                                        .setChannelId(channel)
+                                                val importance =
+                                                    NotificationManager.IMPORTANCE_HIGH
+                                                val mChannel = NotificationChannel(
+                                                    channel,
+                                                    name,
+                                                    importance
+                                                )
+                                                nm.createNotificationChannel(mChannel)
 
-                                                    }.build()
-                                                nm.notify(notificationId, notification)
+                                                nm.notify(notificationId, notificationFriendRequest.build())
                                                 db.collection("user").document(idDB)
                                                     .collection("friendrequest")
                                                     .document(child.id).delete()
@@ -326,10 +317,10 @@ class NotifyService : Service() {
                                         }
                                     }
                                 }
-                            //Listner for accepted Request
+                            //Listener for accepted Request
                             db.collection("user").document(idDB).collection("addedfriend")
                                 .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                                    var notificationId = Math.abs(System.nanoTime().toInt())
+                                    val notificationId = abs(System.nanoTime().toInt())
                                     if (firebaseFirestoreException != null) {
                                         Log.w("TAG", "Listen failed.", firebaseFirestoreException)
                                         return@addSnapshotListener
@@ -345,46 +336,56 @@ class NotifyService : Service() {
                                         )
                                         querySnapshot.documents.forEach { child ->
                                             child.data?.forEach { chi ->
-                                                        val string = "Tu e " + chi.value + " ora siete Amici!"
-                                                        notification =
-                                                            NotificationCompat.Builder(context, "first").apply {
-                                                                setContentTitle("Nuovo Amico!")
-                                                                setContentText(string)
-                                                                setSmallIcon(R.drawable.ic_accessibility)
-                                                                setAutoCancel(true) //collegato a tap notification
-
-                                                                // show friend on click notification
-                                                                    val notificationClickIntent: Intent =
-                                                                        Intent(
-                                                                            context,
-                                                                            ShowFriendList::class.java
-                                                                        )
-                                                                    setContentIntent(
-                                                                        PendingIntent.getActivity(
-                                                                            context,
-                                                                            92,
-                                                                            notificationClickIntent,
-                                                                            FLAG_UPDATE_CURRENT
-                                                                        )
-                                                                    )
-
-                                                                priority = NotificationCompat.PRIORITY_DEFAULT
-
-                                                                // channel for android O
-                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                                    val importance =
-                                                                        NotificationManager.IMPORTANCE_HIGH
-                                                                    val mChannel = NotificationChannel(
-                                                                        CHANNEL_ID,
-                                                                        name,
-                                                                        importance
-                                                                    )
-                                                                    nm.createNotificationChannel(mChannel)
-                                                                    setChannelId(CHANNEL_ID)
-                                                                }
-
-                                                            }.build()
-                                                        nm.notify(notificationId, notification)
+                                                val string = "Tu e " + chi.value + " ora siete Amici!"
+                                                val notificationClickIntent =
+                                                    Intent(
+                                                        this,
+                                                        ShowFriendList::class.java
+                                                    )
+                                                notificationClickIntent.flags =
+                                                    FLAG_ACTIVITY_NEW_TASK
+                                                notificationClickIntent.flags =
+                                                    FLAG_ACTIVITY_CLEAR_TASK
+                                                notificationClickIntent.flags =
+                                                    FLAG_ACTIVITY_CLEAR_TOP
+//                                                        .apply {
+//                                                        flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK or FLAG_ACTIVITY_CLEAR_TOP
+//                                                    }
+                                                val clickPendingIntent = PendingIntent.getActivity(
+                                                    context,
+                                                    92,
+                                                    notificationClickIntent,
+                                                    FLAG_ONE_SHOT
+                                                )
+//                                                val clickPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+//                                                    // Add the intent, which inflates the back stack
+////                                                    addParentStack(MapsActivity::class.java)
+//                                                    addNextIntentWithParentStack(notificationClickIntent)
+//                                                    // Get the PendingIntent containing the entire back stack
+//                                                    getPendingIntent(92, FLAG_ONE_SHOT )
+//                                                }
+                                                
+                                                val notificationAddedFriend = NotificationCompat.Builder(this, "first")
+                                                    .setContentTitle("Nuovo Amico!")
+                                                    .setContentText(string)
+                                                    .setSmallIcon(R.drawable.ic_accessibility)
+                                                    .setAutoCancel(true) //collegato a tap notification
+                                                    .setContentIntent(clickPendingIntent)
+                                                    .setChannelId(channel)
+                                                
+                                                val importance =
+                                                    NotificationManager.IMPORTANCE_HIGH
+                                                val mChannel = NotificationChannel(
+                                                    channel,
+                                                    name,
+                                                    importance
+                                                )
+//                                                nm.createNotificationChannel(mChannel)
+                                                with(NotificationManagerCompat.from(this)) {
+                                                    createNotificationChannel(mChannel)
+                                                    notify(notificationId, notificationAddedFriend.build())
+                                                }
+//                                                nm.notify(notificationId, notificationAddedFriend.build())
                                                 //delete item from db
                                                 db.collection("user").document(idDB)
                                                     .collection("addedfriend").document(child.id).delete()
@@ -392,311 +393,11 @@ class NotifyService : Service() {
                                             }
                                         }
                                     }
-//                                }
-                            //Listner for timer almost expired car
-                            db.collection("user").document(idDB).collection("timed")
-                                .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                                    var notificationId = Math.abs(System.nanoTime().toInt())
-
-                                    if (firebaseFirestoreException != null) {
-                                        Log.w("TAG", "Listen failed.", firebaseFirestoreException)
-                                        return@addSnapshotListener
-                                    }
-
-                                    if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
-                                        notificationJson = JSONObject()
-                                        dataFromfirestore = querySnapshot.documents
-                                        var key: String
-                                        var json: JSONObject
-                                        Log.d(
-                                            "TAGnotify",
-                                            "Current data: ${querySnapshot.documents}"
-                                        )
-                                        querySnapshot.documents.forEach { child ->
-
-
-                                            child.data?.forEach { chi ->
-                                                var exist = false
-                                                json = JSONObject(chi.value as HashMap<*, *>)
-                                                key =
-                                                    json.get("owner") as String + json.get("name") as String
-                                                val nameTimed = json.get("name") as String
-                                                val owner = json.get("owner") as String
-                                                //check if car was eliminated before timer expired, in this case doesnt show notification
-                                                for (i in myCar.keys()) {
-                                                    if (nameTimed == myCar.getJSONObject(i)
-                                                            .get("name") as String
-                                                    ) {
-                                                        exist = true
-                                                        break
-                                                    }
-                                                }
-                                                if (exist){
-                                                    jsonNotifIdRemind.put(
-                                                        json.getString("owner"),
-                                                        notificationId
-                                                    )
-                                                notification =
-                                                    NotificationCompat.Builder(context, "first")
-                                                        .apply {
-                                                            setContentTitle("Reminder auto")
-                                                            setContentText(
-                                                                "Sta finendo il timer di " + json.getString(
-                                                                    "name"
-                                                                ) + ". 5 minuti rimanenti"
-                                                            )
-
-                                                            setSmallIcon(R.drawable.ic_car)
-                                                            setAutoCancel(true) //collegato a tap notification
-
-                                                            // prepare intent for all action on notification
-                                                            val notificationClickIntent: Intent =
-                                                                Intent(context, ShowCar::class.java)
-                                                            notificationClickIntent.putExtra(
-                                                                "name",
-                                                                nameTimed
-                                                            )
-                                                            setContentIntent(
-                                                                PendingIntent.getActivity(
-                                                                    context,
-                                                                    95,
-                                                                    notificationClickIntent,
-                                                                    FLAG_UPDATE_CURRENT
-                                                                )
-                                                            )
-                                                            //intent for open car
-                                                            priority =
-                                                                NotificationCompat.PRIORITY_DEFAULT
-                                                            val acceptReminderIntent: Intent =
-                                                                Intent(
-                                                                    context, /*ShowCar::class.java*/
-                                                                    RemindTimer::class.java
-                                                                ) // change intent
-                                                            acceptReminderIntent.putExtra(
-                                                                "name",
-                                                                nameTimed
-                                                            )
-                                                            acceptReminderIntent.putExtra(
-                                                                "owner",
-                                                                owner
-                                                            )
-
-                                                            val acceptPendingIntent =
-                                                                PendingIntent.getActivity(
-                                                                    context,
-                                                                    0,
-                                                                    acceptReminderIntent,
-                                                                    PendingIntent.FLAG_UPDATE_CURRENT
-                                                                )
-
-                                                            addAction(
-                                                                R.drawable.ic_add,
-                                                                "Rimanda",
-                                                                acceptPendingIntent
-                                                            )
-
-                                                            // set channel for android O
-                                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                                val importance =
-                                                                    NotificationManager.IMPORTANCE_HIGH
-                                                                val mChannel = NotificationChannel(
-                                                                    CHANNEL_ID,
-                                                                    nameTimed,
-                                                                    importance
-                                                                )
-                                                                nm.createNotificationChannel(
-                                                                    mChannel
-                                                                )
-                                                                setChannelId(CHANNEL_ID)
-                                                            }
-
-                                                        }.build()
-                                                nm.notify(notificationId, notification)
-
-                                                notificationJson.put(key, json)
-                                            }
-                                            }
-                                            //delete item from db
-                                            db.collection("user").document(idDB)
-                                                .collection("timed").document(child.id).delete()
-
-                                        }
-                                    }
-                                }
-                            //Listner for timer expired car
-                            db.collection("user").document(idDB).collection("timedExpired")
-                                .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                                    var notificationId = Math.abs(System.nanoTime().toInt())
-
-                                    if (firebaseFirestoreException != null) {
-                                        Log.w("TAG", "Listen failed.", firebaseFirestoreException)
-                                        return@addSnapshotListener
-                                    }
-
-                                    if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
-                                        notificationJson = JSONObject()
-                                        dataFromfirestore = querySnapshot.documents
-                                        var key: String
-                                        var json: JSONObject
-                                        Log.d(
-                                            "TAGnotify",
-                                            "Current data: ${querySnapshot.documents}"
-                                        )
-                                        querySnapshot.documents.forEach { child ->
-
-
-                                            child.data?.forEach { chi ->
-                                                var exist = false
-                                                json = JSONObject(chi.value as HashMap<*, *>)
-                                                key =
-                                                    json.get("owner") as String + json.get("name") as String
-                                                val nameTimedCar = json.get("name") as String
-                                                val owner = json.get("owner") as String
-                                                val address = json.get("addr") as String
-                                                //check if car was eliminated before timer expired, in this case doesnt show notification
-                                                for (i in myCar.keys()) {
-                                                    if (nameTimedCar == myCar.getJSONObject(i)
-                                                            .get("name") as String
-                                                    ) {
-                                                        exist = true
-                                                        break
-                                                    }
-                                                }
-                                                if(exist){
-                                                    jsonNotifIdExpired.put(
-                                                        json.getString("owner"),
-                                                        notificationId
-                                                    )
-                                                    notification =
-                                                        NotificationCompat.Builder(context, "first")
-                                                            .apply {
-                                                                setContentTitle("Reminder auto")
-                                                                setContentText(
-                                                                    "E' finito il timer di " + json.getString(
-                                                                        "name"
-                                                                    ) + "."
-                                                                )
-
-                                                                setSmallIcon(R.drawable.ic_car)
-                                                                setAutoCancel(true)
-
-                                                                // prepare intent for all action on notification
-                                                                setContentIntent(
-                                                                    PendingIntent.getActivity(
-                                                                        context,
-                                                                        92,
-                                                                        Intent(),
-                                                                        FLAG_UPDATE_CURRENT
-                                                                    )
-                                                                )
-
-                                                                val notificationClickIntent: Intent =
-                                                                    Intent(context, ShowCar::class.java)
-                                                                notificationClickIntent.putExtra(
-                                                                    "name",
-                                                                    nameTimedCar
-                                                                )
-                                                                setContentIntent(
-                                                                    PendingIntent.getActivity(
-                                                                        context,
-                                                                        99,
-                                                                        notificationClickIntent,
-                                                                        FLAG_UPDATE_CURRENT
-                                                                    )
-                                                                )
-
-                                                                priority =
-                                                                    NotificationCompat.PRIORITY_DEFAULT
-                                                                val acceptReminderIntent: Intent =
-                                                                    Intent(
-                                                                        context,
-                                                                        RemindTimer::class.java
-                                                                    )
-                                                                acceptReminderIntent.putExtra(
-                                                                    "name",
-                                                                    nameTimedCar
-                                                                )
-                                                                acceptReminderIntent.putExtra(
-                                                                    "owner",
-                                                                    owner
-                                                                )
-
-                                                                val acceptPendingIntent =
-                                                                    PendingIntent.getActivity(
-                                                                        context,
-                                                                        97,
-                                                                        acceptReminderIntent,
-                                                                        PendingIntent.FLAG_UPDATE_CURRENT
-                                                                    )
-
-                                                                addAction(
-                                                                    R.drawable.ic_add,
-                                                                    "Rimanda",
-                                                                    acceptPendingIntent
-                                                                )
-                                                                val deleteReminderIntent: Intent =
-                                                                    Intent(
-                                                                        context,
-                                                                        DeleteTimer::class.java
-                                                                    ) // change intent
-                                                                deleteReminderIntent.putExtra(
-                                                                    "name",
-                                                                    nameTimedCar
-                                                                )
-                                                                deleteReminderIntent.putExtra(
-                                                                    "owner",
-                                                                    owner
-                                                                )
-                                                                deleteReminderIntent.putExtra(
-                                                                    "address",
-                                                                    address
-                                                                )
-
-                                                                val deletePendingIntent =
-                                                                    PendingIntent.getActivity(
-                                                                        context,
-                                                                        98,
-                                                                        deleteReminderIntent,
-                                                                        FLAG_UPDATE_CURRENT
-                                                                    )
-
-                                                                addAction(
-                                                                    R.drawable.ic_closenotification,
-                                                                    "Elimina",
-                                                                    deletePendingIntent
-                                                                )
-
-                                                                // set channel for android O
-                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                                    val importance =
-                                                                        NotificationManager.IMPORTANCE_HIGH
-                                                                    val mChannel = NotificationChannel(
-                                                                        CHANNEL_ID,
-                                                                        nameTimedCar,
-                                                                        importance
-                                                                    )
-                                                                    nm.createNotificationChannel(
-                                                                        mChannel
-                                                                    )
-                                                                    setChannelId(CHANNEL_ID)
-                                                                }
-
-                                                            }.build()
-                                                    nm.notify(notificationId, notification)
-
-                                                    notificationJson.put(key, json)
-                                            }
-                                            }
-                                            // delete item from db
-                                            db.collection("user").document(idDB)
-                                                .collection("timedExpired").document(child.id).delete()
-                                        }
-                                    }
-                                }
-                            //Listner for timer expired live
+                            
+                            //Listener for timer expired live
                             db.collection("user").document(idDB).collection("timedLiveExpired")
                                 .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                                    var notificationId = Math.abs(System.nanoTime().toInt())
+                                    val notificationId = abs(System.nanoTime().toInt())
 
                                     if (firebaseFirestoreException != null) {
                                         Log.w("TAG", "Listen failed.", firebaseFirestoreException)
@@ -722,39 +423,31 @@ class NotifyService : Service() {
                                                 val nameLiveExp = json.get("name") as String
                                                 val address = json.get("addr") as String
                                                 val id = account?.email?.replace("@gmail.com","")
-
-                                                notification =
+                                                val voidIntent = Intent()
+                                                val voidPendingIntent = PendingIntent.getActivity(
+                                                    context,
+                                                    103,
+                                                    voidIntent,
+                                                    FLAG_ONE_SHOT
+                                                )
+                                                val notificationLiveExpired =
                                                     NotificationCompat.Builder(context, "first")
-                                                        .apply {
-                                                            setContentTitle("Live")
-                                                            setContentText(
-                                                                "E' finito l'evento " + json.getString(
-                                                                    "name"
-                                                                ) + "."
-                                                            )
-                                                            setSmallIcon(R.drawable.ic_live)
-                                                            setAutoCancel(true)
-
-                                                            priority =
-                                                                NotificationCompat.PRIORITY_DEFAULT
-
-                                                            // set channel for android O
-                                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                                                val importance =
-                                                                    NotificationManager.IMPORTANCE_HIGH
-                                                                val mChannel = NotificationChannel(
-                                                                    CHANNEL_ID,
-                                                                    nameLiveExp,
-                                                                    importance
-                                                                )
-                                                                nm.createNotificationChannel(
-                                                                    mChannel
-                                                                )
-                                                                setChannelId(CHANNEL_ID)
-                                                            }
-
-                                                        }.build()
-                                                nm.notify(notificationId, notification)
+                                                        .setContentTitle("Live")
+                                                        .setContentText("E' finito l'evento " + json.getString("name") + ".")
+                                                        .setSmallIcon(R.drawable.ic_live)
+                                                        .setAutoCancel(true)
+                                                        .setChannelId(channel)
+                                                        .setContentIntent(voidPendingIntent)
+                                                val importance =
+                                                    NotificationManager.IMPORTANCE_HIGH
+                                                val mChannel = NotificationChannel(
+                                                    channel,
+                                                    nameLiveExp,
+                                                    importance
+                                                )
+                                                
+                                                nm.createNotificationChannel(mChannel)
+                                                nm.notify(notificationId, notificationLiveExpired.build())
 
                                                 // found and delete marker from map
                                                 listAddr = geocoder.getFromLocationName(address, 1)
@@ -799,8 +492,7 @@ class NotifyService : Service() {
     private fun createNotification(): Notification {
         //set up foreground notification
         notificationChannelId = "ENDLESS SERVICE CHANNEL"
-        notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager;
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
 
@@ -819,15 +511,318 @@ class NotifyService : Service() {
             }
             notificationManager.createNotificationChannel(channel)
         }
-        val builder: Notification.Builder =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(
-                this,
-                notificationChannelId
-            ) else Notification.Builder(this)
-        return builder
+        val builder: Notification.Builder =Notification.Builder(
+            this,
+            notificationChannelId
+        )
             .setContentTitle("Servizio Live")
             .setContentText("Rimaniamo in ascolto per tenerti sempre aggiornato!")
             .setSmallIcon(R.drawable.ic_location)
-            .build()
+        return builder.build()
     }
 }
+
+
+
+/*
+                            //Listener for timer almost expired car
+                            db.collection("user").document(idDB).collection("timed")
+                                .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                                    val notificationId = abs(System.nanoTime().toInt())
+
+                                    if (firebaseFirestoreException != null) {
+                                        Log.w("TAG", "Listen failed.", firebaseFirestoreException)
+                                        return@addSnapshotListener
+                                    }
+
+                                    if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
+                                        notificationJson = JSONObject()
+                                        dataFromfirestore = querySnapshot.documents
+                                        var key: String
+                                        var json: JSONObject
+                                        Log.d(
+                                            "TAGnotify",
+                                            "Current data: ${querySnapshot.documents}"
+                                        )
+                                        querySnapshot.documents.forEach { child ->
+
+
+                                            child.data?.forEach { chi ->
+                                                var exist = false
+                                                json = JSONObject(chi.value as HashMap<*, *>)
+                                                key =
+                                                    json.get("owner") as String + json.get("name") as String
+                                                val nameTimed = json.get("name") as String
+                                                val owner = json.get("owner") as String
+                                                //check if car was eliminated before timer expired, in this case doesnt show notification
+                                                for (i in myCar.keys()) {
+                                                    if (nameTimed == myCar.getJSONObject(i)
+                                                            .get("name") as String
+                                                    ) {
+                                                        exist = true
+                                                        break
+                                                    }
+                                                }
+                                                if (exist){
+                                                    jsonNotifyIdRemind.put(
+                                                        json.getString("owner"),
+                                                        notificationId
+                                                    )
+                                                notification =
+                                                    NotificationCompat.Builder(context, "first")
+                                                        .apply {
+                                                            setContentTitle("Reminder auto")
+                                                            setContentText(
+                                                                "Sta finendo il timer di " + json.getString(
+                                                                    "name"
+                                                                ) + ". 5 minuti rimanenti"
+                                                            )
+
+                                                            setSmallIcon(R.drawable.ic_car)
+                                                            setAutoCancel(true) //collegato a tap notification
+
+                                                            // prepare intent for all action on notification
+                                                            val notificationClickIntent =
+                                                                Intent(context, ShowCar::class.java)
+                                                            notificationClickIntent.putExtra(
+                                                                "name",
+                                                                nameTimed
+                                                            )
+                                                            setContentIntent(
+                                                                PendingIntent.getActivity(
+                                                                    context,
+                                                                    95,
+                                                                    notificationClickIntent,
+                                                                    FLAG_UPDATE_CURRENT
+                                                                )
+                                                            )
+                                                            //intent for open car
+                                                            priority =
+                                                                NotificationCompat.PRIORITY_DEFAULT
+                                                            val acceptReminderIntent =
+                                                                Intent(
+                                                                    context, /*ShowCar::class.java*/
+                                                                    RemindTimer::class.java
+                                                                ) // change intent
+                                                            acceptReminderIntent.putExtra(
+                                                                "name",
+                                                                nameTimed
+                                                            )
+                                                            acceptReminderIntent.putExtra(
+                                                                "owner",
+                                                                owner
+                                                            )
+
+                                                            val acceptPendingIntent =
+                                                                PendingIntent.getActivity(
+                                                                    context,
+                                                                    0,
+                                                                    acceptReminderIntent,
+                                                                    FLAG_UPDATE_CURRENT
+                                                                )
+
+                                                            addAction(
+                                                                R.drawable.ic_add,
+                                                                "Rimanda",
+                                                                acceptPendingIntent
+                                                            )
+
+                                                            // set channel for android O
+                                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                                val importance =
+                                                                    NotificationManager.IMPORTANCE_HIGH
+                                                                val mChannel = NotificationChannel(
+                                                                    channel,
+                                                                    nameTimed,
+                                                                    importance
+                                                                )
+                                                                nm.createNotificationChannel(
+                                                                    mChannel
+                                                                )
+                                                                setChannelId(channel)
+                                                            }
+
+                                                        }.build()
+                                                nm.notify(notificationId, notification)
+
+                                                notificationJson.put(key, json)
+                                            }
+                                            }
+                                            //delete item from db
+                                            db.collection("user").document(idDB)
+                                                .collection("timed").document(child.id).delete()
+
+                                        }
+                                    }
+                                }
+                            //Listener for timer expired car
+                            db.collection("user").document(idDB).collection("timedExpired")
+                                .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                                    val notificationId = abs(System.nanoTime().toInt())
+
+                                    if (firebaseFirestoreException != null) {
+                                        Log.w("TAG", "Listen failed.", firebaseFirestoreException)
+                                        return@addSnapshotListener
+                                    }
+
+                                    if (querySnapshot != null && querySnapshot.documents.isNotEmpty()) {
+                                        notificationJson = JSONObject()
+                                        dataFromfirestore = querySnapshot.documents
+                                        var key: String
+                                        var json: JSONObject
+                                        Log.d(
+                                            "TAGnotify",
+                                            "Current data: ${querySnapshot.documents}"
+                                        )
+                                        querySnapshot.documents.forEach { child ->
+
+
+                                            child.data?.forEach { chi ->
+                                                var exist = false
+                                                json = JSONObject(chi.value as HashMap<*, *>)
+                                                key =
+                                                    json.get("owner") as String + json.get("name") as String
+                                                val nameTimedCar = json.get("name") as String
+                                                val owner = json.get("owner") as String
+                                                val address = json.get("addr") as String
+                                                //check if car was eliminated before timer expired, in this case doesnt show notification
+                                                for (i in myCar.keys()) {
+                                                    if (nameTimedCar == myCar.getJSONObject(i)
+                                                            .get("name") as String
+                                                    ) {
+                                                        exist = true
+                                                        break
+                                                    }
+                                                }
+                                                if(exist){
+                                                    jsonNotifyIdExpired.put(
+                                                        json.getString("owner"),
+                                                        notificationId
+                                                    )
+                                                    notification =
+                                                        NotificationCompat.Builder(context, "first")
+                                                            .apply {
+                                                                setContentTitle("Reminder auto")
+                                                                setContentText(
+                                                                    "E' finito il timer di " + json.getString(
+                                                                        "name"
+                                                                    ) + "."
+                                                                )
+
+                                                                setSmallIcon(R.drawable.ic_car)
+                                                                setAutoCancel(true)
+
+                                                                // prepare intent for all action on notification
+                                                                setContentIntent(
+                                                                    PendingIntent.getActivity(
+                                                                        context,
+                                                                        92,
+                                                                        Intent(),
+                                                                        FLAG_UPDATE_CURRENT
+                                                                    )
+                                                                )
+
+                                                                val notificationClickIntent =
+                                                                    Intent(context, ShowCar::class.java)
+                                                                notificationClickIntent.putExtra(
+                                                                    "name",
+                                                                    nameTimedCar
+                                                                )
+                                                                setContentIntent(
+                                                                    PendingIntent.getActivity(
+                                                                        context,
+                                                                        99,
+                                                                        notificationClickIntent,
+                                                                        FLAG_UPDATE_CURRENT
+                                                                    )
+                                                                )
+
+                                                                priority =
+                                                                    NotificationCompat.PRIORITY_DEFAULT
+                                                                val acceptReminderIntent =
+                                                                    Intent(
+                                                                        context,
+                                                                        RemindTimer::class.java
+                                                                    )
+                                                                acceptReminderIntent.putExtra(
+                                                                    "name",
+                                                                    nameTimedCar
+                                                                )
+                                                                acceptReminderIntent.putExtra(
+                                                                    "owner",
+                                                                    owner
+                                                                )
+
+                                                                val acceptPendingIntent =
+                                                                    PendingIntent.getActivity(
+                                                                        context,
+                                                                        97,
+                                                                        acceptReminderIntent,
+                                                                        FLAG_UPDATE_CURRENT
+                                                                    )
+
+                                                                addAction(
+                                                                    R.drawable.ic_add,
+                                                                    "Rimanda",
+                                                                    acceptPendingIntent
+                                                                )
+                                                                val deleteReminderIntent =
+                                                                    Intent(
+                                                                        context,
+                                                                        DeleteTimer::class.java
+                                                                    ) // change intent
+                                                                deleteReminderIntent.putExtra(
+                                                                    "name",
+                                                                    nameTimedCar
+                                                                )
+                                                                deleteReminderIntent.putExtra(
+                                                                    "owner",
+                                                                    owner
+                                                                )
+                                                                deleteReminderIntent.putExtra(
+                                                                    "address",
+                                                                    address
+                                                                )
+
+                                                                val deletePendingIntent =
+                                                                    PendingIntent.getActivity(
+                                                                        context,
+                                                                        98,
+                                                                        deleteReminderIntent,
+                                                                        FLAG_UPDATE_CURRENT
+                                                                    )
+
+                                                                addAction(
+                                                                    R.drawable.ic_closenotification,
+                                                                    "Elimina",
+                                                                    deletePendingIntent
+                                                                )
+
+                                                                // set channel for android O
+                                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                                    val importance =
+                                                                        NotificationManager.IMPORTANCE_HIGH
+                                                                    val mChannel = NotificationChannel(
+                                                                        channel,
+                                                                        nameTimedCar,
+                                                                        importance
+                                                                    )
+                                                                    nm.createNotificationChannel(
+                                                                        mChannel
+                                                                    )
+                                                                    setChannelId(channel)
+                                                                }
+
+                                                            }.build()
+                                                    nm.notify(notificationId, notification)
+
+                                                    notificationJson.put(key, json)
+                                            }
+                                            }
+                                            // delete item from db
+                                            db.collection("user").document(idDB)
+                                                .collection("timedExpired").document(child.id).delete()
+                                        }
+                                    }
+                                }
+                            */

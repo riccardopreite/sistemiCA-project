@@ -21,7 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 //created to start service at boot time but cause problem with context and activity
 class Start : BroadcastReceiver() {
 
-    lateinit var mGoogleSignInClient: GoogleSignInClient
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var mGoogleSignInOptions: GoogleSignInOptions
     override fun onReceive(context: Context, intent: Intent) {
         println("BOOT FINISHED")
