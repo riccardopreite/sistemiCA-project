@@ -26,6 +26,7 @@ import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
 import com.example.maptry.changeUI.CircleTransform
+import com.example.maptry.changeUI.createJsonMarker
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -50,7 +51,7 @@ fun reDraw(){
         val mark : Marker = tmp[i] as Marker
         val marker = createMarker(mark.position)
         try{
-            val cont = myList.getJSONObject(i).get("cont")
+            val cont = myList.getJSONObject(i).get("type")
             println(cont)
             when (cont) {
                 "Live" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
@@ -140,7 +141,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     val url: TextView = dialogView.findViewById(R.id.uri_lblattr)
     val text : String =  friendTempPoi.getJSONObject(p0).get("type") as String+": "+ friendTempPoi.getJSONObject(p0).get("name") as String
     header.text =  text
-    address.text = friendTempPoi.getJSONObject(p0).get("addr") as String
+    address.text = friendTempPoi.getJSONObject(p0).get("address") as String
     url.text = friendTempPoi.getJSONObject(p0).get("url") as String
     phone.text = friendTempPoi.getJSONObject(p0).get("phone") as String
     val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
@@ -167,16 +168,21 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
         if (added == 0) {
             mymarker.remove(p0)
             mark.remove()
-        } else writeNewPOI(
-            account?.email?.replace("@gmail.com", "") as String,
-            friendTempPoi.getJSONObject(p0).get("name") as String,
-            friendTempPoi.getJSONObject(p0).get("addr") as String,
-            friendTempPoi.getJSONObject(p0).get("cont") as String,
-            friendTempPoi.getJSONObject(p0).get("type") as String,
-            mark,
-            friendTempPoi.getJSONObject(p0).get("url") as String,
-            friendTempPoi.getJSONObject(p0).get("phone") as String
-        )
+        } else {
+            val name = friendTempPoi.getJSONObject(p0).get("name") as String
+            val addr = friendTempPoi.getJSONObject(p0).get("address") as String
+            val cont = friendTempPoi.getJSONObject(p0).get("type") as String
+            val type =  friendTempPoi.getJSONObject(p0).get("visibility") as String
+            val lat = mark.position.latitude.toString()
+            val lon = mark.position.longitude.toString()
+            val phoneFriend = friendTempPoi.getJSONObject(p0).get("url") as String
+            val urlFriend = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
+            val id = account?.email?.replace("@gmail.com", "") as String
+
+            val newJsonMark = createJsonMarker(name,addr,cont,type,lat,lon,phoneFriend,urlFriend,id)
+            myList.put(p0, newJsonMark)
+        }
+
     }
 
     dialogBuilder.setView(dialogView)

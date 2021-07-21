@@ -136,7 +136,7 @@ class NotifyService : Service() {
                                                 )
                                                 showLiveEvent.putExtra(
                                                     "address",
-                                                    json.get("addr") as String
+                                                    json.get("address") as String
                                                 )
                                                 showLiveEvent.putExtra(
                                                     "name",
@@ -185,7 +185,7 @@ class NotifyService : Service() {
                                                     notify(notificationId, notificationLive.build())
                                                 }
                                                 //create live marker
-                                                val list = geocoder.getFromLocationName(json.get("addr") as String,1)
+                                                val list = geocoder.getFromLocationName(json.get("address") as String,1)
                                                 val lat = list[0].latitude
                                                 val lon = list[0].longitude
                                                 val p0 = LatLng(lat,lon)
@@ -202,7 +202,7 @@ class NotifyService : Service() {
                                                 json.put("phone", "da implementare")
                                                 myList.put(p0.toString(), json)
                                                 if (mark != null) {
-                                                    writeNewLive(idDB,json.get("name") as String,json.get("addr") as String,json.get("timer") as String,json.get("owner") as String,mark,"da implementare","da implementare","Pubblico","Live")
+                                                    writeNewLive(idDB,json.get("name") as String,json.get("address") as String,json.get("timer") as String,json.get("owner") as String,mark,"da implementare","da implementare","Pubblico","Live")
                                                 }
                                             }
                                             // eliminate item from db
@@ -421,7 +421,7 @@ class NotifyService : Service() {
 
                                                 json = JSONObject(chi.value as HashMap<*, *>)
                                                 val nameLiveExp = json.get("name") as String
-                                                val address = json.get("addr") as String
+                                                val address = json.get("address") as String
                                                 val id = account?.email?.replace("@gmail.com","")
                                                 val voidIntent = Intent()
                                                 val voidPendingIntent = PendingIntent.getActivity(

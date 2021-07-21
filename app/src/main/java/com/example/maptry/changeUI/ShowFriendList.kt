@@ -241,10 +241,10 @@ class ShowFriendList : AppCompatActivity() {
                                                 .get("name") == selectedMarker
                                         ) {
                                             key = i
-                                            lat = result.getJSONObject(i).get("lat")
+                                            lat = result.getJSONObject(i).get("latitude")
                                                 .toString()
                                                 .toDouble()
-                                            lon = result.getJSONObject(i).get("lon")
+                                            lon = result.getJSONObject(i).get("longitude")
                                                 .toString()
                                                 .toDouble()
                                         }

@@ -24,6 +24,7 @@ import androidx.fragment.app.FragmentManager
 import com.example.maptry.*
 import com.example.maptry.R
 import com.example.maptry.R.id
+import com.example.maptry.changeUI.createJsonMarker
 import com.example.maptry.changeUI.markerView
 import com.example.maptry.changeUI.showCreateMarkerView
 import com.example.maptry.location.myLocationClick
@@ -332,6 +333,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                     letHandler            // Callback called if an error occurs
                 )
                 isRunning = true
+
                 // QUA SI USA FIREBASE
                 FirebaseFirestore.setLoggingEnabled(true)
                 db = FirebaseFirestore.getInstance()
@@ -405,7 +407,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         val lv:ListView = findViewById(R.id.lv)
         var len = 0
         for (i in myList.keys()){
-            if(myList.getJSONObject(i).get("cont") as String != "Live"){
+            if(myList.getJSONObject(i).get("type") as String != "Live"){
                 len++
             }
         }
@@ -413,7 +415,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         if(len == 0) txt.visibility = View.VISIBLE
         else txt.visibility = View.INVISIBLE
         for (i in myList.keys()){
-            if(myList.getJSONObject(i).get("cont") as String != "Live"){
+            if(myList.getJSONObject(i).get("type") as String != "Live"){
                 userList[index] = myList.getJSONObject(i).get("name") as String
                 index++
             }
@@ -443,22 +445,24 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         // create a Toast to undo the operation of removing
                         val snackbar = Snackbar.make(view, text, 5000)
                             .setAction(cancel) {
-                                id?.let { it1 ->
-                                    myList.put(mark.position.toString(), removed)
+                                id?.let { _ ->
+
+                                    val name = removed.get("name").toString()
+                                    val addr = removed.get("address").toString()
+                                    val cont = removed.get("type").toString()
+                                    val type =  removed.get("visibility").toString()
+                                    val lat = removed.get("latitude").toString()
+                                    val lon = removed.get("longitude").toString()
+                                    val phone = removed.get("phoneNumber").toString()
+                                    val url = removed.get("url").toString()
+
+                                    val newJsonMark = createJsonMarker(name,addr,cont,type,lat,lon,phone,url,id)
+
+                                    myList.put(mark.position.toString(), newJsonMark)
                                     mymarker.put(mark.position.toString(), mark)
-                                    writeNewPOI(
-                                        it1,
-                                        removed.get("name").toString(),
-                                        removed.get("addr").toString(),
-                                        removed.get("cont").toString(),
-                                        removed.get("type").toString(),
-                                        mark,
-                                        "da implementare",
-                                        "da implementare"
-                                    )
                                     Toast.makeText(
                                         this,
-                                        "undo$selectedItem",
+                                        "Annullata rimozione di $selectedItem",
                                         Toast.LENGTH_LONG
                                     ).show()
 
@@ -466,8 +470,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                 }
                             }
                         snackbar.setActionTextColor(Color.DKGRAY)
-                        val snackbarView = snackbar.view
-                        snackbarView.setBackgroundColor(Color.BLACK)
+                        val snackView = snackbar.view
+                        snackView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
 
 
@@ -478,7 +482,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                                 super.onDismissed(transientBottomBar, event)
                                 //remove from db the poi
-                                id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
+                                removePOI(removed.get("markId").toString())
+                                /*id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
                                     .addOnSuccessListener { result ->
                                         for (document in result) {
                                             val name = document.data["name"]
@@ -492,7 +497,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                     .addOnFailureListener { exception ->
                                         Log.d("FAIL", "Error getting documents: ", exception)
                                     }
-                                }
+                                }*/
                             }
                         })
                         alertDialog.dismiss()
@@ -589,7 +594,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                 id?.let { _ -> //it1
                                     friendJson.put(i, selectedItem)
                                     confirmFriend(id, selectedItem)
-                                    Toast.makeText(this, "undo $selectedItem", Toast.LENGTH_LONG)
+                                    Toast.makeText(this, "Annulata rimozione di $selectedItem", Toast.LENGTH_LONG)
                                     showFriend()
 
                                 }
@@ -717,10 +722,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                                         .get("name") == selectedMarker
                                                 ) {
                                                     key = i
-                                                    lat = result.getJSONObject(i).get("lat")
+                                                    lat = result.getJSONObject(i).get("latitude")
                                                         .toString()
                                                         .toDouble()
-                                                    lon = result.getJSONObject(i).get("lon")
+                                                    lon = result.getJSONObject(i).get("longitude")
                                                         .toString()
                                                         .toDouble()
                                                 }
