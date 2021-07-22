@@ -10,11 +10,12 @@ import java.net.URLEncoder
 const val endpoint = "points-of-interest/"
 const val addPOIUrl = "add"
 const val removePOIUrl = "remove"
+const val friendPOIUrl = "friend"
 val baseUrl = "https://$ip$port/$endpoint"
 val JSON = MediaType.parse("application/json; charset=utf-8")
 
 //https://casadiso.ddns.net:3000/points-of-interest/
-fun getPoiFromFriend(friend:String): JSONObject {
+fun getPoi(friend:String): JSONObject {
     println("IN GET POI")
     val url = URL(baseUrl + "?friend=" + URLEncoder.encode(friend, "UTF-8"))
     var result = JSONObject()
@@ -34,9 +35,30 @@ fun getPoiFromFriend(friend:String): JSONObject {
     }
     return result
 }
+//https://casadiso.ddns.net:3000/points-of-interest/friend
+fun getPoiFromFriend(friend:String): JSONObject {
+    println("IN GET POI")
+    val url = URL(baseUrl + friendPOIUrl + "?friend=" + URLEncoder.encode(friend, "UTF-8"))
+    var result = JSONObject()
+    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
+
+    val request = Request.Builder()
+        .url(url)
+        .build()
+    val response = client.newCall(request).execute()
+    if (response.isSuccessful){
+        result = JSONObject(response.body()?.string()!!)
+        println("Get poi from friend is success")
+    }
+    else{
+        println("Get poi from friend is error")
+        println(response.message())
+    }
+    return result
+}
 //https://casadiso.ddns.net:3000/points-of-interest/add/
 fun addPOI(poiToAdd:String): String{
-    println("IN GET POI")
+    println("IN ADD POI")
 
     val body: RequestBody = RequestBody.create(JSON, poiToAdd)
 
@@ -62,7 +84,7 @@ fun addPOI(poiToAdd:String): String{
 
 //https://casadiso.ddns.net:3000/points-of-interest/remove/
 fun removePOI(poiId:String) {
-    println("IN GET POI")
+    println("IN REMOVE POI")
 
     val formBody: RequestBody = FormBody.Builder()
         .add("poiId", poiId)

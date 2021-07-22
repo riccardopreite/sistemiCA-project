@@ -1,6 +1,5 @@
 package com.example.maptry.server
 
-import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
 import okhttp3.*
@@ -8,15 +7,45 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
+const val endpointFriend = "live-events/"
+const val confirmFriendUrl = "confirm"
+const val addFriendUrl = "add"
+const val removeFriendUrl = "remove"
 
 
+val baseUrlFriend = "https://${ip}${port}/$endpointFriend"
 
-fun confirmFriend(sender:String,receiver:String){
-    val url = URL("https://"+ MapsActivity.ip + MapsActivity.port +"/confirmFriend?"+ URLEncoder.encode("receiver", "UTF-8") + "=" + URLEncoder.encode(receiver, "UTF-8")+"&"+ URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(sender, "UTF-8"))
+//https://casadiso.ddns.net:3000/friend/
+fun getFriend(user:String): JSONObject {
+    println("IN GET POI")
+    val url = URL(baseUrlFriend + "?user=" + URLEncoder.encode(user, "UTF-8"))
+    var result = JSONObject()
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
         .url(url)
+        .build()
+    val response = client.newCall(request).execute()
+    if (response.isSuccessful){
+        result = JSONObject(response.body()?.string()!!)
+        println("Get poi from friend is success")
+    }
+    else{
+        println("Get poi from friend is error")
+        println(response.message())
+    }
+    return result
+}
+//https://casadiso.ddns.net:3000/friend/confirm
+
+fun confirmFriend(jsonToAdd:String){
+    val url = URL(baseUrlFriend + confirmFriendUrl)
+    val body: RequestBody = RequestBody.create(JSON, jsonToAdd)
+    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
+
+    val request = Request.Builder()
+        .url(url)
+        .post(body)
         .build()
 
     client.newCall(request).enqueue(object : Callback {
@@ -31,13 +60,15 @@ fun confirmFriend(sender:String,receiver:String){
         }
     })
 }
+//https://casadiso.ddns.net:3000/friend/remove
 
-fun removeFriend(sender:String,receiver:String){
-    val url = URL("https://"+ MapsActivity.ip + MapsActivity.port +"/removeFriend?"+ URLEncoder.encode("receiver", "UTF-8") + "=" + URLEncoder.encode(receiver, "UTF-8")+"&"+ URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(sender, "UTF-8"))
-
+fun removeFriend(jsonToRemove:String){
+    val url = URL(baseUrlFriend + removeFriendUrl)
+    val body: RequestBody = RequestBody.create(JSON, jsonToRemove)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
         .url(url)
+        .delete(body)
         .build()
 
 
@@ -50,12 +81,14 @@ fun removeFriend(sender:String,receiver:String){
     })
 }
 
-fun sendFriendRequest(username:String,sender:String){
-    val url = URL("https://"+ MapsActivity.ip + MapsActivity.port +"/addFriend?"+ URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8")+"&"+ URLEncoder.encode("sender", "UTF-8") + "=" + URLEncoder.encode(sender, "UTF-8"))
-
+//https://casadiso.ddns.net:3000/friend/add
+fun sendFriendRequest(jsonToAdd:String){
+    val url = URL(baseUrlFriend + addFriendUrl)
+    val body: RequestBody = RequestBody.create(JSON, jsonToAdd)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
         .url(url)
+        .post(body)
         .build()
 
     client.newCall(request).enqueue(object : Callback {

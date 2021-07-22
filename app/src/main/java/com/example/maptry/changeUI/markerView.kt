@@ -28,13 +28,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.myjson
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
-import com.example.maptry.dataclass.AddPointOfInterest
-import com.example.maptry.dataclass.UserMarker
-import com.example.maptry.server.addPOI
-import com.example.maptry.server.startLive
-import com.example.maptry.utils.createMarker
-import com.example.maptry.utils.switchFrame
-import com.example.maptry.utils.writeNewLive
+import com.example.maptry.utils.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -194,13 +188,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
         val red = R.color.quantum_googred
         val text = lname.text.toString()
         if (text == "") {
-            lname.background.mutate().apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                    colorFilter = BlendModeColorFilter(red, BlendMode.SRC_IN)
-                }else{
-                    setColorFilter(red,PorterDuff.Mode.SRC_IN)
-                }
-            }
+            makeRedLine(lname,red)
 //            lname.background.mutate().colorFilter = red
         }
         else {
@@ -217,24 +205,12 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                         try {
                             val x: String = myLive.getJSONObject(i).get("name") as String
                             if (text == x) {
-                                lname.background.mutate().apply {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                                        colorFilter = BlendModeColorFilter(red, BlendMode.SRC_IN)
-                                    }else{
-                                        setColorFilter(red,PorterDuff.Mode.SRC_IN)
-                                    }
-                                }
+                                makeRedLine(lname,red)
                                 return@setOnClickListener
 
                             }
                             if (address.text == myLive.getJSONObject(i).get("address") as String) {
-                                lname.background.mutate().apply {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                                        colorFilter = BlendModeColorFilter(red, BlendMode.SRC_IN)
-                                    }else{
-                                        setColorFilter(red,PorterDuff.Mode.SRC_IN)
-                                    }
-                                }
+                                makeRedLine(lname,red)
                                 return@setOnClickListener
                             }
                         } catch (e: java.lang.Exception) {
@@ -245,35 +221,12 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                     val marker = createMarker(p0)
                     marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
 
-                    myjson.put("type", "Pubblico")
-                    myjson.put("timer", time.toString())
-                    myjson.put("name", text)
-                    myjson.put("addr", address.text.toString())
-                    myjson.put("owner", account?.email?.replace("@gmail.com", ""))
-                    myjson.put("marker", marker)
-                    myjson.put("cont", spinner.selectedItem.toString())
-                    myjson.put("url", "da implementare")
-                    myjson.put("phone", "da implementare")
-                    startLive(myjson)
-                    myLive.put(p0.toString(), myjson)
-                    myList.put(p0.toString(), myjson)
 
-                    id?.let { it1 ->
-                        if (marker != null) {
-                            writeNewLive(
-                                it1,
-                                text,
-                                address.text.toString(),
-                                time.toString(),
-                                it1,
-                                marker,
-                                "da implementare",
-                                "da implementare",
-                                "Pubblico",
-                                "Live"
-                            )
-                        }
-                    }
+                    val newLiveJsonMark = createLiveJsonMarker(text,address.text.toString(),time.toString(),id!!)
+
+                    myLive.put(p0.toString(), newLiveJsonMark)
+                    myList.put(p0.toString(), newLiveJsonMark)
+
                 }
                 //                spinner on item selected
                 else -> {
@@ -281,24 +234,11 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                         try {
                             val x: String = myList.getJSONObject(i).get("name") as String
                             if (text == x) {
-                                lname.background.mutate().apply {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                                        colorFilter = BlendModeColorFilter(red, BlendMode.SRC_IN)
-                                    }else{
-                                        setColorFilter(red,PorterDuff.Mode.SRC_IN)
-                                    }
-                                }
+                                makeRedLine(lname,red)
                                 return@setOnClickListener
-
                             }
                             if (address.text == myList.getJSONObject(i).get("address") as String) {
-                                lname.background.mutate().apply {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                                        colorFilter = BlendModeColorFilter(red, BlendMode.SRC_IN)
-                                    }else{
-                                        setColorFilter(red,PorterDuff.Mode.SRC_IN)
-                                    }
-                                }
+                                makeRedLine(lname,red)
                                 return@setOnClickListener
                             }
                         } catch (e: java.lang.Exception) {
@@ -308,12 +248,10 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                     val marker = createMarker(p0)
                     marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
 
-                    var phone = "da implementare"
-                    var url = "da implementare"
-                    url =
+                    val url =
                         if(listAddr?.get(0)?.url === null || listAddr?.get(0)?.url === "" || listAddr?.get(0)?.url === " ") "Url non trovato"
                         else listAddr?.get(0)?.url!!
-                    phone =
+                    val phone =
                         if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") "cellulare non trovato"
                         else listAddr?.get(0)?.phone!!
 
@@ -329,23 +267,3 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
     return dialogView
 }
 
-fun createJsonMarker(
-    name: String,
-    address: String,
-    content: String,
-    type: String,
-    lat: String,
-    lon: String,
-    phone: String,
-    url: String,
-    id: String
-): JSONObject {
-
-    val userMark = UserMarker(name, address, content, type, lat, lon, url, phone, "temp")
-    val addPOIClass = AddPointOfInterest(id, userMark)
-    val jsonToAdd = gson.toJson(addPOIClass)
-    val markId = addPOI(jsonToAdd)
-    userMark.markId = markId
-
-    return JSONObject(gson.toJson(userMark))
-}

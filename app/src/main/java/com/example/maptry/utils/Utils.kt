@@ -4,7 +4,11 @@ import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.PorterDuff
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -26,13 +30,11 @@ import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
 import com.example.maptry.changeUI.CircleTransform
-import com.example.maptry.changeUI.createJsonMarker
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
 import java.io.IOException
@@ -91,43 +93,7 @@ fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
 }
 
 // simply create a marker, return it and add it to mymarker
-fun createMarker(p0: LatLng): Marker? {
 
-    val background = object : Runnable {
-        override fun run() {
-            try {
-                listAddr = geocoder.getFromLocation(p0.latitude, p0.longitude, 1)
-                return
-            } catch (e: IOException) {
-                Log.e("Error", "grpc failed2: " + e.message, e)
-                // ... retry again your code that throws the exeception
-            }
-        }
-
-    }
-    addrThread = Thread(background)
-    addrThread?.start()
-
-    try {
-        addrThread?.join()
-    } catch (e:InterruptedException) {
-        e.printStackTrace()
-    }
-
-
-    val text = "Indirizzo:" + listAddr?.get(0)?.getAddressLine(0)+"\nGeoLocalita:" +  listAddr?.get(0)?.locality + "\nAdminArea: " + listAddr?.get(0)?.adminArea + "\nCountryName: " + listAddr?.get(0)?.countryName + "\nPostalCode: " + listAddr?.get(0)?.postalCode + "\nFeatureName: " + listAddr?.get(0)?.featureName
-
-    val x = mMap.addMarker(
-        MarkerOptions()
-            .position(p0)
-            .title(text)
-            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-            .alpha(0.7f)
-    )
-
-    mymarker.put(p0.toString(),x)
-    return x
-}
 
 // show a dialog with information of friend's poi selected, can be add to user's poi
 @SuppressLint("SetTextI18n")
@@ -227,4 +193,14 @@ fun setHomeLayout(navBar : View){
     email.visibility = View.VISIBLE
     email.text = account?.email
     close.visibility = View.VISIBLE
+}
+
+fun makeRedLine(lname: EditText,color: Int){
+    lname.background.mutate().apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+            colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
+        }else{
+            setColorFilter(color, PorterDuff.Mode.SRC_IN)
+        }
+    }
 }

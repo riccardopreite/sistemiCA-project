@@ -28,6 +28,7 @@ import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 
 import com.example.maptry.R
+import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.server.sendFriendRequest
 import com.example.maptry.utils.reDraw
 import com.example.maptry.utils.switchFrame
@@ -146,7 +147,11 @@ class ShowLiveEvent: AppCompatActivity() {
 
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != MapsActivity.account?.email && emailText.text.toString() != MapsActivity.account?.email?.replace("@gmail.com","")){
-                MapsActivity.account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+                val id = MapsActivity.account?.email?.replace("@gmail.com","")!!
+                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val jsonToAdd = gson.toJson(sendRequest)
+                sendFriendRequest(jsonToAdd)
+
                 MapsActivity.alertDialog.dismiss()
             }
         }

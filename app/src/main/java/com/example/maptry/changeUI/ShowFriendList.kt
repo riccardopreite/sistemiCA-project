@@ -17,9 +17,7 @@ import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.context
-import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
-import com.example.maptry.activity.MapsActivity.Companion.port
 import com.example.maptry.activity.MapsActivity.Companion.zoom
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
@@ -32,20 +30,13 @@ import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.dataclass.ConfirmRequest
+import com.example.maptry.dataclass.FriendRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
-import java.net.URL
-import java.net.URLEncoder
-
-
-
 import com.example.maptry.utils.switchFrame
 import com.example.maptry.server.confirmFriend
 import com.example.maptry.server.getPoiFromFriend
@@ -89,7 +80,10 @@ class ShowFriendList : AppCompatActivity() {
 
             addBtn.setOnClickListener {
                 if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                    account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+                    val id = account?.email?.replace("@gmail.com","")!!
+                    val sendRequest = FriendRequest(emailText.text.toString(),id)
+                    val jsonToAdd = gson.toJson(sendRequest)
+                    sendFriendRequest(jsonToAdd)
                     alertDialog.dismiss()
                 }
             }
@@ -150,7 +144,9 @@ class ShowFriendList : AppCompatActivity() {
 
                                 id?.let { _ ->
                                     friendJson.put(i, selectedItem)
-                                    confirmFriend(id, selectedItem)
+                                    val confirm = ConfirmRequest(id, selectedItem)
+                                    val jsonToAdd = gson.toJson(confirm)
+                                    confirmFriend(jsonToAdd)
                                     Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG)
                                         .show()
                                     showFriendActivity()
@@ -163,7 +159,9 @@ class ShowFriendList : AppCompatActivity() {
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
                         if (id != null) {
-                            removeFriend(id, selectedItem)
+                            val remove = FriendRequest(id, selectedItem)
+                            val jsonToRemove = gson.toJson(remove)
+                            removeFriend(jsonToRemove)
                             showFriendActivity()
                             alertDialog.dismiss()
                             return@setOnClickListener
@@ -194,13 +192,12 @@ class ShowFriendList : AppCompatActivity() {
             val context = this
             txtName.text = selectedItem
             //try to replace with function call
-            var result: JSONObject
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
             dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
             val alertDialog2 = dialogBuilder.create()
-            result = getPoiFromFriend(selectedItem)
+            val result: JSONObject = getPoiFromFriend(selectedItem)
             this@ShowFriendList.runOnUiThread {
                 try {
                     alertDialog2.show()
@@ -371,7 +368,10 @@ class ShowFriendList : AppCompatActivity() {
 
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+                val id = account?.email?.replace("@gmail.com","")!!
+                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val jsonToAdd = gson.toJson(sendRequest)
+                sendFriendRequest(jsonToAdd)
                 alertDialog.dismiss()
             }
         }

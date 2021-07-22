@@ -26,10 +26,10 @@ import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.*
 import com.example.maptry.server.AcceptFriend
 import com.example.maptry.server.DeclineFriend
+import com.example.maptry.utils.createLiveJsonMarker
 import com.example.maptry.utils.createMarker
 import com.example.maptry.utils.notificationJson
 import com.example.maptry.utils.reDraw
-import com.example.maptry.utils.writeNewLive
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -85,7 +85,7 @@ class NotifyService : Service() {
         private fun startService() {
             val channel =
                 "findMyCarChannel"
-            val name: CharSequence =
+            val serviceName: CharSequence =
                 "findMyCar"
             if (isServiceStarted) return
             println("Starting the foreground service task")
@@ -174,7 +174,7 @@ class NotifyService : Service() {
                                                 val importance = NotificationManager.IMPORTANCE_HIGH
                                                 val mChannel = NotificationChannel(
                                                                 channel,
-                                                                name,
+                                                                serviceName,
                                                                 importance
                                                               )
 //                                                nmLive.createNotificationChannel(mChannel)
@@ -194,16 +194,15 @@ class NotifyService : Service() {
                                                 mark?.setIcon(
                                                     BitmapDescriptorFactory.defaultMarker(
                                                         BitmapDescriptorFactory.HUE_GREEN))
-                                                myLive.put(p0.toString(), json)
-                                                json.put("cont", "Live")
-                                                json.put("type", "Pubblico")
-                                                json.put("marker", mark)
-                                                json.put("url", "da implementare")
-                                                json.put("phone", "da implementare")
-                                                myList.put(p0.toString(), json)
-                                                if (mark != null) {
-                                                    writeNewLive(idDB,json.get("name") as String,json.get("address") as String,json.get("timer") as String,json.get("owner") as String,mark,"da implementare","da implementare","Pubblico","Live")
-                                                }
+                                                val name = json.get("name") as String
+                                                val address = json.get("address") as String
+                                                val timer = json.get("expiresAfter") as String
+                                                val owner = json.get("owner") as String
+
+                                                val newLiveJsonMark = createLiveJsonMarker(name,address,timer,owner)
+                                                myLive.put(p0.toString(), newLiveJsonMark)
+                                                myList.put(p0.toString(), newLiveJsonMark)
+
                                             }
                                             // eliminate item from db
                                             db.collection("user").document(idDB) .collection("live").document(child.id).delete()
@@ -317,7 +316,7 @@ class NotifyService : Service() {
                                                     NotificationManager.IMPORTANCE_HIGH
                                                 val mChannel = NotificationChannel(
                                                     channel,
-                                                    name,
+                                                    serviceName,
                                                     importance
                                                 )
 //                                                nm.createNotificationChannel(mChannel)
@@ -380,7 +379,7 @@ class NotifyService : Service() {
                                                     NotificationManager.IMPORTANCE_HIGH
                                                 val mChannel = NotificationChannel(
                                                     channel,
-                                                    name,
+                                                    serviceName,
                                                     importance
                                                 )
                                                 with(NotificationManagerCompat.from(this)) {
@@ -449,8 +448,6 @@ class NotifyService : Service() {
                                                     createNotificationChannel(mChannel)
                                                     notify(notificationId, notificationLiveExpired.build())
                                                 }
-//                                                nm.createNotificationChannel(mChannel)
-//                                                nm.notify(notificationId, notificationLiveExpired.build())
 
                                                 // found and delete marker from map
                                                 listAddr = geocoder.getFromLocationName(address, 1)

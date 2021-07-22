@@ -61,25 +61,4 @@ fun checkUser(id: String){
 }
 /*Start Server Function*/
 
-
-fun startLive(live:JSONObject){
-    val url = URL("https://"+ip+port+"/startLive?"+ URLEncoder.encode("owner", "UTF-8") + "=" + URLEncoder.encode(live.get("owner") as String, "UTF-8")+"&"+ URLEncoder.encode("timer", "UTF-8") + "=" + URLEncoder.encode(live.get("timer").toString(), "UTF-8")+"&"+ URLEncoder.encode("name", "UTF-8") + "=" + URLEncoder.encode(live.get("name") as String, "UTF-8")+"&"+ URLEncoder.encode("addr", "UTF-8") + "=" + URLEncoder.encode(live.get("address") as String, "UTF-8"))
-    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
-    val request = Request.Builder()
-        .url(url)
-        .build()
-
-    client.newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            println("something went wrong start live")
-            println(e)
-
-        }
-
-        override fun onResponse(call: Call, response: Response) {
-            println(response.body()?.string())
-        }
-    })
-}
-
 /*End Server Function*/

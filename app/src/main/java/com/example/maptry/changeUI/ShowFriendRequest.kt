@@ -27,6 +27,9 @@ import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 
 import com.example.maptry.R
+import com.example.maptry.activity.MapsActivity.Companion.account
+import com.example.maptry.dataclass.ConfirmRequest
+import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.server.confirmFriend
 import com.example.maptry.server.sendFriendRequest
 import com.example.maptry.utils.reDraw
@@ -59,7 +62,9 @@ class ShowFriendRequest : AppCompatActivity() {
         friendTextView.text = "$sender ti ha inviato una richiesta di amicizia!"
         val buttonDecline:Button = findViewById(R.id.cancelFriendRequest)
         buttonAccept.setOnClickListener {
-            confirmFriend(sender,receiver)
+            val confirm = ConfirmRequest(receiver, sender)
+            val jsonToAdd = gson.toJson(confirm)
+            confirmFriend(jsonToAdd)
             switchFrame(homeLayout,listOf(drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout))
             if(!isRunning) {
                 val main = Intent(context, MapsActivity::class.java)
@@ -129,8 +134,12 @@ class ShowFriendRequest : AppCompatActivity() {
         MapsActivity.alertDialog.show()
 
         addBtn.setOnClickListener {
-            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != MapsActivity.account?.email && emailText.text.toString() != MapsActivity.account?.email?.replace("@gmail.com","")){
-                MapsActivity.account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
+                val id = account?.email?.replace("@gmail.com","")!!
+                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val jsonToAdd = gson.toJson(sendRequest)
+                sendFriendRequest(jsonToAdd)
+
                 MapsActivity.alertDialog.dismiss()
             }
         }

@@ -24,9 +24,11 @@ import androidx.fragment.app.FragmentManager
 import com.example.maptry.*
 import com.example.maptry.R
 import com.example.maptry.R.id
-import com.example.maptry.changeUI.createJsonMarker
+import com.example.maptry.changeUI.gson
 import com.example.maptry.changeUI.markerView
 import com.example.maptry.changeUI.showCreateMarkerView
+import com.example.maptry.dataclass.ConfirmRequest
+import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.location.myLocationClick
 import com.example.maptry.location.registerLocationListener
 import com.example.maptry.location.setUpMap
@@ -593,7 +595,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                                 // Toast to undo operation
                                 id?.let { _ -> //it1
                                     friendJson.put(i, selectedItem)
-                                    confirmFriend(id, selectedItem)
+                                    val confirm = ConfirmRequest(id, selectedItem)
+                                    val jsonToAdd = gson.toJson(confirm)
+                                    confirmFriend(jsonToAdd)
                                     Toast.makeText(this, "Annulata rimozione di $selectedItem", Toast.LENGTH_LONG)
                                     showFriend()
 
@@ -607,7 +611,9 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                                 super.onDismissed(transientBottomBar, event)
                                 if (id != null) {
-                                    removeFriend(id, selectedItem)
+                                    val remove = FriendRequest(id, selectedItem)
+                                    val jsonToRemove = gson.toJson(remove)
+                                    removeFriend(jsonToRemove)
                                 }
                             }
                         })
@@ -801,7 +807,11 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                account?.email?.replace("@gmail.com","")?.let { it1 -> sendFriendRequest(emailText.text.toString(),it1) }
+                val id = account?.email?.replace("@gmail.com","")!!
+                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val jsonToAdd = gson.toJson(sendRequest)
+                sendFriendRequest(jsonToAdd)
+
                 alertDialog.dismiss()
             }
         }

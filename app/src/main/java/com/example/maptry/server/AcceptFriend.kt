@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
+import com.example.maptry.changeUI.gson
+import com.example.maptry.dataclass.ConfirmRequest
 import com.example.maptry.notification.NotifyService.Companion.jsonNotifyIdFriendRequest
 
 class AcceptFriend : BroadcastReceiver() {
@@ -17,6 +19,8 @@ class AcceptFriend : BroadcastReceiver() {
         val receiver = extras.get("receiver") as String
         val notificationId = jsonNotifyIdFriendRequest.get(sender)
         notificationManager.cancel(notificationId as Int)
-        confirmFriend(sender, receiver)
+        val confirm = ConfirmRequest(receiver, sender)
+        val jsonToAdd = gson.toJson(confirm)
+        confirmFriend(jsonToAdd)
     }
 }
