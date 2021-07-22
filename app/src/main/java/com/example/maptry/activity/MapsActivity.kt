@@ -319,7 +319,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 println("loggato")
                 // user logged, init structure, create user in firebase if not exist
                 account = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
-                val id: String? = account?.email?.replace("@gmail.com", "")
+                val id: String = account?.email?.replace("@gmail.com", "")!!
                 val am: AccountManager = AccountManager.get(this)
                 val options = Bundle()
                 val new = account?.account
@@ -337,23 +337,22 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 isRunning = true
 
                 // QUA SI USA FIREBASE
-                FirebaseFirestore.setLoggingEnabled(true)
-                db = FirebaseFirestore.getInstance()
-                val docRef = db.collection("user")
-                if (id != null) {
-                    if (!db.document("user/$id").get().isSuccessful) {
-                        docRef.document(id).set({})
-                    }
-                }
+//                FirebaseFirestore.setLoggingEnabled(true)
+//                db = FirebaseFirestore.getInstance()
+//                val docRef = db.collection("user")
+//                if (id != null) {
+//                    if (!db.document("user/$id").get().isSuccessful) {
+//                        docRef.document(id).set({})
+//                    }
+//                }
+                checkUser(id)
 
                 val intent = Intent(this, NotifyService::class.java)
                 startService(intent)
+                createPoiList(id)
+                createFriendList(id)
+                createLiveList(id)
 
-                if (id != null) {
-                    createPoiList(id)
-                    createFriendList(id)
-                    createLiveList(id)
-                }
 
                 val navBar = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
                 setHomeLayout(navBar)
