@@ -3,7 +3,6 @@ package com.example.maptry.utils
 import com.example.maptry.activity.MapsActivity.Companion.friendJson
 import com.example.maptry.server.getFriend
 import com.example.maptry.server.getLivePoi
-import com.example.maptry.server.getLivePoiFromFriends
 import com.example.maptry.server.getPoi
 import org.json.JSONObject
 
@@ -37,15 +36,9 @@ fun createPoiList(id:String){
 // retrieve live collection from Firebase
 fun createLiveList(id:String){
     val userLive = getLivePoi(id)
-    val userFriendLive = getLivePoiFromFriends(id)
     val userKeys = userLive.keys()
-    val userFriendKeys = userFriendLive.keys()
     userKeys.forEach{ key ->
         val tempJson = userLive.get(key) as JSONObject
-        createLiveMarker(tempJson)
-    }
-    userFriendKeys.forEach{ key ->
-        val tempJson = userFriendLive.get(key) as JSONObject
         createLiveMarker(tempJson)
     }
 }

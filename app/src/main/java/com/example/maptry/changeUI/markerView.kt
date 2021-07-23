@@ -232,15 +232,19 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                 else -> {
                     for (i: String in myList.keys()) {
                         try {
-                            val x: String = myList.getJSONObject(i).get("name") as String
-                            if (text == x) {
-                                makeRedLine(lname,red)
-                                return@setOnClickListener
+
+                            if(myList.getJSONObject(i).has("type")){
+                                val x: String = myList.getJSONObject(i).get("name") as String
+                                if (text == x) {
+                                    makeRedLine(lname,red)
+                                    return@setOnClickListener
+                                }
+                                if (address.text == myList.getJSONObject(i).get("address") as String) {
+                                    makeRedLine(lname,red)
+                                    return@setOnClickListener
+                                }
                             }
-                            if (address.text == myList.getJSONObject(i).get("address") as String) {
-                                makeRedLine(lname,red)
-                                return@setOnClickListener
-                            }
+
                         } catch (e: java.lang.Exception) {
                             println("ops")
                         }

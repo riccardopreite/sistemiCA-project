@@ -115,11 +115,10 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     addbutton.text = "Aggiungi"
     addbutton.setOnClickListener {
 
-        val markAddButton = mymarker.get(p0) as Marker
-        myList.put(p0,friendTempPoi.getJSONObject(p0))
-
+        val markAdd = mymarker.get(p0) as Marker
+//        myList.put(p0,friendTempPoi.getJSONObject(p0))
         added = 1
-        markAddButton.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        markAdd.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         alertDialog.dismiss()
     }
     routebutton.setOnClickListener {
@@ -144,7 +143,6 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
             val phoneFriend = friendTempPoi.getJSONObject(p0).get("url") as String
             val urlFriend = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
             val id = account?.email?.replace("@gmail.com", "") as String
-
             val newJsonMark = createJsonMarker(name,addr,cont,type,lat,lon,phoneFriend,urlFriend,id)
             myList.put(p0, newJsonMark)
         }
@@ -152,7 +150,6 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     }
 
     dialogBuilder.setView(dialogView)
-
     alertDialog = dialogBuilder.create()
     alertDialog.show()
 }

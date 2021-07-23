@@ -197,7 +197,8 @@ class ShowFriendList : AppCompatActivity() {
             dialogBuilder.setView(dialogView)
 
             val alertDialog2 = dialogBuilder.create()
-            val result: JSONObject = getPoiFromFriend(selectedItem)
+            val id = account?.email?.replace("@gmail.com", "")!!
+            val result: JSONObject = getPoiFromFriend(id,selectedItem)
             this@ShowFriendList.runOnUiThread {
                 try {
                     alertDialog2.show()

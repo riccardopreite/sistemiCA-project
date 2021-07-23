@@ -337,7 +337,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 isRunning = true
 
                 // QUA SI USA FIREBASE
-//                FirebaseFirestore.setLoggingEnabled(true)
+//                FirebaseFirestore.setLoggingEnabled(true)au
 //                db = FirebaseFirestore.getInstance()
 //                val docRef = db.collection("user")
 //                if (id != null) {
@@ -483,7 +483,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                                 super.onDismissed(transientBottomBar, event)
                                 //remove from db the poi
-                                removePOI(removed.get("markId").toString())
+                                removePOI(removed.get("markId").toString(),id)
                                 /*id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
                                     .addOnSuccessListener { result ->
                                         for (document in result) {
@@ -664,120 +664,96 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             val context = this
             txtName.text = selectedItem
             // ask public friend's poi with a server call
-
-
-            val url = URL("https://"+ ip + port +"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
-            var result: JSONObject
-            val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
+            val id = account?.email?.replace("@gmail.com", "")!!
+            val result: JSONObject = getPoiFromFriend(id,selectedItem)
 
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
             dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
             val alertDialog2 = dialogBuilder.create()
-
-            val request = Request.Builder()
-                .url(url)
-                .build()
-
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: okhttp3.Call, e: IOException) {
-                    println("something went wrong get poi from friend")
-                    println(e)
+            alertDialog2.show()
+            val length = result.length()
+            val markerList = MutableList(length + 1) { "" }
+            var indexMarkerMap = 1
+            // add this empty item cause a bug with spinner, on init select the first item and trigger the onItemSelected
+            markerList[0] = ""
+            for (i in result.keys()) {
+                if (result.getJSONObject(i).get("type") as String == "Pubblico") {
+                    markerList[indexMarkerMap] =
+                        result.getJSONObject(i).get("name") as String
+                    indexMarkerMap++
                 }
-                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                    this@MapsActivity.runOnUiThread {
-                        // retrieve results in a thread to read more time
-                        try {
-                            alertDialog2.show()
-                            result = JSONObject(response.body()?.string()!!)
-                            val length = result.length()
-                            val markerList = MutableList(length + 1) { "" }
-                            var indexMarkerMap = 1
-                            // add this empty item cause a bug with spinner, on init select the first item and trigger the onItemSelected
-                            markerList[0] = ""
+            }
+            val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
+                context,
+                R.layout.support_simple_spinner_dropdown_item, markerList
+            )
+            spinner.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        if (parent?.getItemAtPosition(position) as String != "") {
+                            var key = ""
+                            val selectedMarker =
+                                parent.getItemAtPosition(position) as String
+                            var lat = 0.0
+                            var lon = 0.0
                             for (i in result.keys()) {
-                                if (result.getJSONObject(i).get("type") as String == "Pubblico") {
-                                    markerList[indexMarkerMap] =
-                                        result.getJSONObject(i).get("name") as String
-                                    indexMarkerMap++
+                                if (result.getJSONObject(i)
+                                        .get("name") == selectedMarker
+                                ) {
+                                    key = i
+                                    lat = result.getJSONObject(i).get("latitude")
+                                        .toString()
+                                        .toDouble()
+                                    lon = result.getJSONObject(i).get("longitude")
+                                        .toString()
+                                        .toDouble()
                                 }
                             }
-                            val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
-                                context,
-                                R.layout.support_simple_spinner_dropdown_item, markerList
+                            val pos = LatLng(
+                                lat,
+                                lon
                             )
-                            spinner.onItemSelectedListener =
-                                object : AdapterView.OnItemSelectedListener {
-                                    override fun onNothingSelected(parent: AdapterView<*>?) {}
-                                    override fun onItemSelected(
-                                        parent: AdapterView<*>?,
-                                        view: View?,
-                                        position: Int,
-                                        id: Long
-                                    ) {
-                                        if (parent?.getItemAtPosition(position) as String != "") {
-                                            var key = ""
-                                            val selectedMarker =
-                                                parent.getItemAtPosition(position) as String
-                                            var lat = 0.0
-                                            var lon = 0.0
-                                            for (i in result.keys()) {
-                                                if (result.getJSONObject(i)
-                                                        .get("name") == selectedMarker
-                                                ) {
-                                                    key = i
-                                                    lat = result.getJSONObject(i).get("latitude")
-                                                        .toString()
-                                                        .toDouble()
-                                                    lon = result.getJSONObject(i).get("longitude")
-                                                        .toString()
-                                                        .toDouble()
-                                                }
-                                            }
-                                            val pos = LatLng(
-                                                lat,
-                                                lon
-                                            )
-                                            val mark = createMarker(pos)
-                                            friendTempPoi.put(
-                                                pos.toString(),
-                                                result.getJSONObject(key)
-                                            )
-                                            mMap.moveCamera(
-                                                CameraUpdateFactory.newLatLngZoom(
-                                                    LatLng(
-                                                        lat,
-                                                        lon
-                                                    ), 20F
-                                                )
-                                            )
-                                            switchFrame(
-                                                homeLayout,
-                                                listOf(friendLayout,
-                                                listLayout,
-                                                drawerLayout,
-                                                friendFrame,
-                                                splashLayout,
-                                                liveLayout)
-                                            )
-                                            alertDialog2.dismiss()
-                                            showPOIPreferences(
-                                                pos.toString(),
-                                                inflater,
-                                                context,
-                                                mark!!
-                                            )
-                                        }
-                                    }
-                                }
-                            spinner.adapter = arrayAdapter2
-                        } catch (e: JSONException) {
-                            e.printStackTrace()
+                            val mark = createMarker(pos)
+                            friendTempPoi.put(
+                                pos.toString(),
+                                result.getJSONObject(key)
+                            )
+                            mMap.moveCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(
+                                        lat,
+                                        lon
+                                    ), 20F
+                                )
+                            )
+                            switchFrame(
+                                homeLayout,
+                                listOf(friendLayout,
+                                    listLayout,
+                                    drawerLayout,
+                                    friendFrame,
+                                    splashLayout,
+                                    liveLayout)
+                            )
+                            alertDialog2.dismiss()
+                            showPOIPreferences(
+                                pos.toString(),
+                                inflater,
+                                context,
+                                mark!!
+                            )
                         }
                     }
                 }
-            })
+            spinner.adapter = arrayAdapter2
         }
         lv.adapter = arrayAdapter
     }

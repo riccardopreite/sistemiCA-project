@@ -10,10 +10,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.gson
-import com.example.maptry.dataclass.AddLiveEvent
-import com.example.maptry.dataclass.AddPointOfInterest
-import com.example.maptry.dataclass.UserLive
-import com.example.maptry.dataclass.UserMarker
+import com.example.maptry.dataclass.*
 import com.example.maptry.server.addLivePOI
 import com.example.maptry.server.addPOI
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -86,8 +83,9 @@ fun createLiveJsonMarker(
     val addPOIClass = AddLiveEvent(id, userLive)
     val jsonToAdd = gson.toJson(addPOIClass)
     addLivePOI(jsonToAdd)
+    val userLiveAdded = UserLiveAdded(name, address, timer,id)
 
-    return JSONObject(gson.toJson(userLive))
+    return JSONObject(gson.toJson(userLiveAdded))
 }
 
 fun createMarker(p0: LatLng): Marker? {
