@@ -13,7 +13,7 @@ import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.*
 
-
+var token = ""
 // SSL certificate configuration
 val trustStore: KeyStore = KeyStore.getInstance("BKS")
 const val keyPair = "SistemiContextAware2021@*"
@@ -35,30 +35,3 @@ val hostnameVerifier = HostnameVerifier { _, session -> //first
     hv.verify(ip, session)
     return@HostnameVerifier true
 }
-
-
-fun checkUser(id: String){
-    val url = URL("https://$ip$port/") //Create this POST api to check if user already exist in DB, if not create it
-
-    val formBody: RequestBody = FormBody.Builder()
-        .add("username", id)
-        .build()
-
-    val request: Request = Request.Builder()
-        .url(url)
-        .post(formBody)
-        .build()
-
-    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
-    val response = client.newCall(request).execute()
-    if (response.isSuccessful){
-        println("Check user is success")
-    }
-    else{
-        println("Check user is error")
-        println(response.message())
-    }
-}
-/*Start Server Function*/
-
-/*End Server Function*/

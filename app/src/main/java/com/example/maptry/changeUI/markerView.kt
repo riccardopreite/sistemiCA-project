@@ -52,7 +52,7 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
     header.text =  text
     address.text = myList.getJSONObject(p0.position.toString()).get("address") as String
     url.text = myList.getJSONObject(p0.position.toString()).get("url") as String
-    phone.text = myList.getJSONObject(p0.position.toString()).get("phone") as String
+    phone.text = myList.getJSONObject(p0.position.toString()).get("phoneNumber") as String
     when {
         myList.getJSONObject(p0.position.toString()).get("type") as String == "Live" -> {
             phone.text = myLive.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
@@ -259,7 +259,8 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                         if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") "cellulare non trovato"
                         else listAddr?.get(0)?.phone!!
 
-                    val newJsonMark = createJsonMarker(text,address.text.toString(),spinner.selectedItem.toString(),gender,marker?.position?.latitude.toString(),marker?.position?.longitude.toString(),phone,url,id!!)
+                    val newJsonMark = createJsonMarker(text,address.text.toString(),spinner.selectedItem.toString(),gender,marker?.position?.latitude!!,
+                        marker.position.longitude,phone,url,id!!)
 
                     myList.put(p0.toString(), newJsonMark)
 

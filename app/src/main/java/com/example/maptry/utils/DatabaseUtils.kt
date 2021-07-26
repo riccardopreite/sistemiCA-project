@@ -1,5 +1,6 @@
 package com.example.maptry.utils
 
+import com.example.maptry.activity.MapsActivity.Companion.drawed
 import com.example.maptry.activity.MapsActivity.Companion.friendJson
 import com.example.maptry.server.getFriend
 import com.example.maptry.server.getLivePoi
@@ -14,10 +15,13 @@ fun createFriendList(id:String){
     friendJson = JSONObject()
     val userFriend = getFriend(id)
     val userKeys = userFriend.keys()
+    println("AMICO")
+
+    println(userFriend)
     userKeys.forEach{ key ->
         val tempJson = userFriend.get(key) as JSONObject
-        createUserMarker(tempJson)
-        friendJson.put(count.toString(),tempJson.get("friend"))
+        println(tempJson.get("friendUsername"))
+        friendJson.put(count.toString(),tempJson.get("friendUsername"))
         count++
     }
 }
@@ -41,6 +45,7 @@ fun createLiveList(id:String){
         val tempJson = userLive.get(key) as JSONObject
         createLiveMarker(tempJson)
     }
+    drawed = true
 }
 
 

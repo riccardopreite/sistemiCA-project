@@ -19,15 +19,22 @@ import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
+import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendFrame
+import com.example.maptry.activity.MapsActivity.Companion.friendLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
 import com.example.maptry.activity.MapsActivity.Companion.geocoder
+import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.lastLocation
 import com.example.maptry.activity.MapsActivity.Companion.listAddr
+import com.example.maptry.activity.MapsActivity.Companion.listLayout
+import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.mAnimation
 import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
+import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
 import com.example.maptry.changeUI.CircleTransform
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -36,9 +43,11 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.squareup.picasso.Picasso
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.lang.Exception
+import java.lang.reflect.Array
 
 var notificationJson = JSONObject()
 
@@ -109,7 +118,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     header.text =  text
     address.text = friendTempPoi.getJSONObject(p0).get("address") as String
     url.text = friendTempPoi.getJSONObject(p0).get("url") as String
-    phone.text = friendTempPoi.getJSONObject(p0).get("phone") as String
+    phone.text = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
     val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
     val addbutton: Button = dialogView.findViewById(R.id.removeBtnattr)
     addbutton.text = "Aggiungi"
@@ -136,14 +145,14 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
         } else {
             val name = friendTempPoi.getJSONObject(p0).get("name") as String
             val addr = friendTempPoi.getJSONObject(p0).get("address") as String
-            val cont = friendTempPoi.getJSONObject(p0).get("type") as String
-            val type =  friendTempPoi.getJSONObject(p0).get("visibility") as String
-            val lat = mark.position.latitude.toString()
-            val lon = mark.position.longitude.toString()
+            val type = friendTempPoi.getJSONObject(p0).get("type") as String
+            val visibility =  friendTempPoi.getJSONObject(p0).get("visibility") as String
+            val lat = mark.position.latitude
+            val lon = mark.position.longitude
             val phoneFriend = friendTempPoi.getJSONObject(p0).get("url") as String
             val urlFriend = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
             val id = account?.email?.replace("@gmail.com", "") as String
-            val newJsonMark = createJsonMarker(name,addr,cont,type,lat,lon,phoneFriend,urlFriend,id)
+            val newJsonMark = createJsonMarker(name,addr,type,visibility,lat,lon,phoneFriend,urlFriend,id)
             myList.put(p0, newJsonMark)
         }
 
@@ -155,6 +164,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
 }
 
 fun setHomeLayout(navBar : View){
+    println("IN SHOW HOME")
     val imageView = navBar.findViewById<ImageView>(R.id.imageView)
     val user = navBar.findViewById<TextView>(R.id.user)
     val email = navBar.findViewById<TextView>(R.id.email)
@@ -174,14 +184,14 @@ fun setHomeLayout(navBar : View){
     // init menu
     menuIcon.setOnClickListener {
         switchFrame(
-            MapsActivity.drawerLayout,
+            drawerLayout,
             listOf(
-                MapsActivity.listLayout,
-                MapsActivity.homeLayout,
-                MapsActivity.friendLayout,
-                MapsActivity.friendFrame,
-                MapsActivity.splashLayout,
-                MapsActivity.liveLayout
+                listLayout,
+                homeLayout,
+                friendLayout,
+                friendFrame,
+                splashLayout,
+                liveLayout
             )
         )
     }
@@ -190,6 +200,8 @@ fun setHomeLayout(navBar : View){
     email.visibility = View.VISIBLE
     email.text = account?.email
     close.visibility = View.VISIBLE
+    println("fine SHOW HOME")
+
 }
 
 fun makeRedLine(lname: EditText,color: Int){
@@ -200,4 +212,24 @@ fun makeRedLine(lname: EditText,color: Int){
             setColorFilter(color, PorterDuff.Mode.SRC_IN)
         }
     }
+}
+
+//fun generateValue(element: JSONObject): kotlin.Array<String> {
+//    val name = element.get("name").toString()
+//    val address = element.get("address").toString()
+//    val type = element.get("type").toString()
+//    val visibility =  element.get("visibility").toString()
+//    val lat = element.get("latitude").toString()
+//    val lon = element.get("longitude").toString()
+//    val phone = element.get("phoneNumber").toString()
+//    val url = element.get("url").toString()
+//    return arrayOf(name, address, type, visibility, lat, lon, phone, url)
+//}
+
+fun toJsonObject(jsonArray: JSONArray):JSONObject{
+    val toReturn = JSONObject()
+    for (i in 0 until jsonArray.length()) {
+        toReturn.put(i.toString(),jsonArray.getJSONObject(i))
+    }
+    return toReturn
 }

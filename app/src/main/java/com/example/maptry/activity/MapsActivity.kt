@@ -54,14 +54,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
-import java.net.URL
-import java.net.URLEncoder
 import java.util.*
 
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
@@ -96,7 +89,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
         }
     }
-
+    private lateinit var show: () -> Unit
     companion object {
         lateinit var locationCallback: LocationCallback
         lateinit var firebaseAuth: FirebaseAuth
@@ -164,7 +157,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
         }
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -326,14 +318,14 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 val letHandler = Handler(Looper.getMainLooper())
                 letHandler.post(error)
 
-                am.getAuthToken(
-                    new,                     // Account retrieved using getAccountsByType()
-                    "Manage your tasks",            // Auth scope
-                    options,                        // Authenticator-specific options
-                    this,                           // Your activity
-                    OnTokenAcquired(),              // Callback called when a token is successfully acquired
-                    letHandler            // Callback called if an error occurs
-                )
+//                am.getAuthToken(
+//                    new,                     // Account retrieved using getAccountsByType()
+//                    "Manage your tasks",            // Auth scope
+//                    options,                        // Authenticator-specific options
+//                    this,                           // Your activity
+//                    OnTokenAcquired(),              // Callback called when a token is successfully acquired
+//                    letHandler            // Callback called if an error occurs
+//                )
                 isRunning = true
 
                 // QUA SI USA FIREBASE
@@ -345,16 +337,17 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 //                        docRef.document(id).set({})
 //                    }
 //                }
-                checkUser(id)
+//                checkUser(id)
 
-                val intent = Intent(this, NotifyService::class.java)
-                startService(intent)
+//                val intent = Intent(this, NotifyService::class.java)
+//                startService(intent)
                 createPoiList(id)
                 createFriendList(id)
                 createLiveList(id)
 
 
                 val navBar = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
+                println("SHOW HOME")
                 setHomeLayout(navBar)
 
             }
@@ -377,7 +370,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         println("MENU")
         return when (item.itemId) {
             id.list -> {
-                println("showpoi menu")
                 showPOI()
                 return true
             }
@@ -391,6 +383,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
             else -> super.onOptionsItemSelected(item)
         }
+
     }
     
     /*End Activity for result Function*/
@@ -399,131 +392,60 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // populate ListView with poi list
     @SuppressLint("WrongViewCast")
-    fun showPOI(){
-        println("dc")
-        var index = 0
-        val txt: TextView = findViewById(id.nosrc)
-        switchFrame(listLayout,listOf(homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
+    fun showPOI() {
+        show = {
+            var index = 0
+            val txt: TextView = findViewById(id.nosrc)
+            switchFrame(listLayout,listOf(homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
 
-        val lv:ListView = findViewById(R.id.lv)
-        var len = 0
-        for (i in myList.keys()){
-            if(myList.getJSONObject(i).get("type") as String != "Live"){
-                len++
+            val lv:ListView = findViewById(R.id.lv)
+            var len = 0
+            for (i in myList.keys()){
+                if(myList.getJSONObject(i).has("type") && myList.getJSONObject(i).get("type") as String != "Live") len++
             }
-        }
-        val userList = MutableList(len) { "" }
-        if(len == 0) txt.visibility = View.VISIBLE
-        else txt.visibility = View.INVISIBLE
-        for (i in myList.keys()){
-            if(myList.getJSONObject(i).get("type") as String != "Live"){
-                userList[index] = myList.getJSONObject(i).get("name") as String
-                index++
-            }
-        }
-        val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList)
 
-        lv.setOnItemLongClickListener { parent, view, position, _ -> //last elem was id
-
-            val inflater: LayoutInflater = this.layoutInflater
-            val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
-            val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)
-
-            eliminateBtn.setOnClickListener {
-                val selectedItem = parent.getItemAtPosition(position) as String
-                for (i in myList.keys()){
-
-                    if(selectedItem == myList.getJSONObject(i).get("name") as String) {
-
-                        val mark = mymarker[i] as Marker
-                        val removed = myList.getJSONObject(i)
-                        mark.remove()
-                        mymarker.remove(i)
-                        myList.remove(i)
-                        val cancel = "Annulla"
-                        val text = "Rimosso $selectedItem"
-                        val id = account?.email?.replace("@gmail.com","")
-                        // create a Toast to undo the operation of removing
-                        val snackbar = Snackbar.make(view, text, 5000)
-                            .setAction(cancel) {
-                                id?.let { _ ->
-
-                                    val name = removed.get("name").toString()
-                                    val addr = removed.get("address").toString()
-                                    val cont = removed.get("type").toString()
-                                    val type =  removed.get("visibility").toString()
-                                    val lat = removed.get("latitude").toString()
-                                    val lon = removed.get("longitude").toString()
-                                    val phone = removed.get("phoneNumber").toString()
-                                    val url = removed.get("url").toString()
-
-                                    val newJsonMark = createJsonMarker(name,addr,cont,type,lat,lon,phone,url,id)
-
-                                    myList.put(mark.position.toString(), newJsonMark)
-                                    mymarker.put(mark.position.toString(), mark)
-                                    Toast.makeText(
-                                        this,
-                                        "Annullata rimozione di $selectedItem",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-
-                                    showPOI()
-                                }
-                            }
-                        snackbar.setActionTextColor(Color.DKGRAY)
-                        val snackView = snackbar.view
-                        snackView.setBackgroundColor(Color.BLACK)
-                        snackbar.show()
-
-
-                        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                            override fun onShown(transientBottomBar: Snackbar?) {
-                                super.onShown(transientBottomBar)
-                            }
-                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                                super.onDismissed(transientBottomBar, event)
-                                //remove from db the poi
-                                removePOI(removed.get("markId").toString(),id)
-                                /*id?.let { it1 -> db.collection("user").document(it1).collection("marker").get()
-                                    .addOnSuccessListener { result ->
-                                        for (document in result) {
-                                            val name = document.data["name"]
-                                            if(name == selectedItem)  {
-                                                db.document("user/"+id+"/marker/"+document.id).delete()
-                                                showPOI()
-                                                return@addOnSuccessListener
-                                            }
-                                        }
-                                    }
-                                    .addOnFailureListener { exception ->
-                                        Log.d("FAIL", "Error getting documents: ", exception)
-                                    }
-                                }*/
-                            }
-                        })
-                        alertDialog.dismiss()
-                        break
-                    }
+            val userList = MutableList(len) { "" }
+            if(len == 0) txt.visibility = View.VISIBLE
+            else txt.visibility = View.INVISIBLE
+            for (i in myList.keys()){
+                if(myList.getJSONObject(i).has("type") && myList.getJSONObject(i).get("type") as String != "Live"){
+                    userList[index] = myList.getJSONObject(i).get("name") as String
+                    index++
                 }
             }
-            val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener { }
-            dialogBuilder.setView(dialogView)
+            val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList)
 
-            alertDialog = dialogBuilder.create()
-            alertDialog.show()
+            lv.setOnItemLongClickListener { parent, view, position, _ -> //last elem was id
+
+                val inflater: LayoutInflater = this.layoutInflater
+                val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
+                val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)
+
+                eliminateBtn.setOnClickListener {
+                    val selectedItem = parent.getItemAtPosition(position) as String
+                    deletePOI(selectedItem,view,show)
+
+                }
+                val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+                dialogBuilder.setOnDismissListener { }
+                dialogBuilder.setView(dialogView)
+
+                alertDialog = dialogBuilder.create()
+                alertDialog.show()
 
 
-            return@setOnItemLongClickListener true
-        }
-        lv.setOnItemClickListener { parent, _, position, _ -> //view e id
-            val selectedItem = parent.getItemAtPosition(position) as String
-            for (i in myList.keys()){
-                if(selectedItem == myList.getJSONObject(i).get("name") as String) onMarkerClick(
-                    mymarker[i] as Marker)
+                return@setOnItemLongClickListener true
             }
+            lv.setOnItemClickListener { parent, _, position, _ -> //view e id
+                val selectedItem = parent.getItemAtPosition(position) as String
+                for (i in myList.keys()){
+                    if(selectedItem == myList.getJSONObject(i).get("name") as String)
+                        onMarkerClick(mymarker[i] as Marker)
+                }
+            }
+            lv.adapter = arrayAdapter
         }
-        lv.adapter = arrayAdapter
+        show()
     }
 
     // populate ListView with live list
@@ -542,14 +464,13 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             index++
         }
 
-
         val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList)
 
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val selectedItem = parent.getItemAtPosition(position) as String
             for (i in myLive.keys()){
-                if(selectedItem == myLive.getJSONObject(i).get("name") as String) onMarkerClick(
-                    mymarker[i] as Marker)
+                if(selectedItem == myLive.getJSONObject(i).get("name") as String)
+                    onMarkerClick(mymarker[i] as Marker)
             }
         }
         lv.adapter = arrayAdapter
@@ -558,6 +479,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // populate ListView with friend list
     @SuppressLint("ShowToast")
     fun showFriend(){
+        println("friendJson")
+        println(friendJson)
         val len = friendJson.length()
         var index = 0
         val txt: TextView = findViewById(id.nofriend)
@@ -606,7 +529,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             override fun onShown(transientBottomBar: Snackbar?) {
                                 super.onShown(transientBottomBar)
                             }
-
                             override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                                 super.onDismissed(transientBottomBar, event)
                                 if (id != null) {
@@ -621,24 +543,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
                         showFriend()
-                        // remove item from db
-                        /* id?.let { it1 -> db.collection("user").document(it1).collection("friend").get()
-                            .addOnSuccessListener { result ->
-                                for (document in result) {
-                                    val name = document.data["friend"]
-                                    if (name == selectedItem) {
-                                        db.document("user/" + id + "/friend/" + document.id)
-                                            .delete()
-                                        removeFriend(id, selectedItem)
-                                        showFriend()
-                                        return@addOnSuccessListener
-                                    }
-                                }
-                            }
-                            .addOnFailureListener { exception ->
-                                Log.d("FAIL", "Error getting documents: ", exception)
-                            }
-                        }*/
                         alertDialog.dismiss()
                         break
                     }
@@ -812,25 +716,3 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
 
 
-// init autoComplete fragment to search address
-/* @SuppressLint("ResourceType")
- fun setUpSearch() {
-     val autoCompleteFragment =
-         supportFragmentManager.findFragmentById(id.autocomplete_fragment) as? AutocompleteSupportFragment
-     autoCompleteFragment?.setCountry("IT")
-     autoCompleteFragment?.setPlaceFields(listOf(Place.Field.ID,Place.Field.NAME,Place.Field.LAT_LNG,Place.Field.ADDRESS,Place.Field.PHONE_NUMBER,Place.Field.WEBSITE_URI))
-
-     autoCompleteFragment?.setOnPlaceSelectedListener(object : PlaceSelectionListener {
-         override fun onPlaceSelected(place: Place) {
-             val lat = place.latLng
-             if (lat != null) {
-                 autoCompleteFragment.setText("")
-                 supportFragmentManager.popBackStack()
-                 onMapClick(lat)
-             }
-         }
-         override fun onError(status: Status) {
-             Log.d("HOY", "An error occurred: ${status.statusMessage}")
-         }
-     })
- }*/

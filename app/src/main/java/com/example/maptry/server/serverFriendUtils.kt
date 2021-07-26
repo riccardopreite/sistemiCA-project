@@ -1,13 +1,16 @@
 package com.example.maptry.server
 
+import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.utils.toJsonObject
 import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.net.URLEncoder
-const val endpointFriend = "live-events/"
+const val endpointFriend = "friends/"
 const val confirmFriendUrl = "confirm"
 const val addFriendUrl = "add"
 const val removeFriendUrl = "remove"
@@ -19,15 +22,17 @@ val baseUrlFriend = "https://${ip}${port}/$endpointFriend"
 fun getFriend(user:String): JSONObject {
     println("IN GET POI")
     val url = URL(baseUrlFriend + "?user=" + URLEncoder.encode(user, "UTF-8"))
+    println(url)
     var result = JSONObject()
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
-        result = JSONObject(response.body()?.string()!!)
+        result = toJsonObject(JSONArray(response.body()?.string()!!))
         println("Get poi from friend is success")
     }
     else{
@@ -44,6 +49,7 @@ fun confirmFriend(jsonToAdd:String){
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .post(body)
         .build()
@@ -67,6 +73,7 @@ fun removeFriend(jsonToRemove:String){
     val body: RequestBody = RequestBody.create(JSON, jsonToRemove)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .delete(body)
         .build()
@@ -87,6 +94,7 @@ fun sendFriendRequest(jsonToAdd:String){
     val body: RequestBody = RequestBody.create(JSON, jsonToAdd)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .post(body)
         .build()

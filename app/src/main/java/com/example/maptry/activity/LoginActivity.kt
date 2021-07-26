@@ -19,6 +19,7 @@ import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.locationCallback
 import com.example.maptry.activity.MapsActivity.Companion.mLocationRequest
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.server.token
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -40,6 +41,7 @@ class LoginActivity : AppCompatActivity() {
     lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
     private var account: GoogleSignInAccount? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -112,6 +114,9 @@ class LoginActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
+                token = it.result.user?.getIdToken(false)?.result?.token!!
+                println("TOKEN")
+                println(token)
                 this.finish()
             } else {
                 configureGoogleSignIn()

@@ -1,8 +1,11 @@
 package com.example.maptry.server
 
+import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.utils.toJsonObject
 import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
 import java.net.URLEncoder
@@ -22,12 +25,14 @@ fun getPoi(user:String): JSONObject {
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
-        result = JSONObject(response.body()?.string()!!)
+        result = toJsonObject(JSONArray(response.body()?.string()!!))
         println("Get poi is success")
+        println(result)
     }
     else{
         println("Get poi is error")
@@ -35,6 +40,9 @@ fun getPoi(user:String): JSONObject {
     }
     return result
 }
+
+
+
 //https://casadiso.ddns.net:3000/points-of-interest/
 fun getPoiFromFriend(user:String,friend:String): JSONObject {
     println("IN GET POI of friend")
@@ -43,11 +51,13 @@ fun getPoiFromFriend(user:String,friend:String): JSONObject {
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
-        result = JSONObject(response.body()?.string()!!)
+        println("FRIEND RESPONSE")
+        result = toJsonObject(JSONArray(response.body()?.string()!!))
         println("Get poi from friend is success")
     }
     else{
@@ -59,13 +69,14 @@ fun getPoiFromFriend(user:String,friend:String): JSONObject {
 //https://casadiso.ddns.net:3000/points-of-interest/add/
 fun addPOI(poiToAdd:String): String{
     println("IN ADD POI")
-
+    println(poiToAdd)
     val body: RequestBody = RequestBody.create(JSON, poiToAdd)
 
     val url = URL(baseUrl + addPOIUrl)
     var result = ""
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .post(body)
         .build()
@@ -85,7 +96,6 @@ fun addPOI(poiToAdd:String): String{
 //https://casadiso.ddns.net:3000/points-of-interest/remove/
 fun removePOI(poiId:String,user: String) {
     println("IN REMOVE POI")
-
     val formBody: RequestBody = FormBody.Builder()
         .add("poiId", poiId)
         .add("username", user)
@@ -94,6 +104,7 @@ fun removePOI(poiId:String,user: String) {
     val url = URL(baseUrl + removePOIUrl)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .delete(formBody)
         .build()

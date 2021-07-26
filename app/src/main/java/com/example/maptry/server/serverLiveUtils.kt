@@ -1,10 +1,13 @@
 package com.example.maptry.server
 
+import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.utils.toJsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
 import java.net.URLEncoder
@@ -22,11 +25,12 @@ fun getLivePoi(user:String): JSONObject {
             .hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful) {
-        result = JSONObject(response.body()?.string()!!)
+        result = toJsonObject(JSONArray(response.body()?.string()!!))
         println("Get poi from friend is success")
     } else {
         println("Get poi from friend is error")
@@ -39,12 +43,12 @@ fun getLivePoi(user:String): JSONObject {
 
 fun addLivePOI(poiToAdd:String){
     println("IN ADD POI")
-
     val body: RequestBody = RequestBody.create(JSON, poiToAdd)
 
     val url = URL(baseUrlLive + addPOIUrl)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
+        .addHeader("Authorization", "Bearer $token")
         .url(url)
         .post(body)
         .build()
