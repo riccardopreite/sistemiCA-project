@@ -111,53 +111,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".changeUI.ShowCar"
-            android:label="showcar"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:parentActivityName=".activity.MapsActivity"
-            android:noHistory="true"
-
-            >
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".changeUI.RemindTimer"
-            android:label="remindtimer"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:parentActivityName=".activity.MapsActivity"
-
-            >
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".server.DeleteTimer"
-            android:label="deletetimer"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:parentActivityName=".activity.MapsActivity"
-
-            >
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-<!--        android:parentActivityName=".activity.MapsActivity"-->
         <activity
             android:name=".changeUI.ShowLiveEvent"
             android:label="showLiveEvent"
