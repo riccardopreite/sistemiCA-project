@@ -148,7 +148,8 @@ class ShowLiveEvent: AppCompatActivity() {
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != MapsActivity.account?.email && emailText.text.toString() != MapsActivity.account?.email?.replace("@gmail.com","")){
                 val id = MapsActivity.account?.email?.replace("@gmail.com","")!!
-                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val receiver = emailText.text.toString().replace("@gmail.com","")
+                val sendRequest = FriendRequest(receiver,id)
                 val jsonToAdd = gson.toJson(sendRequest)
                 sendFriendRequest(jsonToAdd)
 

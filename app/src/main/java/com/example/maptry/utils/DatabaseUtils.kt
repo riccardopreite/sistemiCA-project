@@ -14,26 +14,32 @@ fun createFriendList(id:String){
     var count = 0
     friendJson = JSONObject()
     val userFriend = getFriend(id)
-    val userKeys = userFriend.keys()
-    println("AMICO")
+    if (userFriend.length() > 0){
+        val userKeys = userFriend.keys()
+        println("AMICO")
 
-    println(userFriend)
-    userKeys.forEach{ key ->
-        val tempJson = userFriend.get(key) as JSONObject
-        println(tempJson.get("friendUsername"))
-        friendJson.put(count.toString(),tempJson.get("friendUsername"))
-        count++
+        println(userFriend)
+        userKeys.forEach{ key ->
+            val tempJson = userFriend.get(key) as JSONObject
+            println(tempJson.get("friendUsername"))
+            friendJson.put(count.toString(),tempJson.get("friendUsername"))
+            count++
+        }
     }
+
+
 }
 
 // retrieve poi collection from Firebase
 fun createPoiList(id:String){
 
     val userMarker = getPoi(id)
-    val userKeys = userMarker.keys()
-    userKeys.forEach{ key ->
-        val tempJson = userMarker.get(key) as JSONObject
-        createUserMarker(tempJson)
+    if (userMarker.length() > 0) {
+        val userKeys = userMarker.keys()
+        userKeys.forEach { key ->
+            val tempJson = userMarker.get(key) as JSONObject
+            createUserMarker(tempJson)
+        }
     }
 }
 
@@ -41,9 +47,11 @@ fun createPoiList(id:String){
 fun createLiveList(id:String){
     val userLive = getLivePoi(id)
     val userKeys = userLive.keys()
-    userKeys.forEach{ key ->
-        val tempJson = userLive.get(key) as JSONObject
-        createLiveMarker(tempJson)
+    if (userLive.length() > 0) {
+        userKeys.forEach { key ->
+            val tempJson = userLive.get(key) as JSONObject
+            createLiveMarker(tempJson)
+        }
     }
     drawed = true
 }

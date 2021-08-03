@@ -1,6 +1,6 @@
 package com.example.maptry.dataclass
 
 data class AddLiveEvent(
-    var id: String? = "",
+    var owner: String? = "",
     var poi: UserLive? = UserLive("","","","")
 )

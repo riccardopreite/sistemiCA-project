@@ -329,18 +329,16 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 isRunning = true
 
                 // QUA SI USA FIREBASE
-//                FirebaseFirestore.setLoggingEnabled(true)au
-//                db = FirebaseFirestore.getInstance()
-//                val docRef = db.collection("user")
-//                if (id != null) {
-//                    if (!db.document("user/$id").get().isSuccessful) {
-//                        docRef.document(id).set({})
-//                    }
-//                }
+                FirebaseFirestore.setLoggingEnabled(true)
+                db = FirebaseFirestore.getInstance()
+                val docRef = db.collection("user")
+                if (!db.document("user/$id").get().isSuccessful) {
+                    docRef.document(id).set({})
+                }
 //                checkUser(id)
 
-//                val intent = Intent(this, NotifyService::class.java)
-//                startService(intent)
+                val intent = Intent(this, NotifyService::class.java)
+                startService(intent)
                 createPoiList(id)
                 createFriendList(id)
                 createLiveList(id)
@@ -532,7 +530,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                             override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                                 super.onDismissed(transientBottomBar, event)
                                 if (id != null) {
-                                    val remove = FriendRequest(id, selectedItem)
+                                    val remove = FriendRequest(selectedItem,id)
                                     val jsonToRemove = gson.toJson(remove)
                                     removeFriend(jsonToRemove)
                                 }
@@ -570,7 +568,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             // ask public friend's poi with a server call
             val id = account?.email?.replace("@gmail.com", "")!!
             val result: JSONObject = getPoiFromFriend(id,selectedItem)
-
+            println(result)
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
             dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
@@ -583,7 +581,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             // add this empty item cause a bug with spinner, on init select the first item and trigger the onItemSelected
             markerList[0] = ""
             for (i in result.keys()) {
-                if (result.getJSONObject(i).get("type") as String == "Pubblico") {
+
+                if (result.getJSONObject(i).get("visibility") as String == "Pubblico") {
                     markerList[indexMarkerMap] =
                         result.getJSONObject(i).get("name") as String
                     indexMarkerMap++
@@ -687,7 +686,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
                 val id = account?.email?.replace("@gmail.com","")!!
-                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val receiver = emailText.text.toString().replace("@gmail.com","")
+                val sendRequest = FriendRequest(receiver,id)
                 val jsonToAdd = gson.toJson(sendRequest)
                 sendFriendRequest(jsonToAdd)
 

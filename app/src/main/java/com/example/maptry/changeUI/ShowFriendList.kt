@@ -81,7 +81,8 @@ class ShowFriendList : AppCompatActivity() {
             addBtn.setOnClickListener {
                 if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
                     val id = account?.email?.replace("@gmail.com","")!!
-                    val sendRequest = FriendRequest(emailText.text.toString(),id)
+                    val receiver = emailText.text.toString().replace("@gmail.com","")
+                    val sendRequest = FriendRequest(receiver,id)
                     val jsonToAdd = gson.toJson(sendRequest)
                     sendFriendRequest(jsonToAdd)
                     alertDialog.dismiss()
@@ -159,7 +160,7 @@ class ShowFriendList : AppCompatActivity() {
                         snackbarView.setBackgroundColor(Color.BLACK)
                         snackbar.show()
                         if (id != null) {
-                            val remove = FriendRequest(id, selectedItem)
+                            val remove = FriendRequest(selectedItem,id)
                             val jsonToRemove = gson.toJson(remove)
                             removeFriend(jsonToRemove)
                             showFriendActivity()
@@ -370,7 +371,8 @@ class ShowFriendList : AppCompatActivity() {
         addBtn.setOnClickListener {
             if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
                 val id = account?.email?.replace("@gmail.com","")!!
-                val sendRequest = FriendRequest(emailText.text.toString(),id)
+                val receiver = emailText.text.toString().replace("@gmail.com","")
+                val sendRequest = FriendRequest(receiver,id)
                 val jsonToAdd = gson.toJson(sendRequest)
                 sendFriendRequest(jsonToAdd)
                 alertDialog.dismiss()

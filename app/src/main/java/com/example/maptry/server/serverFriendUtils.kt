@@ -1,6 +1,5 @@
 package com.example.maptry.server
 
-import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
 import com.example.maptry.utils.toJsonObject
@@ -33,10 +32,10 @@ fun getFriend(user:String): JSONObject {
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
         result = toJsonObject(JSONArray(response.body()?.string()!!))
-        println("Get poi from friend is success")
+        println("Get friend is success")
     }
     else{
-        println("Get poi from friend is error")
+        println("Get friend is error")
         println(response.message())
     }
     return result

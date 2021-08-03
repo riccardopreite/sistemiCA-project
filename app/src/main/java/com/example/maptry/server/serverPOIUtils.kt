@@ -59,6 +59,7 @@ fun getPoiFromFriend(user:String,friend:String): JSONObject {
         println("FRIEND RESPONSE")
         result = toJsonObject(JSONArray(response.body()?.string()!!))
         println("Get poi from friend is success")
+        println(result)
     }
     else{
         println("Get poi from friend is error")
@@ -98,7 +99,7 @@ fun removePOI(poiId:String,user: String) {
     println("IN REMOVE POI")
     val formBody: RequestBody = FormBody.Builder()
         .add("poiId", poiId)
-        .add("username", user)
+        .add("user", user)
         .build()
 
     val url = URL(baseUrl + removePOIUrl)
