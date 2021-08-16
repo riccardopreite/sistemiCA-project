@@ -1,7 +1,6 @@
 package com.example.maptry.server
 
-import com.example.maptry.activity.MapsActivity.Companion.ip
-import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.config.Api
 import com.example.maptry.config.Auth
 import com.example.maptry.utils.toJsonObject
 import okhttp3.*
@@ -14,7 +13,7 @@ const val endpoint = "points-of-interest/"
 const val addPOIUrl = "add"
 const val removePOIUrl = "remove"
 const val friendPOIUrl = "friend"
-val baseUrl = "https://$ip$port/$endpoint"
+val baseUrl = "https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}/$endpoint"
 val JSON = MediaType.parse("application/json; charset=utf-8")
 
 //https://casadiso.ddns.net:3000/points-of-interest/

@@ -61,8 +61,8 @@ import java.util.*
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
     "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"
 )
-class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
-    GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,NavigationView.OnNavigationItemSelectedListener{
+class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
+    GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationUpdateState = false
@@ -92,6 +92,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
     private lateinit var show: () -> Unit
     companion object {
+        val TAG: String = LoginActivity::class.qualifiedName!!
+
         lateinit var locationCallback: LocationCallback
         lateinit var lastLocation: Location
         @SuppressLint("StaticFieldLeak")
@@ -127,9 +129,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         var builder = LocationSettingsRequest.Builder()
         var newBundy = Bundle()
         var mLocationRequest: LocationRequest? = null
-        var ip = "192.168.178.73:"
-//        var port = port+"" //oldport
-        var port = "3000"
         var isRunning : Boolean = false
         var zoom = 1
         var oldPos :Marker? = null
@@ -157,12 +156,14 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onDestroy() {
+        Log.v(TAG, "onDestroy")
         super.onDestroy()
         println("onDestroy distrutto")
         isRunning = false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         println("onCreate")
         if(isRunning) {
@@ -210,6 +211,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     @SuppressLint("RestrictedApi")
     override fun onMapReady(googleMap: GoogleMap) {
+        Log.v(TAG, "onMapReady")
         mMap = googleMap
         supportManager = supportFragmentManager
         mMap.setOnMarkerClickListener(this)
@@ -234,7 +236,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*This Function open a dialog with the information of the marker which was clicked*/
     @SuppressLint("SetTextI18n")
     override fun onMarkerClick(p0: Marker): Boolean {
-
+        Log.v(TAG, "onMarkerClick")
         try {
             val myPos = LatLng(lastLocation.latitude, lastLocation.longitude)
 
@@ -261,6 +263,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*Open Dialog to create new POI in the position clicked*/
     @SuppressLint("SetTextI18n")
     override fun onMapClick(p0: LatLng) {
+        Log.v(TAG, "onMapClick")
         val inflater: LayoutInflater = this.layoutInflater
         val dialogView = showCreateMarkerView(inflater,p0)
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -276,6 +279,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*Start Activity for result Function*/
     @SuppressLint("ResourceType", "CutPasteId")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.v(TAG, "onActivityResult")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CHECK_SETTINGS) {
             if (resultCode == Activity.RESULT_OK) {
@@ -305,7 +309,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             }
         }
         else if (requestCode == 40) {
-            if (resultCode == 50) {
+            if (resultCode == LoginActivity.resultCodeSignedIn) {
                 println("loggato")
                 // user logged, init structure, create user in firebase if not exist
                 Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
@@ -347,7 +351,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                 setHomeLayout(navBar)
 
             }
-            else if (resultCode == 40) {
+            else if (resultCode == LoginActivity.resultCodeNotSignedIn) {
                 println("non loggato")
                 val x = findViewById<NavigationView>(id.nav_view).getHeaderView(0)
                 val close = x.findViewById<ImageView>(R.id.close)
@@ -363,6 +367,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        Log.v(TAG, "onNavigationItemSelected")
         println("MENU")
         return when (item.itemId) {
             id.list -> {
@@ -389,6 +394,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // populate ListView with poi list
     @SuppressLint("WrongViewCast")
     fun showPOI() {
+        Log.v(TAG, "showPOI")
         show = {
             var index = 0
             val txt: TextView = findViewById(id.nosrc)
@@ -446,6 +452,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // populate ListView with live list
     fun showLive(){
+        Log.v(TAG, "showLive")
         val len = myLive.length()
         var index = 0
         val txt: TextView = findViewById(id.nolive)
@@ -474,7 +481,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // populate ListView with friend list
     @SuppressLint("ShowToast")
-    fun showFriend(){
+    fun showFriend() {
+        Log.v(TAG, "showFriend")
         println("friendJson")
         println(friendJson)
         val len = friendJson.length()
@@ -661,6 +669,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // show menu or home and reDraw all poi
     fun closeDrawer(view: View) {
+        Log.v(TAG, "closeDrawer")
         println(view)
         if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         else {
@@ -668,8 +677,10 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         }
     }
+
     //get email inserted to send a request via server
     fun addFriend(view: View) {
+        Log.v(TAG, "addFriend")
         println(view)
         val inflater: LayoutInflater = this.layoutInflater
         val dialogView: View = inflater.inflate(R.layout.add_friend, null)

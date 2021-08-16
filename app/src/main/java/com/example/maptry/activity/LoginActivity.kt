@@ -26,22 +26,22 @@ import com.example.maptry.config.Auth
 class LoginActivity : AppCompatActivity() {
     companion object {
         val TAG: String = LoginActivity::class.qualifiedName!!
+
+        /**
+         * Result code returned when the activity closes and the user is authenticated.
+         */
+        const val resultCodeSignedIn: Int = 50
+
+        /**
+         * Result code returned when the activity closes and the user is not authenticated.
+         */
+        const val resultCodeNotSignedIn: Int = 40
     }
 
     /**
      * Request code to check whether the result returned by the activity comes from the Google Sign In intent.
      */
     private val requestCodeSignIn: Int = 1
-
-    /**
-     * Result code returned when the activity closes and the user is authenticated.
-     */
-    private val resultCodeSignedIn: Int = 50
-
-    /**
-     * Result code returned when the activity closes and the user is not authenticated.
-     */
-    private val resultCodeNotSignedIn: Int = 40
 
     /**
      * Flag to memorize whether the user requested to utilize location services or not.

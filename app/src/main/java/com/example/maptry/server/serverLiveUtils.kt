@@ -1,8 +1,7 @@
 package com.example.maptry.server
 
 import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.ip
-import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.config.Api
 import com.example.maptry.config.Auth
 import com.example.maptry.utils.toJsonObject
 import okhttp3.OkHttpClient
@@ -14,7 +13,7 @@ import java.net.URL
 import java.net.URLEncoder
 
 const val endpointLive = "live-events/"
-val baseUrlLive = "https://${ip}${port}/$endpointLive"
+val baseUrlLive = "https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}/$endpointLive"
 
 //https://casadiso.ddns.net:3000/live-events/
 fun getLivePoi(user:String): JSONObject {

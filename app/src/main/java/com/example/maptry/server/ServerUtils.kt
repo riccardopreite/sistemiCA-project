@@ -2,8 +2,7 @@ package com.example.maptry.server
 
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity.Companion.context
-import com.example.maptry.activity.MapsActivity.Companion.ip
-import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.config.Api
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
@@ -31,6 +30,6 @@ val trustManager = tmf.trustManagers[0] as X509TrustManager
 
 val hostnameVerifier = HostnameVerifier { _, session -> //first
     val hv: HostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
-    hv.verify(ip, session)
+    hv.verify(Api.ip, session)
     return@HostnameVerifier true
 }
