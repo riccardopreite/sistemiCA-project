@@ -27,6 +27,7 @@ import com.example.maptry.R.id
 import com.example.maptry.changeUI.gson
 import com.example.maptry.changeUI.markerView
 import com.example.maptry.changeUI.showCreateMarkerView
+import com.example.maptry.config.Auth
 import com.example.maptry.dataclass.ConfirmRequest
 import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.location.myLocationClick
@@ -92,12 +93,12 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var show: () -> Unit
     companion object {
         lateinit var locationCallback: LocationCallback
-        lateinit var firebaseAuth: FirebaseAuth
+        lateinit var firebaseAuth: FirebaseAuth // TODO Passare a Auth.authenticationManager
         lateinit var lastLocation: Location
         @SuppressLint("StaticFieldLeak")
         lateinit var context : Context
         lateinit var alertDialog: AlertDialog
-        lateinit var mMap: GoogleMap
+        lateinit var mMap: GoogleMap // TODO Passare a Location.googleMap
         lateinit var mAnimation : Animation
         lateinit var geocoder : Geocoder
         lateinit var dataFromfirestore :List<DocumentSnapshot>
@@ -121,16 +122,16 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         lateinit var supportManager: FragmentManager
 
 
-        private const val REQUEST_CHECK_SETTINGS = 2
-        const val REQUEST_LOCATION_PERMISSION = 1
+        private const val REQUEST_CHECK_SETTINGS = 2 // TODO Cambiare con Location.REQUEST_CHECK_SETTINGS
+        const val REQUEST_LOCATION_PERMISSION = 1 // TODO Cambiare con Location.REQUEST_LOCATION_PERMISSIONS
 
 
         var builder = LocationSettingsRequest.Builder()
         var newBundy = Bundle()
         var mLocationRequest: LocationRequest? = null
-        var ip = "casadiso.ddns.net"
+        var ip = "192.168.178.73:"
 //        var port = port+"" //oldport
-        var port = ""
+        var port = "3000"
         var isRunning : Boolean = false
         var zoom = 1
         var oldPos :Marker? = null
@@ -141,7 +142,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         var mymarker = JSONObject() //marker
         var myList = JSONObject() // POI json
         val myLive = JSONObject() // live json
-        var account : GoogleSignInAccount? = null
+//        var account : GoogleSignInAccount? = null // TODO Passare a Auth.signInAccount
         var friendJson = JSONObject() // friend json
         var friendTempPoi = JSONObject()
 
@@ -310,11 +311,11 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             if (resultCode == 50) {
                 println("loggato")
                 // user logged, init structure, create user in firebase if not exist
-                account = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
-                val id: String = account?.email?.replace("@gmail.com", "")!!
+                Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
+                val id: String = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
                 val am: AccountManager = AccountManager.get(this)
                 val options = Bundle()
-                val new = account?.account
+                val new = Auth.signInAccount?.account
                 val letHandler = Handler(Looper.getMainLooper())
                 letHandler.post(error)
 
@@ -509,7 +510,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
                         friendJson.remove(i)
                         val cancel = "Annulla"
                         val text = "Rimosso $selectedItem"
-                        val id = account?.email?.replace("@gmail.com","")
+                        val id = Auth.signInAccount?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 5000)
                             snackbar.setAction(cancel) {
                                 // Toast to undo operation
@@ -566,7 +567,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
             val context = this
             txtName.text = selectedItem
             // ask public friend's poi with a server call
-            val id = account?.email?.replace("@gmail.com", "")!!
+            val id = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
             val result: JSONObject = getPoiFromFriend(id,selectedItem)
             println(result)
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
@@ -684,8 +685,8 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         alertDialog.show()
 
         addBtn.setOnClickListener {
-            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                val id = account?.email?.replace("@gmail.com","")!!
+            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != Auth.signInAccount?.email && emailText.text.toString() != Auth.signInAccount?.email?.replace("@gmail.com","")){
+                val id = Auth.signInAccount?.email?.replace("@gmail.com","")!!
                 val receiver = emailText.text.toString().replace("@gmail.com","")
                 val sendRequest = FriendRequest(receiver,id)
                 val jsonToAdd = gson.toJson(sendRequest)

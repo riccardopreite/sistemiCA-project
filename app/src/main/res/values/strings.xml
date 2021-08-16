@@ -85,4 +85,5 @@
     <string name="remind">Rimanda</string>
     <string name="timer">Timer:</string>
     <string name="nolive">Nessun evento Live!</string>
+    <string name="location_services_required">This app requires location services to be enabled to work properly.</string>
 </resources>

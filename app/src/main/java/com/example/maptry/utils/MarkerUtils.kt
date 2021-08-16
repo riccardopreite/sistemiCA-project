@@ -4,8 +4,6 @@ import android.graphics.Color
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.context
@@ -16,6 +14,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.gson
+import com.example.maptry.config.Auth
 import com.example.maptry.dataclass.*
 import com.example.maptry.server.addLivePOI
 import com.example.maptry.server.addPOI
@@ -148,7 +147,7 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit){
             myList.remove(i)
             val cancel = "Annulla"
             val text = "Rimosso $toRemove"
-            val id = account?.email?.replace("@gmail.com","")!!
+            val id = Auth.signInAccount?.email?.replace("@gmail.com","")!!
             // create a Toast to undo the operation of removing
             val snackbar = Snackbar.make(view, text, 5000)
                 .setAction(cancel) {

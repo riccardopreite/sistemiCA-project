@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.R
+import com.example.maptry.config.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -29,10 +29,10 @@ class Start : BroadcastReceiver() {
         MapsActivity.context = context
         FirebaseFirestore.setLoggingEnabled(true)
         MapsActivity.db = FirebaseFirestore.getInstance()
-        account = GoogleSignIn.getLastSignedInAccount(context)
+        Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(context)
         println("maybe done")
-        println(account?.email)
-        account?.let { firebaseAuthWithGoogle(it) }
+        println(Auth.signInAccount?.email)
+        Auth.signInAccount?.let { firebaseAuthWithGoogle(it) }
 
     }
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
@@ -60,7 +60,7 @@ class Start : BroadcastReceiver() {
             .requestEmail()
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(context, mGoogleSignInOptions)
-        account = GoogleSignIn.getLastSignedInAccount(context)
+        Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(context)
         println("DONE")
     }
 }

@@ -9,24 +9,18 @@ import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.core.content.ContextCompat.startActivity
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.account
-import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
-import com.example.maptry.activity.MapsActivity.Companion.geocoder
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.lastLocation
-import com.example.maptry.activity.MapsActivity.Companion.listAddr
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.mAnimation
@@ -37,17 +31,15 @@ import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
 import com.example.maptry.changeUI.CircleTransform
+import com.example.maptry.config.Auth
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.squareup.picasso.Picasso
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
 import java.lang.Exception
-import java.lang.reflect.Array
 
 var notificationJson = JSONObject()
 
@@ -151,7 +143,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
             val lon = mark.position.longitude
             val phoneFriend = friendTempPoi.getJSONObject(p0).get("url") as String
             val urlFriend = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
-            val id = account?.email?.replace("@gmail.com", "") as String
+            val id = Auth.signInAccount?.email?.replace("@gmail.com", "") as String
             val newJsonMark = createJsonMarker(name,addr,type,visibility,lat,lon,phoneFriend,urlFriend,id)
             myList.put(p0, newJsonMark)
         }
@@ -175,9 +167,9 @@ fun setHomeLayout(navBar : View){
     val menuIcon: ImageView = layout.getChildAt(0) as ImageView
     imageView.visibility = View.VISIBLE
     // load google photo
-    Picasso.get().load(account?.photoUrl).into(imageView)
+    Picasso.get().load(Auth.signInAccount?.photoUrl).into(imageView)
     Picasso.get()
-        .load(account?.photoUrl)
+        .load(Auth.signInAccount?.photoUrl)
         .transform(CircleTransform())
         .resize(100, 100)
         .into(menuIcon)
@@ -196,9 +188,9 @@ fun setHomeLayout(navBar : View){
         )
     }
     user.visibility = View.VISIBLE
-    user.text = account?.displayName
+    user.text = Auth.signInAccount?.displayName
     email.visibility = View.VISIBLE
-    email.text = account?.email
+    email.text = Auth.signInAccount?.email
     close.visibility = View.VISIBLE
     println("fine SHOW HOME")
 

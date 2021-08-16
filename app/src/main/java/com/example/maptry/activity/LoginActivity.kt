@@ -1,20 +1,16 @@
 package com.example.maptry.activity
-import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import android.view.View
-import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity.Companion.REQUEST_LOCATION_PERMISSION
-
+import android.Manifest
 import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.locationCallback
 import com.example.maptry.activity.MapsActivity.Companion.mLocationRequest
@@ -28,170 +24,232 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import java.lang.Exception
+
+import androidx.appcompat.app.AlertDialog
+import com.example.maptry.config.Auth
+
 
 class LoginActivity : AppCompatActivity() {
+    companion object {
+        val TAG: String = LoginActivity::class.qualifiedName!!
+    }
 
-    //Login
-    private val rcSignIn: Int = 1
+    /**
+     * Request code to check whether the result returned by the activity comes from the Google Sign In intent.
+     */
+    private val requestCodeSignIn: Int = 1
+
+    /**
+     * Result code returned when the activity closes and the user is authenticated.
+     */
+    private val resultCodeSignedIn: Int = 50
+
+    /**
+     * Result code returned when the activity closes and the user is not authenticated.
+     */
+    private val resultCodeNotSignedIn: Int = 40
+
+    /**
+     * Flag to memorize whether the user requested to utilize location services or not.
+     */
+    private var locationPermissionAllowed: Boolean = false
+
+    /**
+     * Permission request launcher (for location permission).
+     */
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+        isGranted: Boolean ->
+        if(isGranted) {
+            locationPermissionAllowed = true
+            Log.i(TAG, "Permission to use location GRANTED")
+        } else {
+            locationPermissionAllowed = false
+            Log.i(TAG, "Permission to use location DENIED")
+        }
+    }
+
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
-    private var account: GoogleSignInAccount? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
         firebaseAuth = FirebaseAuth.getInstance()
 
-
-        val data = Intent()
-
-        data.data = Uri.parse("done")
-
-        // ask gps permission if not allowed yet
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            requestPermissions()
-        }
-        else {
-            // simply get last account
-            startAccount()
-        }
-
-
+        checkPermissionsAndSignIn()
     }
 
-    private fun configureGoogleSignIn() {
+    /**
+     * Setting up all the necessary stuff to login with Google.
+     */
+    private fun configureSignInWithGoogle() {
+        Log.v(TAG, "configureSignInWithGoogle")
         // set google key and prepare for sign in
         mGoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
         mGoogleSignInClient = GoogleSignIn.getClient(this, mGoogleSignInOptions)
-         account = GoogleSignIn.getLastSignedInAccount(this)
-        setResultLogin(account)
+        Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this)
     }
 
-
-    /*Start SignIn Function*/
-    private fun signIn() {
-        // intent to sign in
-        val signInIntent : Intent = mGoogleSignInClient.signInIntent
-        println(signInIntent)
-
-        startActivityForResult(signInIntent, rcSignIn)
+    /**
+     * Starts a new activity that asks the user to sign in. The result is returned through an intent
+     * that gets processed in [onActivityResult].
+     */
+    private fun signInWithGoogle() {
+        Log.v(TAG, "signInWithGoogle")
+        Log.i(TAG, "The user tries to log in.")
+        startActivityForResult(mGoogleSignInClient.signInIntent, requestCodeSignIn)
     }
 
-    private fun setResultLogin( account: GoogleSignInAccount?){
-        if(account != null){
-            val data = Intent()
-            data.data = Uri.parse("done")
-            setResult(50, data)
-
-        }else {
-            val data = Intent()
-            data.data = Uri.parse("Not logged")
-            setResult(40, data)
+    /**
+     * Sets the result value for the intent returned by this activity.
+     */
+    private fun setResultAfterLogin(account: GoogleSignInAccount?) {
+        Log.v(TAG, "setResultAfterLogin")
+        if(account != null) {
+            val data = Intent().apply {
+                data = Uri.parse("signed-in")
+            }
+            setResult(resultCodeSignedIn, data)
+        } else {
+            val data = Intent().apply {
+                data = Uri.parse("not-signed-in")
+            }
+            setResult(resultCodeNotSignedIn, data)
         }
     }
 
-    private fun handleSignInResult( completedTask:Task<GoogleSignInAccount>) {
-        try {
-            account  = completedTask.getResult(ApiException::class.java)
-            // connection with firebase
-            account?.let { firebaseAuthWithGoogle(it) }
-            account?.let { setResultLogin(it) }
-        } catch (e: ApiException) {
-            Log.w("IN FAIL", "signInResult:failed code=" + e.statusCode)
-            setResultLogin(null)
-        }
-    }
-
+    /**
+     * After authenticating via Google, the user is authenticated against Firebase Auth
+     * in order to retrieve the user token to use on the webservices.
+     */
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+        Log.v(TAG, "firebaseAuthWithGoogle")
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
-            if (it.isSuccessful) {
-                token = it.result.user?.getIdToken(false)?.result?.token!!
-                println("TOKEN")
-                println(token)
-                this.finish()
+        firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                firebaseAuth.currentUser!!.getIdToken(true).addOnCompleteListener {
+                    if(it.isSuccessful) {
+                        Log.i(TAG, "Token for APIs successfully retrieved")
+                        token = it.result.token!! // TODO Sostituire con Auth.userToken
+                        finish()
+                    }
+                }
             } else {
-                configureGoogleSignIn()
-                signIn()
+                configureSignInWithGoogle()
+                signInWithGoogle()
             }
         }
     }
 
-    private fun startAccount(){
-        if(Build.VERSION.SDK_INT >= 23 && checkPermission()) {
-            try {
-                //try to set up map location
+    /**
+     * This method checks permissions to ACCESS_FINE_LOCATION and if enabled:
+     * - enables the retrieval of location updates
+     * - checks if the user is logged in via Google (authentication provided by the device) and if so, logs in via Firebase
+     * - if the use is not logged in, it asks the user to log in
+     * If
+     */
+    private fun checkPermissionsAndSignIn() {
+        Log.v(TAG, "checkPermissionsAndSignIn")
+        // Location permission check
+        when {
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.i(TAG, "Enabling location services since permissions were given.")
+                locationPermissionAllowed = true
+
                 MapsActivity.mMap.isMyLocationEnabled = true
-                val loop = Looper.myLooper() as Looper
                 LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(
-                    mLocationRequest as LocationRequest, locationCallback, loop
+                    mLocationRequest as LocationRequest,
+                    locationCallback,
+                    Looper.myLooper()!!
+                )
+
+                retrieveGoogleAccountAndSignInOnFirebase()
+            }
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) -> {
+                Log.i(TAG, "Asking the user for permissions (rationale).")
+                // addition rationale should be displayed
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+                builder.setTitle(title)
+                    .setMessage(R.string.location_services_required)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        requestPermissionLauncher.launch(
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                    } // The user can only accept location functionalities.
+                builder.create().show()
+            }
+            else -> {
+                Log.i(TAG, "Asking the user for permissions.")
+                requestPermissionLauncher.launch(
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
-            catch (e:Exception){}
-        }
-        if(GoogleSignIn.getLastSignedInAccount(this) != null) {
-            account = GoogleSignIn.getLastSignedInAccount(this)
-            account?.let { firebaseAuthWithGoogle(it) }
-            // Signed in successfully, show authenticated UI.
-            account?.let { setResultLogin(it) }
-        }
-        else{
-            configureGoogleSignIn()
-            signIn()
         }
     }
 
-    private fun checkPermission() : Boolean {
-        return if (ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            true
+    /**
+     * Retrieves the account via Google Play Services API, if it is null then asks the user to
+     * login ([signInWithGoogle]), otherwise it logs the user in via Firebase.
+     */
+    private fun retrieveGoogleAccountAndSignInOnFirebase() {
+        Log.v(TAG, "retrieveGoogleAccountAndSignInOnFirebase")
+        Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this) // TODO Sostituire con Auth.getLastSignedInAccount
+        if(Auth.signInAccount == null) {
+            Log.i(TAG, "Asking the user to log in.")
+            configureSignInWithGoogle()
+            signInWithGoogle()
         } else {
-            requestPermissions()
-            false
+            Auth.signInAccount?.let {
+                Log.i(TAG, "The user has already logged in.")
+                setResultAfterLogin(it)
+                firebaseAuthWithGoogle(it)
+                // Signed in successfully, show authenticated UI.
+            }
         }
     }
-
-/*End SignIn Function*/
-
-    fun get(): GoogleSignInAccount? {
-        return this.account
-    }
-
-/*Start Override Function*/
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-
-
+        Log.v(TAG, "onActivityResult")
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == rcSignIn) {
-            val task:Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
-            handleSignInResult(task)
-        }
-    }
-    override fun onBackPressed() { }
 
-    private fun requestPermissions() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            REQUEST_LOCATION_PERMISSION
-        )
+        if (requestCode == requestCodeSignIn) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                Auth.signInAccount = task.getResult(ApiException::class.java)!!
+                Auth.signInAccount?.let {
+                    setResultAfterLogin(it)
+                    firebaseAuthWithGoogle(it)
+                }
+            } catch (e: ApiException) {
+                Log.w(TAG, "The sign in process via Google failed: " + e.message)
+                setResultAfterLogin(null)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Log.v(TAG, "onRequestPermissionsResult")
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        // Login independently of the result of the permission request
-        startAccount()
+        // Login independently of the result of the permission request (of course the app functions are limited)
+        if(locationPermissionAllowed) {
+            checkPermissionsAndSignIn()
+        } else {
+            retrieveGoogleAccountAndSignInOnFirebase()
+        }
     }
-
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -207,9 +265,4 @@ class LoginActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         savedInstanceState.getBundle("newBundy")
     }
-
-    fun closeDrawer(view: View) {}
-    fun addFriend(view: View) {}
-
-/*End Override Function*/
 }

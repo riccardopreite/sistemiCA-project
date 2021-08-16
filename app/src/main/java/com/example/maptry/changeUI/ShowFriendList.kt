@@ -14,7 +14,6 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.example.maptry.*
 import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
@@ -30,6 +29,7 @@ import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.config.Auth
 import com.example.maptry.dataclass.ConfirmRequest
 import com.example.maptry.dataclass.FriendRequest
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -79,8 +79,8 @@ class ShowFriendList : AppCompatActivity() {
             alertDialog.show()
 
             addBtn.setOnClickListener {
-                if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                    val id = account?.email?.replace("@gmail.com","")!!
+                if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != Auth.signInAccount?.email && emailText.text.toString() != Auth.signInAccount?.email?.replace("@gmail.com","")){
+                    val id = Auth.signInAccount?.email?.replace("@gmail.com","")!!
                     val receiver = emailText.text.toString().replace("@gmail.com","")
                     val sendRequest = FriendRequest(receiver,id)
                     val jsonToAdd = gson.toJson(sendRequest)
@@ -139,7 +139,7 @@ class ShowFriendList : AppCompatActivity() {
                         friendJson.remove(i)
                         val cancelString = "Annulla"
                         val text = "Rimosso $selectedItem"
-                        val id = account?.email?.replace("@gmail.com","")
+                        val id = Auth.signInAccount?.email?.replace("@gmail.com","")
                         val snackbar = Snackbar.make(view, text, 2000)
                             .setAction(cancelString) {
 
@@ -198,7 +198,7 @@ class ShowFriendList : AppCompatActivity() {
             dialogBuilder.setView(dialogView)
 
             val alertDialog2 = dialogBuilder.create()
-            val id = account?.email?.replace("@gmail.com", "")!!
+            val id = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
             val result: JSONObject = getPoiFromFriend(id,selectedItem)
             this@ShowFriendList.runOnUiThread {
                 try {
@@ -369,8 +369,8 @@ class ShowFriendList : AppCompatActivity() {
         alertDialog.show()
 
         addBtn.setOnClickListener {
-            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != account?.email && emailText.text.toString() != account?.email?.replace("@gmail.com","")){
-                val id = account?.email?.replace("@gmail.com","")!!
+            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != Auth.signInAccount?.email && emailText.text.toString() != Auth.signInAccount?.email?.replace("@gmail.com","")){
+                val id = Auth.signInAccount?.email?.replace("@gmail.com","")!!
                 val receiver = emailText.text.toString().replace("@gmail.com","")
                 val sendRequest = FriendRequest(receiver,id)
                 val jsonToAdd = gson.toJson(sendRequest)

@@ -11,7 +11,6 @@ import android.view.View
 import android.widget.*
 import androidx.core.content.ContextCompat.startActivity
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.context
@@ -28,6 +27,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.myjson
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
+import com.example.maptry.config.Auth
 import com.example.maptry.utils.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -124,7 +124,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
     val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker1)
     val addbutton: Button = dialogView.findViewById(R.id.addBtn)
     val removebutton: Button = dialogView.findViewById(R.id.removeBtn)
-    val id = account?.email?.replace("@gmail.com", "")
+    val id = Auth.signInAccount?.email?.replace("@gmail.com", "")
 
     timePicker.hour = 3
     timePicker.minute = 0

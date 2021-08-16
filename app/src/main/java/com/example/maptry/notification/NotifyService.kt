@@ -14,7 +14,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.maptry.*
-import com.example.maptry.activity.MapsActivity.Companion.account
 import com.example.maptry.activity.MapsActivity.Companion.context
 import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
 import com.example.maptry.activity.MapsActivity.Companion.db
@@ -24,6 +23,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.changeUI.*
+import com.example.maptry.config.Auth
 import com.example.maptry.server.AcceptFriend
 import com.example.maptry.server.DeclineFriend
 import com.example.maptry.utils.createLiveJsonMarker
@@ -99,7 +99,7 @@ class NotifyService : Service() {
                 }
 //                        var notification: Notification
 //                        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                        val idDB = account?.email?.replace("@gmail.com", "")
+                        val idDB = Auth.signInAccount?.email?.replace("@gmail.com", "")
                         if (idDB != null) {
                             //Listener for live marker
                             db.collection("user").document(idDB).collection("live")
@@ -421,7 +421,7 @@ class NotifyService : Service() {
                                                 json = JSONObject(chi.value as HashMap<*, *>)
                                                 val nameLiveExp = json.get("name") as String
                                                 val address = json.get("address") as String
-                                                val id = account?.email?.replace("@gmail.com","")
+                                                val id = Auth.signInAccount?.email?.replace("@gmail.com","")
                                                 val voidIntent = Intent()
                                                 val voidPendingIntent = PendingIntent.getActivity(
                                                     context,
