@@ -25,7 +25,7 @@ class Start : BroadcastReceiver() {
     lateinit var mGoogleSignInOptions: GoogleSignInOptions
     override fun onReceive(context: Context, intent: Intent) {
         println("BOOT FINISHED")
-        MapsActivity.firebaseAuth = FirebaseAuth.getInstance()
+        Auth.loadAuthenticationManager()
         MapsActivity.context = context
         FirebaseFirestore.setLoggingEnabled(true)
         MapsActivity.db = FirebaseFirestore.getInstance()
@@ -37,7 +37,7 @@ class Start : BroadcastReceiver() {
     }
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        MapsActivity.firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
+        Auth.authManager.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
                 val i = Intent(context, NotifyService::class.java)
 

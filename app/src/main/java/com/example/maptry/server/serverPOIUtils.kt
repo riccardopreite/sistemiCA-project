@@ -1,8 +1,8 @@
 package com.example.maptry.server
 
-import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.config.Auth
 import com.example.maptry.utils.toJsonObject
 import okhttp3.*
 import org.json.JSONArray
@@ -25,7 +25,7 @@ fun getPoi(user:String): JSONObject {
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
@@ -51,7 +51,7 @@ fun getPoiFromFriend(user:String,friend:String): JSONObject {
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
@@ -77,7 +77,7 @@ fun addPOI(poiToAdd:String): String{
     var result = ""
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .post(body)
         .build()
@@ -105,7 +105,7 @@ fun removePOI(poiId:String,user: String) {
     val url = URL(baseUrl + removePOIUrl)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .delete(formBody)
         .build()

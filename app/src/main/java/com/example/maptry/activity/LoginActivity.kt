@@ -11,21 +11,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.maptry.R
 import android.Manifest
-import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.locationCallback
 import com.example.maptry.activity.MapsActivity.Companion.mLocationRequest
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
-import com.example.maptry.server.token
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 
 import androidx.appcompat.app.AlertDialog
 import com.example.maptry.config.Auth
@@ -70,31 +62,14 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var mGoogleSignInClient: GoogleSignInClient
-    lateinit var mGoogleSignInOptions: GoogleSignInOptions
-
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
-        firebaseAuth = FirebaseAuth.getInstance()
+        Auth.loadAuthenticationManager()
 
         checkPermissionsAndSignIn()
-    }
-
-    /**
-     * Setting up all the necessary stuff to login with Google.
-     */
-    private fun configureSignInWithGoogle() {
-        Log.v(TAG, "configureSignInWithGoogle")
-        // set google key and prepare for sign in
-        mGoogleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        mGoogleSignInClient = GoogleSignIn.getClient(this, mGoogleSignInOptions)
-        Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this)
     }
 
     /**
@@ -104,45 +79,27 @@ class LoginActivity : AppCompatActivity() {
     private fun signInWithGoogle() {
         Log.v(TAG, "signInWithGoogle")
         Log.i(TAG, "The user tries to log in.")
-        startActivityForResult(mGoogleSignInClient.signInIntent, requestCodeSignIn)
-    }
-
-    /**
-     * Sets the result value for the intent returned by this activity.
-     */
-    private fun setResultAfterLogin(account: GoogleSignInAccount?) {
-        Log.v(TAG, "setResultAfterLogin")
-        if(account != null) {
-            val data = Intent().apply {
-                data = Uri.parse("signed-in")
-            }
-            setResult(resultCodeSignedIn, data)
-        } else {
-            val data = Intent().apply {
-                data = Uri.parse("not-signed-in")
-            }
-            setResult(resultCodeNotSignedIn, data)
-        }
+        startActivityForResult(Auth.getSignInIntent(this), requestCodeSignIn)
     }
 
     /**
      * After authenticating via Google, the user is authenticated against Firebase Auth
      * in order to retrieve the user token to use on the webservices.
      */
-    private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
+    private fun firebaseAuthWithGoogle() {
         Log.v(TAG, "firebaseAuthWithGoogle")
-        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
-        firebaseAuth.signInWithCredential(credential).addOnCompleteListener { task ->
+        val credential = Auth.getGoogleCredential(Auth.signInAccount!!.idToken!!) // Auth.signInAccount, idToken are surely not null.
+        Auth.authManager.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                firebaseAuth.currentUser!!.getIdToken(true).addOnCompleteListener {
+                Auth.authManager.currentUser!!.getIdToken(true).addOnCompleteListener {
                     if(it.isSuccessful) {
                         Log.i(TAG, "Token for APIs successfully retrieved")
-                        token = it.result.token!! // TODO Sostituire con Auth.userToken
+                        Auth.userToken = it.result.token!! // TODO Sostituire con Auth.userToken
                         finish()
                     }
                 }
             } else {
-                configureSignInWithGoogle()
+                Auth.signInAccount = Auth.getLastSignedInAccount(this)
                 signInWithGoogle()
             }
         }
@@ -206,16 +163,17 @@ class LoginActivity : AppCompatActivity() {
      */
     private fun retrieveGoogleAccountAndSignInOnFirebase() {
         Log.v(TAG, "retrieveGoogleAccountAndSignInOnFirebase")
-        Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this) // TODO Sostituire con Auth.getLastSignedInAccount
+        Auth.signInAccount = Auth.getLastSignedInAccount(this) // TODO Sostituire con Auth.getLastSignedInAccount
         if(Auth.signInAccount == null) {
             Log.i(TAG, "Asking the user to log in.")
-            configureSignInWithGoogle()
             signInWithGoogle()
         } else {
             Auth.signInAccount?.let {
                 Log.i(TAG, "The user has already logged in.")
-                setResultAfterLogin(it)
-                firebaseAuthWithGoogle(it)
+                setResult(resultCodeSignedIn, Intent().apply {
+                    this.data = Uri.parse("signed-in") // this is referred to the Intent.
+                })
+                firebaseAuthWithGoogle()
                 // Signed in successfully, show authenticated UI.
             }
         }
@@ -226,16 +184,20 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == requestCodeSignIn) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            val task = Auth.getSignedInAccountFromIntent(data)
             try {
                 Auth.signInAccount = task.getResult(ApiException::class.java)!!
                 Auth.signInAccount?.let {
-                    setResultAfterLogin(it)
-                    firebaseAuthWithGoogle(it)
+                    setResult(resultCodeSignedIn, Intent().apply {
+                        this.data = Uri.parse("signed-in") // this is referred to the Intent.
+                    })
+                    firebaseAuthWithGoogle()
                 }
             } catch (e: ApiException) {
                 Log.w(TAG, "The sign in process via Google failed: " + e.message)
-                setResultAfterLogin(null)
+                setResult(resultCodeNotSignedIn, Intent().apply {
+                    this.data = Uri.parse("not-signed-in")
+                })
             }
         }
     }

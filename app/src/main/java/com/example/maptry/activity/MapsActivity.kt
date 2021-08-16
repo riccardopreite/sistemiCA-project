@@ -93,7 +93,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var show: () -> Unit
     companion object {
         lateinit var locationCallback: LocationCallback
-        lateinit var firebaseAuth: FirebaseAuth // TODO Passare a Auth.authenticationManager
         lateinit var lastLocation: Location
         @SuppressLint("StaticFieldLeak")
         lateinit var context : Context
@@ -123,7 +122,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
 
         private const val REQUEST_CHECK_SETTINGS = 2 // TODO Cambiare con Location.REQUEST_CHECK_SETTINGS
-        const val REQUEST_LOCATION_PERMISSION = 1 // TODO Cambiare con Location.REQUEST_LOCATION_PERMISSIONS
 
 
         var builder = LocationSettingsRequest.Builder()
@@ -142,7 +140,6 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
         var mymarker = JSONObject() //marker
         var myList = JSONObject() // POI json
         val myLive = JSONObject() // live json
-//        var account : GoogleSignInAccount? = null // TODO Passare a Auth.signInAccount
         var friendJson = JSONObject() // friend json
         var friendTempPoi = JSONObject()
 

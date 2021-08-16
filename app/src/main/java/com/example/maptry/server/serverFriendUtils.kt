@@ -2,6 +2,7 @@ package com.example.maptry.server
 
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.config.Auth
 import com.example.maptry.utils.toJsonObject
 import okhttp3.*
 import org.json.JSONArray
@@ -26,7 +27,7 @@ fun getFriend(user:String): JSONObject {
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
@@ -48,7 +49,7 @@ fun confirmFriend(jsonToAdd:String){
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .post(body)
         .build()
@@ -72,7 +73,7 @@ fun removeFriend(jsonToRemove:String){
     val body: RequestBody = RequestBody.create(JSON, jsonToRemove)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .delete(body)
         .build()
@@ -93,7 +94,7 @@ fun sendFriendRequest(jsonToAdd:String){
     val body: RequestBody = RequestBody.create(JSON, jsonToAdd)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .post(body)
         .build()

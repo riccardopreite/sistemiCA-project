@@ -13,7 +13,6 @@ import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.*
 
-var token = ""
 // SSL certificate configuration
 val trustStore: KeyStore = KeyStore.getInstance("BKS")
 const val keyPair = "SistemiContextAware2021@*"

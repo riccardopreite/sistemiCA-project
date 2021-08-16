@@ -3,6 +3,7 @@ package com.example.maptry.server
 import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
+import com.example.maptry.config.Auth
 import com.example.maptry.utils.toJsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -25,7 +26,7 @@ fun getLivePoi(user:String): JSONObject {
             .hostnameVerifier(hostnameVerifier).build()
 
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .build()
     val response = client.newCall(request).execute()
@@ -48,7 +49,7 @@ fun addLivePOI(poiToAdd:String){
     val url = URL(baseUrlLive + addPOIUrl)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
     val request = Request.Builder()
-        .addHeader("Authorization", "Bearer $token")
+        .addHeader("Authorization", "Bearer ${Auth.userToken}")
         .url(url)
         .post(body)
         .build()
