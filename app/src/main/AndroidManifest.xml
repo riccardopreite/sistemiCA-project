@@ -24,7 +24,7 @@
 
         <service android:name=".notification.NotifyService"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="false" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -46,8 +46,7 @@
             android:name=".activity.LoginActivity"
             android:label="Login"
             android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            >
+            android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
 
@@ -60,14 +59,12 @@
             android:label="friendRequest"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:parentActivityName=".activity.MapsActivity"
-            >
+            android:parentActivityName=".activity.MapsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MapsActivity"/>
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
@@ -83,7 +80,6 @@
                 android:value=".activity.MapsActivity"/>
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
@@ -95,8 +91,7 @@
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:launchMode="singleTask"
             android:taskAffinity=""
-            android:excludeFromRecents="true"
-            />
+            android:excludeFromRecents="true" />
 
         <receiver android:name=".server.AcceptFriend"/>
         <receiver android:name=".server.DeclineFriend"/>

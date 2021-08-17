@@ -2,33 +2,32 @@
     <string name="app_name">Find My Car</string>
     <string name="title_activity_maps">Find My Car</string>
     <string-array name="planets_array">
-        <item>Ristoranti</item>
+        <item>Restaurants</item>
         <item>Sport</item>
-        <item>Svago</item>
-        <item>Macchina</item>
-        <item>Live</item>
+        <item>Spare time</item>
+        <item>Live event</item>
     </string-array>
 
-    <string name="name">Nome:</string>
-    <string name="address">Indirizzo:</string>
+    <string name="name">Name:</string>
+    <string name="address">Address:</string>
     <string name="login">Login</string>
-    <string name="share">Condividi</string>
-    <string name="enter_password">Enter Password</string>
-    <string name="enter_email">Inserisci Email</string>
-    <string name="enter_name">Enter Name</string>
-    <string name="pubblico">Pubblico</string>
+    <string name="share">Share</string>
+    <string name="enter_password">Enter password</string>
+    <string name="enter_email">Insert e-mail</string>
+    <string name="enter_name">Enter name</string>
+    <string name="pubblico">Public</string>
     <string name="travelling">Travelling</string>
-    <string name="privato">Privato</string>
-    <string name="custom_btn">Aggiungi POI</string>
-    <string name="nome">Nome:</string>
-    <string name="tipo">Privacy:</string>
+    <string name="privato">Private</string>
+    <string name="custom_btn">Add Point of Interest</string>
+    <string name="nome">Name:</string>
+    <string name="tipo">Visibility:</string>
     <string name="gender">Gender</string>
     <string name="reading">Reading</string>
     <string name="sports">Sports</string>
-    <string name="header">Crea Punto di interesse</string>
-    <string name="spinner_name">Tipologia:</string>
+    <string name="header">Create Point of Interest</string>
+    <string name="spinner_name">Type:</string>
     <string name="info">Info</string>
-    <string name="help">Guida</string>
+    <string name="help">Help</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -42,48 +41,47 @@
     <string name="menu_slideshow">Slideshow</string>
 
     <string name="home_second">Home Second</string>
-    <string name="title_activity_navigation">navigation</string>
+    <string name="title_activity_navigation">Navigation</string>
     <string name="logout">Logout</string>
-    <string name="list">I tuoi punti di interesse</string>
+    <string name="list">Points of Interest</string>
     <string name="x">X</string>
     <string name="back">Back</string>
     <string name="button">Button</string>
-    <string name="other_functionality">other functionality?</string>
-    <string name="add">Aggiungi</string>
-    <string name="nosrc">Nessun marker registrato!</string>
-    <string name="nocar">Nessuna macchina registrata!</string>
-    <string name="nofriend">Ancora nessun amico!</string>
+    <string name="other_functionality">Other functionality?</string>
+    <string name="add">ADd</string>
+    <string name="nosrc">No points of interest are registered!</string>
+    <string name="nofriend">You have no friends yet!</string>
     <string name="title_activity_login">Sign in</string>
-    <string name="prompt_email">Email</string>
+    <string name="prompt_email">E-mail</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome">"Welcome !"</string>
     <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_password">Password must be longer than 5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="sign_in">     Login</string>
-    <string name="route">Portami</string>
-    <string name="elimina">   Elimina</string>
+    <string name="route">Take me there</string>
+    <string name="elimina">   Delete</string>
     <string name="splash">splash</string>
     <string name="title">Find My Car</string>
     <string name="find_my_car_2020">Find My Car 2020</string>
-    <string name="phone">N. cellulare</string>
-    <string name="notsetphone">Nessun numero di cellulare</string>
+    <string name="phone">Phone number</string>
+    <string name="notsetphone">No phone number</string>
     <string name="website">Website</string>
-    <string name="noteseturi">Nessun sito web</string>
-    <string name="cancel">Annulla</string>
-    <string name="friend">Amici</string>
-    <string name="addfriend">Aggiungi amico</string>
-    <string name="addFriend">Accetta</string>
-    <string name="delete">Rifiuta</string>
-    <string name="friendheader">Nuova richiesta di amicizia</string>
-    <string name="removeFriend">Rimuovi</string>
-    <string name="POIname">POI:</string>
+    <string name="noteseturi">No website</string>
+    <string name="cancel">Cancel</string>
+    <string name="friend">Friends</string>
+    <string name="addfriend">Add friend</string>
+    <string name="addFriend">Accept</string>
+    <string name="delete">Refuse</string>
+    <string name="friendheader">New friend request</string>
+    <string name="removeFriend">Remove</string>
+    <string name="POIname">PoI:</string>
     <string name="car">Auto</string>
     <string name="live">Live</string>
-    <string name="remind">Rimanda</string>
+    <string name="remind">Postpone</string>
     <string name="timer">Timer:</string>
-    <string name="nolive">Nessun evento Live!</string>
+    <string name="nolive">No live events registered!</string>
     <string name="location_services_required">This app requires location services to be enabled to work properly.</string>
 </resources>
