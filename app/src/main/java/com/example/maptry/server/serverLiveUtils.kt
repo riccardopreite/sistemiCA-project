@@ -30,11 +30,11 @@ fun getLivePoi(user:String): JSONObject {
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful) {
-        result = toJsonObject(JSONArray(response.body()?.string()!!))
+        result = toJsonObject(JSONArray(response.body?.string()!!))
         println("Get poi live from friend is success")
     } else {
         println("Get poi live from friend is error")
-        println(response.message())
+        println(response.message)
     }
     return result
 }
@@ -59,6 +59,6 @@ fun addLivePOI(poiToAdd:String){
     }
     else{
         println("Add poi is error")
-        println(response.message())
+        println(response.message)
     }
 }

@@ -31,12 +31,12 @@ fun getFriend(user:String): JSONObject {
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
-        result = toJsonObject(JSONArray(response.body()?.string()!!))
+        result = toJsonObject(JSONArray(response.body?.string()!!))
         println("Get friend is success")
     }
     else{
         println("Get friend is error")
-        println(response.message())
+        println(response.message)
     }
     return result
 }
@@ -61,7 +61,7 @@ fun confirmFriend(jsonToAdd:String){
         }
 
         override fun onResponse(call: Call, response: Response) {
-            println(response.body()?.string())
+            println(response.body?.string())
         }
     })
 }
@@ -83,7 +83,7 @@ fun removeFriend(jsonToRemove:String){
             println("something went wrong remove friend")
             println(e)
         }
-        override fun onResponse(call: Call, response: Response) = println(response.body()?.string())
+        override fun onResponse(call: Call, response: Response) = println(response.body?.string())
     })
 }
 
@@ -103,6 +103,6 @@ fun sendFriendRequest(jsonToAdd:String){
             println("something went wrong sendfriend request")
             println(e)
         }
-        override fun onResponse(call: Call, response: Response) = println(response.body()?.string())
+        override fun onResponse(call: Call, response: Response) = println(response.body?.string())
     })
 }

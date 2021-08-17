@@ -4,6 +4,7 @@ import com.example.maptry.config.Api
 import com.example.maptry.config.Auth
 import com.example.maptry.utils.toJsonObject
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
@@ -14,7 +15,7 @@ const val addPOIUrl = "add"
 const val removePOIUrl = "remove"
 const val friendPOIUrl = "friend"
 val baseUrl = "https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}/$endpoint"
-val JSON = MediaType.parse("application/json; charset=utf-8")
+val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
 
 //https://casadiso.ddns.net:3000/points-of-interest/
 fun getPoi(user:String): JSONObject {
@@ -29,13 +30,13 @@ fun getPoi(user:String): JSONObject {
         .build()
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
-        result = toJsonObject(JSONArray(response.body()?.string()!!))
+        result = toJsonObject(JSONArray(response.body?.string()!!))
         println("Get poi is success")
         println(result)
     }
     else{
         println("Get poi is error")
-        println(response.message())
+        println(response.message)
     }
     return result
 }
@@ -56,13 +57,13 @@ fun getPoiFromFriend(user:String,friend:String): JSONObject {
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
         println("FRIEND RESPONSE")
-        result = toJsonObject(JSONArray(response.body()?.string()!!))
+        result = toJsonObject(JSONArray(response.body?.string()!!))
         println("Get poi from friend is success")
         println(result)
     }
     else{
         println("Get poi from friend is error")
-        println(response.message())
+        println(response.message)
     }
     return result
 }
@@ -83,12 +84,12 @@ fun addPOI(poiToAdd:String): String{
 
     val response = client.newCall(request).execute()
     if (response.isSuccessful){
-        result = response.body()?.string()!!
+        result = response.body?.string()!!
         println("Add poi is success")
     }
     else{
         println("Add poi is error")
-        println(response.message())
+        println(response.message)
     }
     return result
 }
@@ -115,6 +116,6 @@ fun removePOI(poiId:String,user: String) {
     }
     else{
         println("Remove poi is error")
-        println(response.message())
+        println(response.message)
     }
 }
