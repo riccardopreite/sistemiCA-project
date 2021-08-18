@@ -82,6 +82,6 @@
     <string name="live">Live</string>
     <string name="remind">Postpone</string>
     <string name="timer">Timer:</string>
-    <string name="nolive">No live events registered!</string>
+    <string name="nolive">No live events are registered!</string>
     <string name="location_services_required">This app requires location services to be enabled to work properly.</string>
 </resources>
