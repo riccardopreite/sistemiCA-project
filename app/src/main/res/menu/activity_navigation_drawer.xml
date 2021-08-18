@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,24 +6,30 @@
 
     <group android:checkableBehavior="single"
         android:id="@+id/firstgroup">
+
         <item
             android:id="@+id/list"
             android:icon="@drawable/ic_list"
             android:title="@string/list"
             app:showAsAction="always"/>
+
         <item
             android:id="@+id/friend"
             android:icon="@drawable/ic_friend_black"
             android:title="@string/friend"
             app:showAsAction="always"/>
+
         <item
             android:id="@+id/live"
             android:icon="@drawable/ic_live"
             android:title="@string/live"
             app:showAsAction="always"/>
+
     </group>
+
     <group android:checkableBehavior="single"
         android:id="@+id/secondgroup">
 
     </group>
+
 </menu>

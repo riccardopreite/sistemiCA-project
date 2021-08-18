@@ -15,14 +15,12 @@
         android:layout_height="wrap_content"
         android:autofillHints="" />
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
+        android:gravity="center">
 
-        >
         <Button
             android:id="@+id/friendBtn"
             android:layout_width="138dp"

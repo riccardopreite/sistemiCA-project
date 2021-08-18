@@ -5,8 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
+
         <LinearLayout
             android:id="@+id/content"
             android:layout_height="match_parent"
@@ -29,6 +29,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textAllCaps="false"/>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -42,8 +43,8 @@
                     android:text="@string/nome"
                     android:id="@+id/lbl_lname"
                     android:textColor="#000000"
-                    android:layout_centerVertical="true"
-                    />
+                    android:layout_centerVertical="true" />
+
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -54,7 +55,9 @@
                     android:layout_toEndOf="@+id/lbl_lname"
                     android:autofillHints=""
                     android:inputType="text" />
+
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -67,36 +70,36 @@
                     android:textColor="#000000"
                     android:text="@string/address"
                     android:id="@+id/lbl_address"
-                    android:layout_centerVertical="true"
-                    />
+                    android:layout_centerVertical="true" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/txt_address"
-                    android:layout_toEndOf="@+id/lbl_address"
-                    />
+                    android:layout_toEndOf="@+id/lbl_address" />
+
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp">
+
                 <TextView
                     android:layout_width="150dp"
                     android:layout_height="wrap_content"
-
                     android:textColor="#000000"
                     android:text="@string/spinner_name"
                     android:id="@+id/spinner_name"
-                    android:layout_centerVertical="true"
+                    android:layout_centerVertical="true" />
 
-                    />
                 <Spinner
                     android:id="@+id/planets_spinner"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@+id/spinner_name"/>
+
             </RelativeLayout>
 
             <RelativeLayout
@@ -112,27 +115,29 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:timePickerMode="spinner" />
+
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/rl_gender"
                 android:layout_marginTop="10dp">
+
                 <TextView
                     android:layout_width="150dp"
                     android:layout_height="wrap_content"
                     android:text="@string/tipo"
                     android:textColor="#000000"
                     android:id="@+id/lbl_gender"
-                    android:layout_centerVertical="true"
-                    />
+                    android:layout_centerVertical="true" />
+
                 <RadioGroup
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/rg_gender"
                     android:layout_toEndOf="@+id/lbl_gender"
-                    android:orientation="horizontal"
-                    >
+                    android:orientation="horizontal">
 
                     <RadioButton
                         android:id="@+id/rb_public"
@@ -147,11 +152,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
-                        android:text="@string/privato"
+                        android:text="@string/privato" />
 
-                       />
                 </RadioGroup>
+
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -166,8 +172,7 @@
                     android:layout_marginStart="10dp"
                     android:background="@drawable/layout_padding"
                     android:drawableStart="@drawable/ic_close_blu"
-                    android:text="@string/cancel"
-                     />
+                    android:text="@string/cancel" />
 
                 <Button
                     android:id="@+id/addBtn"
@@ -180,11 +185,11 @@
                     android:background="@drawable/layout_paddingroute"
                     android:drawableStart="@drawable/ic_add"
                     android:text="@string/add" />
+
             </RelativeLayout>
-
-
 
         </LinearLayout>
 
     </ScrollView>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

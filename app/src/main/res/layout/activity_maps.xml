@@ -6,12 +6,13 @@
     android:layout_width="match_parent">
 
 
+    <!-- @+id/friendFrame displays the "New friend request" box -->
     <FrameLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/friendFrame"
-        android:visibility="gone"
-        >
+        android:visibility="gone">
+
         <LinearLayout
             android:id="@+id/friendRequestLinearLayout"
             android:layout_width="match_parent"
@@ -38,7 +39,6 @@
                 android:textSize="17sp" />
 
             <RelativeLayout
-
                 android:id="@+id/friendRequestTextLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,22 +46,20 @@
                 android:layout_marginBottom="16dp"
                 android:gravity="center">
 
+                <!-- tools:text is for design only -->
                 <TextView
                     android:gravity="center"
-
                     android:id="@+id/friendRequestText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="@string/nome"
+                    tools:text="@string/nome"
                     android:textColor="#000000" />
-
 
             </RelativeLayout>
 
             <RelativeLayout
                 android:gravity="center"
-
                 android:id="@+id/friendRequestbuttonlayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -69,7 +67,6 @@
 
                 <Button
                     android:gravity="center"
-
                     android:id="@+id/cancelFriendRequest"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -81,7 +78,6 @@
 
                 <Button
                     android:gravity="center"
-
                     android:id="@+id/acceptFriendRequest"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -92,19 +88,21 @@
                     android:layout_marginEnd="34dp"
                     android:background="#7F2942"
                     android:text="@string/addFriend" />
+
             </RelativeLayout>
+
         </LinearLayout>
+
     </FrameLayout>
 
-
+    <!-- @+id/splashFrame shows the app name and logo during startup -->
     <FrameLayout android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/splashFrame"
         android:layout_centerVertical="true"
         android:background="@color/colorBackground"
-        android:visibility="gone"
+        android:visibility="gone">
 
-        >
         <ImageView
             android:id="@+id/imagesplashView"
             android:layout_width="match_parent"
@@ -144,7 +142,10 @@
             android:textSize="15sp"
             android:textStyle="bold"
             android:textAlignment="center"/>
+
     </FrameLayout>
+
+    <!-- @+id/list_layout shows the list of registered points of interest -->
     <FrameLayout tools:ignore="ExtraText"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
@@ -155,9 +156,7 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
-        android:visibility="gone"
-
-        >
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/close_list"
@@ -178,13 +177,16 @@
             android:textAlignment="center"
             android:textColor="@color/colorBackground"
             android:textSize="30sp" />
+
         <ListView
             android:id="@+id/lv"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"/>
+
     </FrameLayout>
 
+    <!-- @+id/live_layout shows the list of registered live events (owned by the user and friends) -->
     <FrameLayout tools:ignore="ExtraText"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
@@ -195,9 +197,7 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
-        android:visibility="gone"
-
-        >
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/close_live"
@@ -208,6 +208,7 @@
             android:focusable="true"
             android:onClick="closeDrawer"
             app:srcCompat="@drawable/ic_signout" />
+
         <TextView
             android:id="@+id/nolive"
             android:layout_width="match_parent"
@@ -217,15 +218,16 @@
             android:textAlignment="center"
             android:textColor="@color/colorBackground"
             android:textSize="30sp" />
+
         <ListView
             android:id="@+id/lvLive"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"/>
+
     </FrameLayout>
 
-
-
+    <!-- @+id/friend_layout shows the list of friends (confirmed) -->
     <FrameLayout tools:ignore="ExtraText"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
@@ -236,9 +238,7 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
-        android:visibility="gone"
-
-        >
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/close_listfriend"
@@ -249,6 +249,7 @@
             android:focusable="true"
             android:onClick="closeDrawer"
             app:srcCompat="@drawable/ic_signout" />
+
         <ImageView
             android:id="@+id/add_listfriend"
             android:layout_width="wrap_content"
@@ -268,24 +269,24 @@
             android:textAlignment="center"
             android:textColor="@color/colorBackground"
             android:textSize="30sp" />
+
         <ListView
             android:id="@+id/fv"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"/>
+
     </FrameLayout>
 
-
+    <!-- @+id/drawer_layout display the user menu -->
     <FrameLayout tools:ignore="ExtraText"
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         android:id="@+id/drawer_layout"
         android:fitsSystemWindows="true"
-        android:visibility="gone"
+        android:visibility="gone">
 
-        >
         <com.google.android.material.navigation.NavigationView
-
             android:id="@+id/nav_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -293,31 +294,24 @@
             android:background="#FAF6F6"
             android:fitsSystemWindows="true"
             app:headerLayout="@layout/nav_header_navigation"
-            app:menu="@menu/activity_navigation_drawer"
-            >
-
-
-        </com.google.android.material.navigation.NavigationView>
+            app:menu="@menu/activity_navigation_drawer"/>
 
     </FrameLayout>
 
+    <!-- @+id/homeframe displays the search bar -->
     <FrameLayout android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:id="@+id/homeframe"
-    android:visibility="gone"
-        >
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activity.MapsActivity">
-
-
-    </androidx.fragment.app.FragmentContainerView>
+        android:id="@+id/homeframe"
+        android:visibility="gone">
 
         <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".activity.MapsActivity"/>
 
+        <androidx.fragment.app.FragmentContainerView
             android:id="@+id/autocomplete_fragment"
             android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
             android:layout_width="match_parent"
@@ -326,11 +320,8 @@
             android:layout_marginTop="8dp"
             android:layout_marginRight="4dp"
             android:background="@drawable/layout_bg"
-            tools:layout="@layout/place_autocomplete_fragment">
+            tools:layout="@layout/place_autocomplete_fragment"/>
 
-        </androidx.fragment.app.FragmentContainerView>
-
-</FrameLayout>
-
+    </FrameLayout>
 
 </RelativeLayout>

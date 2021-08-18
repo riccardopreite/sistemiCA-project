@@ -3,9 +3,31 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/acceptfriend.xml" value="0.1" />
         <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/activity_login.xml" value="0.12874779541446207" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/activity_maps.xml" value="0.25885416666666666" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/activity_splash.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/app_bar_navigation.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/content_navigation.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/dialog_custom_eliminate.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/dialog_custom_friend_poi.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/dialog_custom_view.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/nav_header_navigation.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/nav_list_header.xml" value="0.1" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout-land/notification_layout.xml" value="0.31040564373897706" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/acceptfriend.xml" value="0.31023550724637683" />
         <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/activity_login.xml" value="0.15208333333333332" />
-        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/activity_maps.xml" value="0.15208333333333332" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/activity_maps.xml" value="0.25" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/activity_splash.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/app_bar_navigation.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/content_navigation.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/dialog_custom_eliminate.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/dialog_custom_friend_poi.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/dialog_custom_view.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/nav_header_navigation.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/nav_list_header.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/layout/notification_layout.xml" value="0.31023550724637683" />
+        <entry key="..\:/Users/azzal/Progetti/sistemiCA-project/app/src/main/res/menu/activity_navigation_drawer.xml" value="0.36666666666666664" />
       </map>
     </option>
   </component>

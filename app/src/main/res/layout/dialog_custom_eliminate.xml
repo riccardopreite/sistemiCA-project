@@ -12,4 +12,5 @@
         android:text="@string/elimina"
         android:drawableStart="@drawable/ic_close"
         android:layout_centerInParent="true"/>
+
 </RelativeLayout>
