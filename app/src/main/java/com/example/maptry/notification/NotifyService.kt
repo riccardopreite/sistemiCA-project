@@ -14,7 +14,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.maptry.*
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.dataFromfirestore
 import com.example.maptry.activity.MapsActivity.Companion.db
 import com.example.maptry.activity.MapsActivity.Companion.geocoder
@@ -124,7 +124,7 @@ class NotifyService : Service() {
 //                                                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
                                                 val showLiveEvent = Intent(
-                                                        context,
+                                                        mapsActivityContext,
                                                         ShowLiveEvent::class.java
                                                 )
                                                 showLiveEvent.flags = FLAG_ACTIVITY_NEW_TASK or
@@ -147,7 +147,7 @@ class NotifyService : Service() {
                                                     json.get("timer") as String
                                                 )
                                                 val clickLiveIntent = PendingIntent.getActivity(
-                                                    context,
+                                                    mapsActivityContext,
                                                     87,
                                                     showLiveEvent,
                                                     FLAG_UPDATE_CURRENT
@@ -160,7 +160,7 @@ class NotifyService : Service() {
 //                                                        FLAG_UPDATE_CURRENT
 //                                                    )
                                                 val notificationLive =
-                                                    NotificationCompat.Builder(context, "first")
+                                                    NotificationCompat.Builder(mapsActivityContext, "first")
                                                         .setContentTitle("Evento Live")
                                                         .setContentText(
                                                             json.getString(
@@ -234,18 +234,18 @@ class NotifyService : Service() {
                                                 )
                                                 val notificationClickIntent =
                                                     Intent(
-                                                        context,
+                                                        mapsActivityContext,
                                                         ShowFriendRequest::class.java
                                                     )
-                                                val stackBuilder = TaskStackBuilder.create(context)
+                                                val stackBuilder = TaskStackBuilder.create(mapsActivityContext)
                                                 stackBuilder.addParentStack(ShowFriendList::class.java)
                                                 stackBuilder.addNextIntent(notificationClickIntent)
 
                                                 val acceptFriendIntent =
-                                                    Intent(context, AcceptFriend::class.java)
+                                                    Intent(mapsActivityContext, AcceptFriend::class.java)
 
                                                 val declineFriendIntent =
-                                                    Intent(context, DeclineFriend::class.java)
+                                                    Intent(mapsActivityContext, DeclineFriend::class.java)
 
                                                 acceptFriendIntent.putExtra(
                                                     "sender",
@@ -276,7 +276,7 @@ class NotifyService : Service() {
 
                                                 val acceptPendingIntent =
                                                     PendingIntent.getBroadcast(
-                                                        context,
+                                                        mapsActivityContext,
                                                         90,
                                                         acceptFriendIntent,
                                                         FLAG_ONE_SHOT
@@ -284,7 +284,7 @@ class NotifyService : Service() {
 
                                                 val declinePendingIntent =
                                                     PendingIntent.getBroadcast(
-                                                        context,
+                                                        mapsActivityContext,
                                                         91,
                                                         declineFriendIntent,
                                                         FLAG_ONE_SHOT
@@ -292,7 +292,7 @@ class NotifyService : Service() {
 
 
                                                 val notificationFriendRequest =
-                                                    NotificationCompat.Builder(context, "first")
+                                                    NotificationCompat.Builder(mapsActivityContext, "first")
                                                         .setContentTitle("Richiesta d'amicizia")
                                                         .setContentText(chi.value as String + ": Ti ha inviato una richiesta di amicizia!")
                                                         .setSmallIcon(R.drawable.ic_addfriend)
@@ -356,10 +356,10 @@ class NotifyService : Service() {
 
                                                 val notificationClickIntent =
                                                     Intent(
-                                                        context,
+                                                        mapsActivityContext,
                                                         ShowFriendList::class.java
                                                     )
-                                                val stackBuilder = TaskStackBuilder.create(context)
+                                                val stackBuilder = TaskStackBuilder.create(mapsActivityContext)
                                                 stackBuilder.addParentStack(ShowFriendList::class.java)
                                                 stackBuilder.addNextIntent(notificationClickIntent)
                                                 val clickPendingIntent =
@@ -367,7 +367,7 @@ class NotifyService : Service() {
                                                         92,
                                                         FLAG_UPDATE_CURRENT
                                                     )
-                                                val notificationAddedFriend = NotificationCompat.Builder(context, "first")
+                                                val notificationAddedFriend = NotificationCompat.Builder(mapsActivityContext, "first")
                                                     .setContentTitle("Nuovo Amico!")
                                                     .setContentText(string)
                                                     .setSmallIcon(R.drawable.ic_accessibility)
@@ -424,13 +424,13 @@ class NotifyService : Service() {
                                                 val id = Auth.signInAccount?.email?.replace("@gmail.com","")
                                                 val voidIntent = Intent()
                                                 val voidPendingIntent = PendingIntent.getActivity(
-                                                    context,
+                                                    mapsActivityContext,
                                                     103,
                                                     voidIntent,
                                                     FLAG_ONE_SHOT
                                                 )
                                                 val notificationLiveExpired =
-                                                    NotificationCompat.Builder(context, "first")
+                                                    NotificationCompat.Builder(mapsActivityContext, "first")
                                                         .setContentTitle("Live")
                                                         .setContentText("E' finito l'evento " + json.getString("name") + ".")
                                                         .setSmallIcon(R.drawable.ic_live)

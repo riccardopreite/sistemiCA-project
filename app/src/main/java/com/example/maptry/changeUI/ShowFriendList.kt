@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.maptry.*
 import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.zoom
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
@@ -94,7 +94,7 @@ class ShowFriendList : AppCompatActivity() {
             switchFrame(homeLayout,listOf(friendLayout,drawerLayout,listLayout,splashLayout,friendFrame,liveLayout))
             if(!isRunning) {
                 println("STARTO ACTIVITY")
-                val main = Intent(context, MapsActivity::class.java)
+                val main = Intent(mapsActivityContext, MapsActivity::class.java)
                 zoom = 1
 
                 startActivity(main)
@@ -349,7 +349,7 @@ class ShowFriendList : AppCompatActivity() {
         switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         if(!isRunning) {
             println("STARTO ACTIVITY friend list")
-            val main = Intent(context, MapsActivity::class.java)
+            val main = Intent(mapsActivityContext, MapsActivity::class.java)
             zoom = 1
             startActivity(main)
         }

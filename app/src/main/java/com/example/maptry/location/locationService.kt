@@ -7,13 +7,12 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
-import android.provider.Settings.Secure.getString
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity.Companion.builder
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.lastLocation
 import com.example.maptry.activity.MapsActivity.Companion.locationCallback
 import com.example.maptry.activity.MapsActivity.Companion.mLocationRequest
@@ -50,7 +49,7 @@ fun startLocationUpdates() {
     val locationSettingsRequest = builder.build()
 
     // initialize location service object
-    val settingsClient = LocationServices.getSettingsClient(context)
+    val settingsClient = LocationServices.getSettingsClient(mapsActivityContext)
     settingsClient.checkLocationSettings(locationSettingsRequest)
 
     // call register location listener
@@ -88,11 +87,11 @@ fun onLocationChanged(location: Location) {
 fun isLocationEnable(): Boolean{
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         // This is new method provided in API 28
-        val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val lm = mapsActivityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         lm.isLocationEnabled;
     } else {
         // This is Deprecated in API 28
-        val mode = Settings.Secure.getInt(context.contentResolver, Settings.Secure.LOCATION_MODE,
+        val mode = Settings.Secure.getInt(mapsActivityContext.contentResolver, Settings.Secure.LOCATION_MODE,
             Settings.Secure.LOCATION_MODE_OFF);
         (mode != Settings.Secure.LOCATION_MODE_OFF);
     }
@@ -146,7 +145,7 @@ fun myLocationClick(contextUtils: Activity?): Boolean{
 }
 
 fun setUpMap(mapsKey: String) {
-    Places.initialize(context, mapsKey)
+    Places.initialize(mapsActivityContext, mapsKey)
     val mapFragment =  supportManager.findFragmentById(R.id.map) as SupportMapFragment
     var locationButton : View? = mapFragment.view?.findViewById<LinearLayout>(Integer.parseInt("1"))
     val prov : View = (locationButton?.parent) as View

@@ -30,18 +30,20 @@ class LoginActivity : AppCompatActivity() {
         /**
          * Result code returned when the activity closes and the user is authenticated.
          */
-        const val resultCodeSignedIn: Int = 50
+        const val resultCodeSignedIn: Int = 200
 
         /**
          * Result code returned when the activity closes and the user is not authenticated.
          */
-        const val resultCodeNotSignedIn: Int = 40
+        const val resultCodeNotSignedIn: Int = 201
+
+        /**
+         * Request code to check whether the result returned by the activity comes from the Google Sign In intent.
+         */
+        const val requestCodeSignIn: Int = 100
     }
 
-    /**
-     * Request code to check whether the result returned by the activity comes from the Google Sign In intent.
-     */
-    private val requestCodeSignIn: Int = 1
+
 
     /**
      * Flag to memorize whether the user requested to utilize location services or not.
@@ -94,7 +96,7 @@ class LoginActivity : AppCompatActivity() {
                 Auth.authManager.currentUser!!.getIdToken(true).addOnCompleteListener {
                     if(it.isSuccessful) {
                         Log.i(TAG, "Token for APIs successfully retrieved")
-                        Auth.userToken = it.result.token!! // TODO Sostituire con Auth.userToken
+                        Auth.userToken = it.result.token!!
                         finish()
                     }
                 }
@@ -163,7 +165,7 @@ class LoginActivity : AppCompatActivity() {
      */
     private fun retrieveGoogleAccountAndSignInOnFirebase() {
         Log.v(TAG, "retrieveGoogleAccountAndSignInOnFirebase")
-        Auth.signInAccount = Auth.getLastSignedInAccount(this) // TODO Sostituire con Auth.getLastSignedInAccount
+        Auth.signInAccount = Auth.getLastSignedInAccount(this)
         if(Auth.signInAccount == null) {
             Log.i(TAG, "Asking the user to log in.")
             signInWithGoogle()

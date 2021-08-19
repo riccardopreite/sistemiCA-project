@@ -1,13 +1,9 @@
 package com.example.maptry.server
 
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.config.Api
 import okhttp3.*
-import org.json.JSONObject
-import java.io.IOException
-import java.net.URL
-import java.net.URLEncoder
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.*
@@ -16,7 +12,7 @@ import javax.net.ssl.*
 val trustStore: KeyStore = KeyStore.getInstance("BKS")
 const val keyPair = "SistemiContextAware2021@*"
 
-val res = context.resources.openRawResource(R.raw.mystore).use {
+val res = mapsActivityContext.resources.openRawResource(R.raw.mystore).use {
     trustStore.load(it,keyPair.toCharArray())
 }
 val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {

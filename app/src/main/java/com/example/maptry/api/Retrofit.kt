@@ -18,7 +18,7 @@ object Retrofit {
     private val trustStore: KeyStore = KeyStore.getInstance("BKS")
     private const val keyPair = "SistemiContextAware2021@*"
 
-    val res = MapsActivity.context.resources.openRawResource(R.raw.mystore).use {
+    val res = MapsActivity.mapsActivityContext.resources.openRawResource(R.raw.mystore).use {
         trustStore.load(it,keyPair.toCharArray())
     }
 

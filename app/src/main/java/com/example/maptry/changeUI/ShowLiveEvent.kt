@@ -12,7 +12,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.geocoder
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.mMap
@@ -76,7 +76,7 @@ class ShowLiveEvent: AppCompatActivity() {
             )
         )
         if(!isRunning) {
-            val main = Intent(context, MapsActivity::class.java)
+            val main = Intent(mapsActivityContext, MapsActivity::class.java)
             zoom = 1
             main.putExtra(
                 "lat",
@@ -124,7 +124,7 @@ class ShowLiveEvent: AppCompatActivity() {
             reDraw()
             if(!isRunning) {
                 println("STARTO ACTIVITY")
-                val main = Intent(context, MapsActivity::class.java)
+                val main = Intent(mapsActivityContext, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
 

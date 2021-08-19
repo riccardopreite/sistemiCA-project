@@ -38,7 +38,6 @@ import com.example.maptry.notification.NotifyService
 import com.example.maptry.server.*
 import com.example.maptry.utils.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -52,7 +51,6 @@ import com.google.android.material.internal.ContextUtils
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import org.json.JSONObject
@@ -63,9 +61,16 @@ import java.util.*
 )
 class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener,NavigationView.OnNavigationItemSelectedListener {
-
+    /**
+     * Client for accessing the device position.
+     */
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    /**
+     * Set to true when requestCode == REQUEST_CHECK_SETTINGS and resultCode == Activity.RESULT_OK
+     */
     private var locationUpdateState = false
+
     private var mainHandler = Handler()
     private var error = Runnable { println("error") }
     private var run = object : Runnable {
@@ -92,49 +97,84 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     }
     private lateinit var show: () -> Unit
     companion object {
-        val TAG: String = LoginActivity::class.qualifiedName!!
+        val TAG: String = MapsActivity::class.qualifiedName!!
 
         lateinit var locationCallback: LocationCallback
         lateinit var lastLocation: Location
         @SuppressLint("StaticFieldLeak")
-        lateinit var context : Context
+        lateinit var mapsActivityContext: Context
         lateinit var alertDialog: AlertDialog
         lateinit var mMap: GoogleMap // TODO Passare a Location.googleMap
         lateinit var mAnimation : Animation
         lateinit var geocoder : Geocoder
-        lateinit var dataFromfirestore :List<DocumentSnapshot>
+
+        /* Firestore stuff */
+        lateinit var dataFromfirestore :List<DocumentSnapshot> // TODO Remove Firestore
 
         @SuppressLint("StaticFieldLeak")
-        lateinit var db :FirebaseFirestore
+        lateinit var db :FirebaseFirestore // TODO Remove Firestore
+        /* End of Firestore stuff */
+
+        /**
+         * (UI) Reference to the drawer menu (opened).
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var drawerLayout: FrameLayout
+
+        /**
+         * (UI) Reference to the list of points of interest.
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var listLayout: FrameLayout
+
+        /**
+         * (UI) Reference to the search bar on the screen top.
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var homeLayout: FrameLayout
+
+        /**
+         * (UI) Reference to the splash screen.
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var splashLayout: FrameLayout
+
+        /**
+         * (UI) Reference to the list of confirmed friends.
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var friendLayout: FrameLayout
+
+        /**
+         * (UI) Reference to the popup for a new friend request.
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var friendFrame: FrameLayout
+
+        /**
+         * (UI) Reference to the list of live events.
+         */
         @SuppressLint("StaticFieldLeak")
         lateinit var liveLayout: FrameLayout
+
+        /**
+         * Fragment manager.
+         */
         lateinit var supportManager: FragmentManager
 
 
-        private const val REQUEST_CHECK_SETTINGS = 2 // TODO Cambiare con Location.REQUEST_CHECK_SETTINGS
+        private const val REQUEST_CHECK_SETTINGS = 2 // TODO Change with Location.REQUEST_CHECK_SETTINGS
 
 
         var builder = LocationSettingsRequest.Builder()
         var newBundy = Bundle()
         var mLocationRequest: LocationRequest? = null
-        var isRunning : Boolean = false
+        var isRunning : Boolean = false // TODO 1) Che serve?
         var zoom = 1
         var oldPos :Marker? = null
         var addrThread:Thread? = null
         var listAddr:MutableList<Address>? = null
-        var drawed = false
+        var drawed = false // TODO What do we need this for?
         var myjson = JSONObject() //tmp json
         var mymarker = JSONObject() //marker
         var myList = JSONObject() // POI json
@@ -165,13 +205,13 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        println("onCreate")
-        if(isRunning) {
+        if(isRunning) { // TODO 1) Che serve?
             return
         }
-        setContentView(R.layout.activity_maps)
         isRunning = true
-        context = this
+        mapsActivityContext = this
+        // Loading view and setting reference to the UI components
+        setContentView(R.layout.activity_maps)
         drawerLayout = findViewById(id.drawer_layout)
         listLayout = findViewById(id.list_layout)
         homeLayout = findViewById(id.homeframe)
@@ -180,28 +220,28 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
         friendFrame = findViewById(id.friendFrame)
         liveLayout = findViewById(id.live_layout)
 
+        // TODO Do we need a splash animation? Does the splashLayout actually get loaded?
         mAnimation = AnimationUtils.loadAnimation(this, R.anim.enlarge)
         mAnimation.backgroundColor = Color.TRANSPARENT
         switchFrame(splashLayout,listOf(homeLayout,listLayout,drawerLayout,friendLayout,friendFrame,liveLayout))
 
+        // TODO Do we really want to do this?
         val policy: StrictMode.ThreadPolicy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
-        geocoder = Geocoder(this)
+        geocoder = Geocoder(this) // TODO Replace with Location.geocoder
 
         //create connection
         mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post(run)
 
-        // start intent to log in user
+        // TODO It can be replaced with an authentication check instead that opening a new activity
         val menuIntent =  Intent(this, LoginActivity::class.java)
         val component = ComponentName(this, LoginActivity::class.java)
         intent.component = component
-        startActivityForResult(menuIntent,40)
+        startActivityForResult(menuIntent, LoginActivity.requestCodeSignIn)
 
-        val displayMetrics = DisplayMetrics()
-
-        windowManager.defaultDisplay.getMetrics(displayMetrics)
+        windowManager.defaultDisplay.getMetrics(DisplayMetrics())
 
         val mapFragment = supportFragmentManager
             .findFragmentById(id.map) as SupportMapFragment
@@ -223,7 +263,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
 //        setUpSearch()
         // override methode to ask to turn on GPS if is off or to move Camera if is on
         mMap.setOnMyLocationButtonClickListener {
-            myLocationClick(ContextUtils.getActivity(context))
+            myLocationClick(ContextUtils.getActivity(mapsActivityContext))
             return@setOnMyLocationButtonClickListener true
         }
 
@@ -281,88 +321,93 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.v(TAG, "onActivityResult")
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CHECK_SETTINGS) {
-            if (resultCode == Activity.RESULT_OK) {
-                locationUpdateState = true
-            }
-        }
-        else if (requestCode == 30) {
-            if (resultCode == 60) {
-                println("SERVER OK")
-            }
-            else if (resultCode == 70) {
-                println("SERVER OK")
-            }
-        }
-        else if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                val place = data?.let { Autocomplete.getPlaceFromIntent(it) }
-                Log.i("OK", "Place: " + place?.name + ", " + place?.id)
-            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                val status = data?.let { Autocomplete.getStatusFromIntent(it) }
-                if (status != null) {
-                    Log.i("error", status.statusMessage)
+        when (requestCode) {
+            REQUEST_CHECK_SETTINGS -> {
+                Log.d(TAG, "onActivityResult: requestCode == REQUEST_CHECK_SETTINGS")
+                if (resultCode == Activity.RESULT_OK) {
+                    locationUpdateState = true
                 }
-            } else if (resultCode == RESULT_CANCELED) {
-                println("Result canceled")
-                // The user canceled the operation.
             }
-        }
-        else if (requestCode == 40) {
-            if (resultCode == LoginActivity.resultCodeSignedIn) {
-                println("loggato")
-                // user logged, init structure, create user in firebase if not exist
-                Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
-                val id: String = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
-                val am: AccountManager = AccountManager.get(this)
-                val options = Bundle()
-                val new = Auth.signInAccount?.account
-                val letHandler = Handler(Looper.getMainLooper())
-                letHandler.post(error)
-
-//                am.getAuthToken(
-//                    new,                     // Account retrieved using getAccountsByType()
-//                    "Manage your tasks",            // Auth scope
-//                    options,                        // Authenticator-specific options
-//                    this,                           // Your activity
-//                    OnTokenAcquired(),              // Callback called when a token is successfully acquired
-//                    letHandler            // Callback called if an error occurs
-//                )
-                isRunning = true
-
-                // QUA SI USA FIREBASE
-                FirebaseFirestore.setLoggingEnabled(true)
-                db = FirebaseFirestore.getInstance()
-                val docRef = db.collection("user")
-                if (!db.document("user/$id").get().isSuccessful) {
-                    docRef.document(id).set({})
+            30 -> {
+                Log.d(TAG, "onActivityResult: requestCode == 30")
+                if (resultCode == 60) {
+                    println("SERVER OK")
+                } else if (resultCode == 70) {
+                    println("SERVER OK")
                 }
-//                checkUser(id)
-
-                val intent = Intent(this, NotifyService::class.java)
-                startService(intent)
-                createPoiList(id)
-                createFriendList(id)
-                createLiveList(id)
-
-
-                val navBar = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
-                println("SHOW HOME")
-                setHomeLayout(navBar)
-
             }
-            else if (resultCode == LoginActivity.resultCodeNotSignedIn) {
-                println("non loggato")
-                val x = findViewById<NavigationView>(id.nav_view).getHeaderView(0)
-                val close = x.findViewById<ImageView>(R.id.close)
-                val user = x.findViewById<TextView>(R.id.user)
-                val email = x.findViewById<TextView>(R.id.email)
-                val imageView = x.findViewById<ImageView>(R.id.imageView)
-                close.visibility = View.GONE
-                imageView.visibility = View.GONE
-                user.visibility = View.GONE
-                email.visibility = View.GONE
+            1 -> {
+                Log.d(TAG, "onActivityResult: requestCode == 1")
+                if (resultCode == RESULT_OK) {
+                    val place = data?.let { Autocomplete.getPlaceFromIntent(it) }
+                    Log.i("OK", "Place: " + place?.name + ", " + place?.id)
+                } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                    val status = data?.let { Autocomplete.getStatusFromIntent(it) }
+                    if (status != null) {
+                        Log.i("error", status.statusMessage)
+                    }
+                } else if (resultCode == RESULT_CANCELED) {
+                    println("Result canceled")
+                    // The user canceled the operation.
+                }
             }
+            LoginActivity.requestCodeSignIn -> {
+                Log.d(TAG, "onActivityResult: requestCode == LoginActivity.requestCodeSignIn")
+                if (resultCode == LoginActivity.resultCodeSignedIn) {
+                    println("loggato")
+                    // user logged, init structure, create user in firebase if not exist
+                    Auth.signInAccount = GoogleSignIn.getLastSignedInAccount(this@MapsActivity)
+                    val id: String = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
+                    val am: AccountManager = AccountManager.get(this)
+                    val options = Bundle()
+                    val new = Auth.signInAccount?.account
+                    val letHandler = Handler(Looper.getMainLooper())
+                    letHandler.post(error)
+
+    //                am.getAuthToken(
+    //                    new,                     // Account retrieved using getAccountsByType()
+    //                    "Manage your tasks",            // Auth scope
+    //                    options,                        // Authenticator-specific options
+    //                    this,                           // Your activity
+    //                    OnTokenAcquired(),              // Callback called when a token is successfully acquired
+    //                    letHandler            // Callback called if an error occurs
+    //                )
+                    isRunning = true
+
+                    // QUA SI USA FIREBASE
+                    FirebaseFirestore.setLoggingEnabled(true)
+                    db = FirebaseFirestore.getInstance()
+                    val docRef = db.collection("user")
+                    if (!db.document("user/$id").get().isSuccessful) {
+                        docRef.document(id).set({})
+                    }
+    //                checkUser(id)
+
+                    val intent = Intent(this, NotifyService::class.java)
+                    startService(intent)
+                    createPoiList(id)
+                    createFriendList(id)
+                    createLiveList(id)
+
+
+                    val navBar = findViewById<NavigationView>(R.id.nav_view).getHeaderView(0)
+                    println("SHOW HOME")
+                    setHomeLayout(navBar)
+
+                } else if (resultCode == LoginActivity.resultCodeNotSignedIn) {
+                    println("non loggato")
+                    val x = findViewById<NavigationView>(id.nav_view).getHeaderView(0)
+                    val close = x.findViewById<ImageView>(R.id.close)
+                    val user = x.findViewById<TextView>(R.id.user)
+                    val email = x.findViewById<TextView>(R.id.email)
+                    val imageView = x.findViewById<ImageView>(R.id.imageView)
+                    close.visibility = View.GONE
+                    imageView.visibility = View.GONE
+                    user.visibility = View.GONE
+                    email.visibility = View.GONE
+                }
+            }
+            else -> Unit
         }
     }
 

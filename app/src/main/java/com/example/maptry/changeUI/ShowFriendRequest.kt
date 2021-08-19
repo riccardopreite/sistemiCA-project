@@ -14,7 +14,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.maptry.activity.MapsActivity
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.zoom
 
@@ -67,7 +67,7 @@ class ShowFriendRequest : AppCompatActivity() {
             confirmFriend(jsonToAdd)
             switchFrame(homeLayout,listOf(drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout))
             if(!isRunning) {
-                val main = Intent(context, MapsActivity::class.java)
+                val main = Intent(mapsActivityContext, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
             }
@@ -76,7 +76,7 @@ class ShowFriendRequest : AppCompatActivity() {
         buttonDecline.setOnClickListener {
             switchFrame(homeLayout,listOf(drawerLayout,listLayout,friendFrame,friendLayout,splashLayout,liveLayout))
             if(!isRunning) {
-                val main = Intent(context, MapsActivity::class.java)
+                val main = Intent(mapsActivityContext, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
             }
@@ -110,7 +110,7 @@ class ShowFriendRequest : AppCompatActivity() {
             reDraw()
             if(!isRunning) {
                 println("STARTO ACTIVITY")
-                val main = Intent(context, MapsActivity::class.java)
+                val main = Intent(mapsActivityContext, MapsActivity::class.java)
                 zoom = 1
                 startActivity(main)
 

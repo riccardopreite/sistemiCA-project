@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.*
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +12,7 @@ import androidx.core.content.ContextCompat.startActivity
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
@@ -75,7 +74,7 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
         shareIntent.type="text/plain"
         shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ myList.getJSONObject(p0.position.toString()).get("lat")+","+ myList.getJSONObject(p0.position.toString()).get("lon"))
         val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo "+ myList.getJSONObject(p0.position.toString()).get("name"))
-        startActivity(context,createdIntent,null)
+        startActivity(mapsActivityContext,createdIntent,null)
         alertDialog.dismiss()
     }
 
@@ -106,7 +105,7 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
         routebutton.setOnClickListener {
             val intent =
                 Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + address.text))
-            startActivity(context,intent,null)
+            startActivity(mapsActivityContext,intent,null)
             alertDialog.dismiss()
         }
     }
@@ -152,7 +151,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
     address.text = listAddr?.get(0)?.getAddressLine(0)
 
     ArrayAdapter.createFromResource(
-        context,
+        mapsActivityContext,
         R.array.planets_array,
         android.R.layout.simple_spinner_item
     ).also { adapter ->

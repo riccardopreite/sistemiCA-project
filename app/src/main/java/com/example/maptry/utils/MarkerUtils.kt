@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.Toast
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
-import com.example.maptry.activity.MapsActivity.Companion.context
+import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
 import com.example.maptry.activity.MapsActivity.Companion.geocoder
 import com.example.maptry.activity.MapsActivity.Companion.listAddr
 import com.example.maptry.activity.MapsActivity.Companion.mMap
@@ -165,7 +165,7 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit){
                     myList.put(mark.position.toString(), newJsonMark)
                     mymarker.put(mark.position.toString(), mark)
                     Toast.makeText(
-                        context,
+                        mapsActivityContext,
                         "Annullata rimozione di $toRemove",
                         Toast.LENGTH_LONG
                     ).show()
