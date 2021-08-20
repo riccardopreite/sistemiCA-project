@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.*
 import androidx.core.content.ContextCompat.startActivity
 import com.example.maptry.R
+import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.addrThread
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.mapsActivityContext
@@ -20,21 +21,36 @@ import com.example.maptry.activity.MapsActivity.Companion.geocoder
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.listAddr
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
+import com.example.maptry.activity.MapsActivity.Companion.liveEventsList
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.myjson
+import com.example.maptry.activity.MapsActivity.Companion.poisList
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
+import com.example.maptry.api.Retrofit
 import com.example.maptry.config.Auth
+import com.example.maptry.model.liveevents.AddLiveEvent
+import com.example.maptry.model.liveevents.LiveEvent
+import com.example.maptry.model.pointofinterests.AddPointOfInterest
+import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.example.maptry.utils.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import retrofit2.HttpException
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+
 val gson = Gson()
 
 
@@ -206,7 +222,6 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                             if (text == x) {
                                 makeRedLine(lname,red)
                                 return@setOnClickListener
-
                             }
                             if (address.text == myLive.getJSONObject(i).get("address") as String) {
                                 makeRedLine(lname,red)
@@ -221,10 +236,48 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                     marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
 
 
-                    val newLiveJsonMark = createLiveJsonMarker(text,address.text.toString(),time.toString(),id!!)
+//                    val newLiveJsonMark = createLiveJsonMarker(text,address.text.toString(),time.toString(),id!!)
 
-                    myLive.put(p0.toString(), newLiveJsonMark)
-                    myList.put(p0.toString(), newLiveJsonMark)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response = try {
+                            Retrofit.liveEventsApi.addLiveEvent(
+                                AddLiveEvent(
+                                    time,
+                                    id!!,
+                                    text,
+                                    address.text.toString(),
+                                    p0.latitude,
+                                    p0.longitude
+                                )
+                            )
+                        } catch (e: IOException) {
+                            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                            return@launch
+                        } catch (e: HttpException) {
+                            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                            return@launch
+                        }
+
+                        if(response.isSuccessful && response.body() != null) {
+                            val date = LocalDateTime.now()
+                            liveEventsList.add(LiveEvent(
+                                "",
+                                address.text.toString(),
+                                p0.latitude,
+                                p0.longitude,
+                                text,
+                                id,
+                                date.plusMinutes(time.toLong()).toEpochSecond(
+                                    OffsetDateTime.now().offset).toInt()
+                            ))
+                            Log.i(MapsActivity.TAG, "Point of interest successfully added")
+                        } else {
+                            Log.e(MapsActivity.TAG, "Point of interest not added")
+                        }
+                    }
+
+//                    myLive.put(p0.toString(), newLiveJsonMark)
+//                    myList.put(p0.toString(), newLiveJsonMark)
 
                 }
                 //                spinner on item selected
@@ -258,10 +311,55 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                         if(listAddr?.get(0)?.phone === null|| listAddr?.get(0)?.phone === "" || listAddr?.get(0)?.phone === " ") "cellulare non trovato"
                         else listAddr?.get(0)?.phone!!
 
-                    val newJsonMark = createJsonMarker(text,address.text.toString(),spinner.selectedItem.toString(),gender,marker?.position?.latitude!!,
-                        marker.position.longitude,phone,url,id!!)
+//                    val newJsonMark = createJsonMarker(text,address.text.toString(),spinner.selectedItem.toString(),gender,marker?.position?.latitude!!,
+//                        marker.position.longitude,phone,url,id!!)
 
-                    myList.put(p0.toString(), newJsonMark)
+                    val latitude = marker?.position?.latitude!!
+                    val longitude = marker?.position?.longitude!!
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response = try {
+                            Retrofit.pointOfInterestsApi.addPointOfInterest(
+                                AddPointOfInterest(
+                                    id!!,
+                                    AddPointOfInterestPoi(
+                                        address.text.toString(),
+                                        spinner.selectedItem.toString(),
+                                        latitude,
+                                        longitude,
+                                        text,
+                                        phone,
+                                        gender,
+                                        url
+                                    )
+                                )
+                            )
+                        } catch (e: IOException) {
+                            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                            return@launch
+                        } catch (e: HttpException) {
+                            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                            return@launch
+                        }
+
+                        if(response.isSuccessful && response.body() != null) {
+                            poisList.add(PointOfInterest(
+                                response.body()!!,
+                                address.text.toString(),
+                                spinner.selectedItem.toString(),
+                                latitude,
+                                longitude,
+                                text,
+                                phone,
+                                gender,
+                                url
+                            ))
+                            Log.i(MapsActivity.TAG, "Point of interest successfully added")
+                        } else {
+                            Log.e(MapsActivity.TAG, "Point of interest not added")
+                        }
+                    }
+//                    myList.put(p0.toString(), newJsonMark)
 
                 }
             }

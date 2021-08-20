@@ -17,31 +17,6 @@ const val friendPOIUrl = "friend"
 val baseUrl = "https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}/$endpoint"
 val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
 
-//https://casadiso.ddns.net:3000/points-of-interest/
-fun getPoi(user:String): JSONObject {
-    println("IN GET POI")
-    val url = URL(baseUrl + "?user=" + URLEncoder.encode(user, "UTF-8"))
-    var result = JSONObject()
-    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
-
-    val request = Request.Builder()
-        .addHeader("Authorization", "Bearer ${Auth.userToken}")
-        .url(url)
-        .build()
-    val response = client.newCall(request).execute()
-    if (response.isSuccessful){
-        result = toJsonObject(JSONArray(response.body?.string()!!))
-        println("Get poi is success")
-        println(result)
-    }
-    else{
-        println("Get poi is error")
-        println(response.message)
-    }
-    return result
-}
-
-
 
 //https://casadiso.ddns.net:3000/points-of-interest/
 fun getPoiFromFriend(user:String,friend:String): JSONObject {

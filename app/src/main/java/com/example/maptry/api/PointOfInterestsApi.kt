@@ -1,8 +1,10 @@
 package com.example.maptry.api
 
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
+import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.example.maptry.model.pointofinterests.RemovePointOfInterest
+import okhttp3.internal.http.hasBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -13,6 +15,6 @@ interface PointOfInterestsApi {
     @POST("/points-of-interest/add")
     suspend fun addPointOfInterest(@Body addPointOfInterest: AddPointOfInterest): Response<String>
 
-    @DELETE("/points-of-interest/remove")
+    @HTTP(method = "DELETE", path = "/points-of-interest/remove", hasBody = true)
     suspend fun removePointOfInterest(@Body removePointOfInterest: RemovePointOfInterest): Response<Unit>
 }

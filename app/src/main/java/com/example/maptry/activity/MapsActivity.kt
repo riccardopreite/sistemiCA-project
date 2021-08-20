@@ -21,9 +21,11 @@ import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.example.maptry.*
 import com.example.maptry.R
 import com.example.maptry.R.id
+import com.example.maptry.api.Retrofit
 import com.example.maptry.changeUI.gson
 import com.example.maptry.changeUI.markerView
 import com.example.maptry.changeUI.showCreateMarkerView
@@ -34,6 +36,9 @@ import com.example.maptry.location.myLocationClick
 import com.example.maptry.location.registerLocationListener
 import com.example.maptry.location.setUpMap
 import com.example.maptry.location.startLocationUpdates
+import com.example.maptry.model.friends.AddFriendshipRequest
+import com.example.maptry.model.liveevents.LiveEvent
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.example.maptry.notification.NotifyService
 import com.example.maptry.server.*
 import com.example.maptry.utils.*
@@ -53,8 +58,16 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import retrofit2.HttpException
+import retrofit2.http.HTTP
+import java.io.IOException
 import java.util.*
+import kotlin.streams.toList
 
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
     "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"
@@ -175,12 +188,38 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
         var addrThread:Thread? = null
         var listAddr:MutableList<Address>? = null
         var drawed = false // TODO What do we need this for?
+        // TODO FIRST Remove all the following
         var myjson = JSONObject() //tmp json
+
+        /**
+         * HashMap of Google Maps markers with key=LatLng::toString and value the LatLng object.
+         */
         var mymarker = JSONObject() //marker
+
+        /**
+         * HashMap of PoIs and Live Events with key=LatLng::toString and value the json object of the point of interest or live event.
+         */
         var myList = JSONObject() // POI json
+
+        /**
+         * List of points of interest of the user.
+         */
+        val poisList: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
+
+        /**
+         * HashMap of Live Events with key=LatLng::toString and value the json object of the live event.
+         */
         val myLive = JSONObject() // live json
+
+        /**
+         * List of live events of the user.
+         */
+        val liveEventsList: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
+
         var friendJson = JSONObject() // friend json
         var friendTempPoi = JSONObject()
+
+        // TODO SECOND Remove all the following that are a replacement of the previous ones
 
     }
 
@@ -441,11 +480,45 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     fun showPOI() {
         Log.v(TAG, "showPOI")
         show = {
-            var index = 0
+//            var index = 0
             val txt: TextView = findViewById(id.nosrc)
             switchFrame(listLayout,listOf(homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
 
             val lv:ListView = findViewById(R.id.lv)
+
+            val len = poisList.size
+            txt.visibility = if(len == 0) View.VISIBLE else View.INVISIBLE
+
+            val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, poisList.stream().map(PointOfInterest::name).toList())
+
+            lv.setOnItemLongClickListener { parent, view, position, _ -> // _ refers to an id
+                val inflater: LayoutInflater = this.layoutInflater
+                val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
+                val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)
+
+                eliminateBtn.setOnClickListener {
+                    val selectedItem = parent.getItemAtPosition(position) as String
+                    deletePOI(selectedItem,view,show)
+                }
+
+                val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
+//                dialogBuilder.setOnDismissListener { }
+                dialogBuilder.setView(dialogView)
+
+                alertDialog = dialogBuilder.create()
+                alertDialog.show()
+
+                return@setOnItemLongClickListener true
+            }
+            lv.setOnItemClickListener { parent, _, position, _ -> //view e id
+                val selectedItem = parent.getItemAtPosition(position) as String
+                for (i in myList.keys()){
+                    if(selectedItem == myList.getJSONObject(i).get("name") as String)
+                        onMarkerClick(mymarker[i] as Marker)
+                }
+            }
+            lv.adapter = arrayAdapter
+            /*
             var len = 0
             for (i in myList.keys()){
                 if(myList.getJSONObject(i).has("type") && myList.getJSONObject(i).get("type") as String != "Live") len++
@@ -491,6 +564,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                 }
             }
             lv.adapter = arrayAdapter
+             */
         }
         show()
     }
@@ -738,14 +812,28 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
         alertDialog.show()
 
         addBtn.setOnClickListener {
-            if(emailText.text.toString() !="" && emailText.text.toString() != "Inserisci Email" && emailText.text.toString() != Auth.signInAccount?.email && emailText.text.toString() != Auth.signInAccount?.email?.replace("@gmail.com","")){
-                val id = Auth.signInAccount?.email?.replace("@gmail.com","")!!
-                val receiver = emailText.text.toString().replace("@gmail.com","")
-                val sendRequest = FriendRequest(receiver,id)
-                val jsonToAdd = gson.toJson(sendRequest)
-                sendFriendRequest(jsonToAdd)
+            val userToAddEmail = emailText.text.toString()
+            val personalEmail = Auth.signInAccount?.email
+            if(userToAddEmail !="" && userToAddEmail != "Inserisci Email" && userToAddEmail != personalEmail && userToAddEmail != personalEmail?.replace("@gmail.com","")){
+                val id = personalEmail?.replace("@gmail.com","")!!
+                val receiver = userToAddEmail.replace("@gmail.com","")
+                CoroutineScope(Dispatchers.IO).launch {
+                    val response = try {
+                        Retrofit.friendsApi.addFriend(AddFriendshipRequest(receiver, id))
+                    } catch (e: IOException) {
+                        e?.message?.let { it1 -> Log.e(TAG, it1) }
+                        return@launch
+                    } catch (e: HttpException) {
+                        e?.message?.let { it1 -> Log.e(TAG, it1) }
+                        return@launch
+                    }
 
-                alertDialog.dismiss()
+                    if(response.isSuccessful) {
+                        Log.i(TAG, "Friend request successfully sent")
+                    }
+
+                    alertDialog.dismiss()
+                }
             }
         }
     }

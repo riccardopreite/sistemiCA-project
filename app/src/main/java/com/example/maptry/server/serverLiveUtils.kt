@@ -15,30 +15,6 @@ import java.net.URLEncoder
 const val endpointLive = "live-events/"
 val baseUrlLive = "https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}/$endpointLive"
 
-//https://casadiso.ddns.net:3000/live-events/
-fun getLivePoi(user:String): JSONObject {
-    println("IN GET LIVE POI")
-    val url = URL(baseUrlLive + "?user=" + URLEncoder.encode(user, "UTF-8"))
-    var result = JSONObject()
-    val client =
-        OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory, trustManager)
-            .hostnameVerifier(hostnameVerifier).build()
-
-    val request = Request.Builder()
-        .addHeader("Authorization", "Bearer ${Auth.userToken}")
-        .url(url)
-        .build()
-    val response = client.newCall(request).execute()
-    if (response.isSuccessful) {
-        result = toJsonObject(JSONArray(response.body?.string()!!))
-        println("Get poi live from friend is success")
-    } else {
-        println("Get poi live from friend is error")
-        println(response.message)
-    }
-    return result
-}
-
 //https://casadiso.ddns.net:3000/live-events/add
 
 fun addLivePOI(poiToAdd:String){
