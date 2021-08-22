@@ -41,6 +41,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 fun createLiveMarker(liveEvent: LiveEvent){
+    Log.v("MarkerUtils", "createLiveMarker")
     val point = LatLng(
         liveEvent.latitude,
         liveEvent.longitude
@@ -54,6 +55,7 @@ fun createLiveMarker(liveEvent: LiveEvent){
 }
 
 fun createUserMarker(poi: PointOfInterest) {
+    Log.v("MarkerUtils", "createUserMarker")
     val point = LatLng(
         poi.latitude,
         poi.longitude
@@ -66,35 +68,13 @@ fun createUserMarker(poi: PointOfInterest) {
     }
 }
 
-
-//fun createJsonMarker(
-//    name: String,
-//    address: String,
-//    type: String,
-//    visibility: String,
-//    lat: Double,
-//    lon: Double,
-//    phone: String,
-//    url: String,
-//    id: String
-//): JSONObject {
-//
-//    val userMark = UserMarker(name, address, type, visibility, lat, lon, url, phone, "temp")
-//    val addPOIClass = AddPointOfInterest(id, userMark)
-//    val jsonToAdd = gson.toJson(addPOIClass)
-//    val markId = addPOI(jsonToAdd)
-//    userMark.markId = markId
-//
-//    return JSONObject(gson.toJson(userMark))
-//}
-
 fun createLiveJsonMarker(
     name: String,
     address: String,
     timer: String,
     id: String
 ): JSONObject {
-
+    Log.v("MarkerUtils", "createLiveJsonMarker")
     val userLive = UserLive(name, address, timer,id)
     val addPOIClass = AddLiveEvent(id, userLive)
     val jsonToAdd = gson.toJson(addPOIClass)
@@ -105,7 +85,7 @@ fun createLiveJsonMarker(
 }
 
 fun createMarker(p0: LatLng): Marker? {
-
+    Log.v("MarkerUtils", "createMarker")
     val background = object : Runnable {
         override fun run() {
             try {
@@ -143,6 +123,7 @@ fun createMarker(p0: LatLng): Marker? {
 }
 
 fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
+    Log.v("MarkerUtils", "deletePOI")
     // poisToRemove is a list in this code but it can actually only be of size 0 or 1 because of how the api are implemented.
     val poisToRemove = poisList.filter { poi -> poi.name == toRemove }
     if(poisToRemove.isEmpty()) {

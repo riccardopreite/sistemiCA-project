@@ -15,6 +15,7 @@ import java.io.IOException
 
 // retrieve friends collection from Server
 fun createFriendList(id:String){
+    Log.v("DatabaseUtils", "createFriendList")
     CoroutineScope(Dispatchers.IO).launch {
         val response = try {
             Retrofit.friendsApi.getFriends(id)
@@ -35,6 +36,7 @@ fun createFriendList(id:String){
 
 // retrieve poi collection from Firebase
 fun createPoiList(id:String){
+    Log.v("DatabaseUtils", "createPoiList")
     CoroutineScope(Dispatchers.IO).launch {
         val response = try {
             Retrofit.pointOfInterestsApi.getPointsOfInterest(id)
@@ -57,6 +59,7 @@ fun createPoiList(id:String){
 
 // retrieve live collection from Firebase
 fun createLiveList(id:String){
+    Log.v("DatabaseUtils", "createLiveList")
     CoroutineScope(Dispatchers.IO).launch {
         val response = try {
             Retrofit.liveEventsApi.getLiveEvents(id)

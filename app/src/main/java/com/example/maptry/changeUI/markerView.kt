@@ -63,7 +63,8 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
     val header: TextView = dialogView.findViewById(R.id.headerattr)
     val url: TextView = dialogView.findViewById(R.id.uri_lblattr)
     val urlCap: TextView = dialogView.findViewById(R.id.uri_lbl)
-    val text : String =  myList.getJSONObject(p0.position.toString()).get("type") as String+": "+ myList.getJSONObject(p0.position.toString()).get("name") as String
+    val poi = poisList.first { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude }
+    val text : String =  poi.type +  ": "+ poi.name
     header.text =  text
     address.text = myList.getJSONObject(p0.position.toString()).get("address") as String
     url.text = myList.getJSONObject(p0.position.toString()).get("url") as String

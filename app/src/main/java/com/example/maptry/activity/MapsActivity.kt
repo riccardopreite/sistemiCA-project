@@ -532,10 +532,9 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
             }
             lv.setOnItemClickListener { parent, _, position, _ -> //view e id
                 val selectedItem = parent.getItemAtPosition(position) as String
-                for (i in myList.keys()){
-                    if(selectedItem == myList.getJSONObject(i).get("name") as String)
-                        onMarkerClick(mymarker[i] as Marker)
-                }
+                val selectedPoi = poisList.first { it.name == selectedItem }
+                val markerId = LatLng(selectedPoi.latitude, selectedPoi.longitude).toString()
+                onMarkerClick(mymarker.get(markerId) as Marker)
             }
             lv.adapter = arrayAdapter
         }
@@ -685,35 +684,54 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                 if(response.isSuccessful && response.body() != null) {
                     val friendsPois = response.body()!!
 
-                    val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-                    dialogBuilder.setView(dialogView)
-                    val alertDialog2 = dialogBuilder.create()
-                    alertDialog2.show()
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+                        dialogBuilder.setView(dialogView)
+                        val alertDialog2 = dialogBuilder.create()
+                        alertDialog2.show()
 
-                    val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
-                        context,
-                        R.layout.support_simple_spinner_dropdown_item, friendsPois.map { it.name }.plus("")
-                    )
+                        val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
+                            context,
+                            R.layout.support_simple_spinner_dropdown_item,
+                            friendsPois.map { it.name }.plus("")
+                        )
 
-                    spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                        override fun onNothingSelected(parent: AdapterView<*>?) {}
-                        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                            val selectedItem = parent?.getItemAtPosition(position) as String
-                            if(selectedItem == "") {
-                                return
+                        spinner.onItemSelectedListener =
+                            object : AdapterView.OnItemSelectedListener {
+                                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                                override fun onItemSelected(
+                                    parent: AdapterView<*>?,
+                                    view: View?,
+                                    position: Int,
+                                    id: Long
+                                ) {
+                                    val selectedItem = parent?.getItemAtPosition(position) as String
+                                    if (selectedItem == "") {
+                                        return
+                                    }
+
+                                    val selectedPoi = friendsPois.first { it.name == selectedItem }
+
+                                    val pos = LatLng(selectedPoi.latitude, selectedPoi.longitude)
+                                    val marker = createMarker(pos)
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 20F))
+                                    switchFrame(
+                                        homeLayout,
+                                        listOf(
+                                            friendLayout,
+                                            listLayout,
+                                            drawerLayout,
+                                            friendFrame,
+                                            splashLayout,
+                                            liveLayout
+                                        )
+                                    )
+                                    alertDialog2.dismiss()
+                                    showPOIPreferences(pos.toString(), inflater, context, marker!!)
+                                }
                             }
-
-                            val selectedPoi = friendsPois.first { it.name == selectedItem }
-
-                            val pos = LatLng(selectedPoi.latitude, selectedPoi.longitude)
-                            val marker = createMarker(pos)
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 20F))
-                            switchFrame(homeLayout, listOf(friendLayout, listLayout, drawerLayout, friendFrame, splashLayout, liveLayout))
-                            alertDialog2.dismiss()
-                            showPOIPreferences(pos.toString(), inflater, context, marker!!)
-                        }
+                        spinner.adapter = arrayAdapter2
                     }
-                    spinner.adapter = arrayAdapter2
                 }
             }
         }

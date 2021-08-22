@@ -58,6 +58,7 @@ var notificationJson = JSONObject()
 
 // re draw all poi
 fun reDraw(){
+    Log.v("Utils", "reDraw")
     mMap.clear()
     val tmp = mymarker
     mymarker = JSONObject()
@@ -94,6 +95,7 @@ fun reDraw(){
 
 // move Frame of activity_maps layout
 fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
+    Log.v("Utils", "switchFrame")
     toHide.forEach { frame ->
         frame.invalidate()
         frame.visibility = View.GONE
@@ -111,6 +113,7 @@ fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
 // show a dialog with information of friend's poi selected, can be add to user's poi
 @SuppressLint("SetTextI18n")
 fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, mark:Marker){
+    Log.v("Utils", "showPOIPreferences")
     val dialogView: View = inflater.inflate(R.layout.dialog_custom_friend_poi, null)
     var added = true
     val address: TextView = dialogView.findViewById(R.id.txt_addressattr)
@@ -204,6 +207,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
 }
 
 fun setHomeLayout(navBar : View){
+    Log.v("Utils", "setHomeLayout")
     println("IN SHOW HOME")
     val imageView = navBar.findViewById<ImageView>(R.id.imageView)
     val user = navBar.findViewById<TextView>(R.id.user)
@@ -245,6 +249,7 @@ fun setHomeLayout(navBar : View){
 }
 
 fun makeRedLine(lname: EditText,color: Int){
+    Log.v("Utils", "makeRedLine")
     lname.background.mutate().apply {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
             colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
@@ -267,6 +272,7 @@ fun makeRedLine(lname: EditText,color: Int){
 //}
 
 fun toJsonObject(jsonArray: JSONArray):JSONObject{
+    Log.v("Utils", "toJsonObject")
     val toReturn = JSONObject()
     for (i in 0 until jsonArray.length()) {
         toReturn.put(i.toString(),jsonArray.getJSONObject(i))
