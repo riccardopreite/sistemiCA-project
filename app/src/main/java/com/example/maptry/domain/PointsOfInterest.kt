@@ -18,7 +18,13 @@ object PointsOfInterest {
 
     lateinit var userId: String
 
-    suspend fun getPointsOfInterest(user: String = ""): List<PointOfInterest> {
+    private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
+
+    suspend fun getPointsOfInterest(user: String = "", forceSync: Boolean = false): List<PointOfInterest> {
+        if(!forceSync) {
+            return pointsOfInterest
+        }
+
         val response = try {
             api.getPointsOfInterest(userId, user)
         } catch (e: IOException) {
@@ -37,7 +43,8 @@ object PointsOfInterest {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} points of interest of user $user.")
-            return response.body()!!
+            pointsOfInterest.addAll(response.body()!!)
+            return pointsOfInterest
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)
         }

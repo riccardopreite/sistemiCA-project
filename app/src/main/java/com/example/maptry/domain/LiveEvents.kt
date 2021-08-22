@@ -17,7 +17,13 @@ object LiveEvents {
 
     lateinit var userId: String
 
-    suspend fun getLiveEvents(): List<LiveEvent> {
+    private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
+
+    suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
+        if(!forceSync) {
+            return liveEvents
+        }
+
         val response = try {
             api.getLiveEvents(userId)
         } catch (e: IOException) {
@@ -36,7 +42,8 @@ object LiveEvents {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} live events.")
-            return response.body()!!
+            liveEvents.addAll(response.body()!!)
+            return liveEvents
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)
         }

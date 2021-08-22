@@ -19,7 +19,13 @@ object Friends {
 
     lateinit var userId: String
 
-    suspend fun getFriends(): List<Friend> {
+    val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
+
+    suspend fun getFriends(forceSync: Boolean = false): List<Friend> {
+        if(!forceSync) {
+            return friends
+        }
+
         val response = try {
             api.getFriends(userId)
         } catch (e: IOException) {
@@ -38,7 +44,8 @@ object Friends {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} friends.")
-            return response.body()!!
+            friends.addAll(response.body()!!)
+            return friends
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)
         }
