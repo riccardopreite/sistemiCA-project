@@ -1,6 +1,7 @@
 package com.example.maptry.domain
 
 import android.util.Log
+import com.example.maptry.api.ApiError
 import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.model.friends.AddFriendshipConfirmation
 import com.example.maptry.model.friends.AddFriendshipRequest
@@ -38,6 +39,8 @@ object Friends {
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} friends.")
             return response.body()!!
+        } else {
+            Log.e(TAG, (response.errorBody() as ApiError).message)
         }
 
         return emptyList()
@@ -56,6 +59,8 @@ object Friends {
 
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request to $friendUsername successfully sent.")
+        } else {
+            Log.e(TAG, (response.errorBody() as ApiError).message)
         }
     }
 
@@ -72,6 +77,8 @@ object Friends {
 
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
+        } else {
+            Log.e(TAG, (response.errorBody() as ApiError).message)
         }
     }
 
@@ -88,6 +95,8 @@ object Friends {
 
         if(response.isSuccessful) {
             Log.i(TAG, "Friend with username $friendUsername successfully removed.")
+        } else {
+            Log.e(TAG, (response.errorBody() as ApiError).message)
         }
     }
 }

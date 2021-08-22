@@ -21,17 +21,13 @@ import android.view.animation.AnimationUtils
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.lifecycleScope
 import com.example.maptry.*
 import com.example.maptry.R
 import com.example.maptry.R.id
 import com.example.maptry.api.RetrofitInstances
-import com.example.maptry.changeUI.gson
 import com.example.maptry.changeUI.markerView
 import com.example.maptry.changeUI.showCreateMarkerView
 import com.example.maptry.config.Auth
-import com.example.maptry.dataclass.ConfirmRequest
-import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.location.myLocationClick
 import com.example.maptry.location.registerLocationListener
 import com.example.maptry.location.setUpMap
@@ -41,7 +37,6 @@ import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.friends.RemoveFriendshipRequest
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.PointOfInterest
-import com.example.maptry.model.pointofinterests.RemovePointOfInterest
 import com.example.maptry.notification.NotifyService
 import com.example.maptry.server.*
 import com.example.maptry.utils.*
@@ -64,13 +59,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import retrofit2.HttpException
-import retrofit2.http.HTTP
 import java.io.IOException
 import java.util.*
-import kotlin.streams.toList
 
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
     "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"

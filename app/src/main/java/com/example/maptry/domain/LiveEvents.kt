@@ -1,7 +1,7 @@
 package com.example.maptry.domain
 
 import android.util.Log
-import com.example.maptry.activity.MapsActivity
+import com.example.maptry.api.ApiError
 import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
@@ -37,6 +37,8 @@ object LiveEvents {
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} live events.")
             return response.body()!!
+        } else {
+            Log.e(TAG, (response.errorBody() as ApiError).message)
         }
 
         return emptyList()
@@ -55,6 +57,8 @@ object LiveEvents {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Point of interest successfully added.")
+        } else {
+            Log.e(TAG, (response.errorBody() as ApiError).message)
         }
     }
 }

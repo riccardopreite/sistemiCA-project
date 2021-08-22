@@ -21,7 +21,6 @@ import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendPointOfInterest
-import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.lastLocation
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
