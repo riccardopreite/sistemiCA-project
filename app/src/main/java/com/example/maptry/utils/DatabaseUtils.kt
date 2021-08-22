@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.drawed
 import com.example.maptry.activity.MapsActivity.Companion.friendsList
-import com.example.maptry.api.Retrofit
+import com.example.maptry.api.RetrofitInstances
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,7 +18,7 @@ fun createFriendList(id:String){
     Log.v("DatabaseUtils", "createFriendList")
     CoroutineScope(Dispatchers.IO).launch {
         val response = try {
-            Retrofit.friendsApi.getFriends(id)
+            RetrofitInstances.friendsApi.getFriends(id)
         } catch (e: IOException) {
             e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
             return@launch
@@ -39,7 +39,7 @@ fun createPoiList(id:String){
     Log.v("DatabaseUtils", "createPoiList")
     CoroutineScope(Dispatchers.IO).launch {
         val response = try {
-            Retrofit.pointOfInterestsApi.getPointsOfInterest(id)
+            RetrofitInstances.pointOfInterestsApi.getPointsOfInterest(id)
         } catch (e: IOException) {
             e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
             return@launch
@@ -62,7 +62,7 @@ fun createLiveList(id:String){
     Log.v("DatabaseUtils", "createLiveList")
     CoroutineScope(Dispatchers.IO).launch {
         val response = try {
-            Retrofit.liveEventsApi.getLiveEvents(id)
+            RetrofitInstances.liveEventsApi.getLiveEvents(id)
         } catch (e: IOException) {
             e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
             return@launch

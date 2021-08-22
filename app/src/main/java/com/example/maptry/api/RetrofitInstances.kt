@@ -12,7 +12,7 @@ import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.*
 
-object Retrofit {
+object RetrofitInstances {
 
     // SSL certificate configuration
     private val trustStore: KeyStore = KeyStore.getInstance("BKS")

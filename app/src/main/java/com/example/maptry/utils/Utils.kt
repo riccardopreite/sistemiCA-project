@@ -33,7 +33,7 @@ import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
-import com.example.maptry.api.Retrofit
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.changeUI.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
@@ -154,7 +154,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
             CoroutineScope(Dispatchers.IO).launch {
                 val response = try {
                     friendPointOfInterest?.let {
-                        Retrofit.pointOfInterestsApi.addPointOfInterest(
+                        RetrofitInstances.pointOfInterestsApi.addPointOfInterest(
                             AddPointOfInterest(
                                 userId,
                                 AddPointOfInterestPoi(

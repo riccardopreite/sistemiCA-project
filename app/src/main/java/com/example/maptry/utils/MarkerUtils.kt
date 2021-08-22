@@ -17,7 +17,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.poisList
-import com.example.maptry.api.Retrofit
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.changeUI.gson
 import com.example.maptry.config.Auth
 import com.example.maptry.dataclass.*
@@ -163,7 +163,7 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
             }
             CoroutineScope(Dispatchers.IO).launch {
                 val response = try {
-                    Retrofit.pointOfInterestsApi.removePointOfInterest(RemovePointOfInterest(userId, poiToRemove.markId))
+                    RetrofitInstances.pointOfInterestsApi.removePointOfInterest(RemovePointOfInterest(userId, poiToRemove.markId))
                 } catch (e: IOException) {
                     e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
                     return@launch

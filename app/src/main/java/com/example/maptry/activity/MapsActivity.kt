@@ -25,7 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.maptry.*
 import com.example.maptry.R
 import com.example.maptry.R.id
-import com.example.maptry.api.Retrofit
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.changeUI.gson
 import com.example.maptry.changeUI.markerView
 import com.example.maptry.changeUI.showCreateMarkerView
@@ -623,7 +623,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                         }
                         CoroutineScope(Dispatchers.IO).launch {
                             val response = try {
-                                Retrofit.friendsApi.removeFriend(
+                                RetrofitInstances.friendsApi.removeFriend(
                                     RemoveFriendshipRequest(friendToRemove.friendUsername, userId)
                                 )
                             } catch (e: IOException) {
@@ -672,7 +672,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
             val userId = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
             CoroutineScope(Dispatchers.IO).launch {
                 val response = try {
-                    Retrofit.pointOfInterestsApi.getPointsOfInterest(userId, selectedItem)
+                    RetrofitInstances.pointOfInterestsApi.getPointsOfInterest(userId, selectedItem)
                 } catch (e: IOException) {
                     e?.message?.let { it1 -> Log.e(TAG, it1) }
                     return@launch
@@ -771,7 +771,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                 val receiver = userToAddEmail.replace("@gmail.com","")
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = try {
-                        Retrofit.friendsApi.addFriend(AddFriendshipRequest(receiver, id))
+                        RetrofitInstances.friendsApi.addFriend(AddFriendshipRequest(receiver, id))
                     } catch (e: IOException) {
                         e?.message?.let { it1 -> Log.e(TAG, it1) }
                         return@launch

@@ -29,7 +29,7 @@ import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.myjson
 import com.example.maptry.activity.MapsActivity.Companion.poisList
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
-import com.example.maptry.api.Retrofit
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.config.Auth
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
@@ -241,7 +241,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
 
                     CoroutineScope(Dispatchers.IO).launch {
                         val response = try {
-                            Retrofit.liveEventsApi.addLiveEvent(
+                            RetrofitInstances.liveEventsApi.addLiveEvent(
                                 AddLiveEvent(
                                     time,
                                     id!!,
@@ -320,7 +320,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
 
                     CoroutineScope(Dispatchers.IO).launch {
                         val response = try {
-                            Retrofit.pointOfInterestsApi.addPointOfInterest(
+                            RetrofitInstances.pointOfInterestsApi.addPointOfInterest(
                                 AddPointOfInterest(
                                     id!!,
                                     AddPointOfInterestPoi(
