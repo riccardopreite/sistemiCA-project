@@ -1,5 +1,6 @@
 package com.example.maptry.server
 
+import android.util.Log
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
 import com.example.maptry.utils.toJsonObject
@@ -19,6 +20,7 @@ val baseUrlFriend = "https://${ip}${port}/$endpointFriend"
 
 //https://casadiso.ddns.net:3000/friend/
 fun getFriend(user:String): JSONObject {
+    Log.v("serverFriendUtils", "getFriend")
     println("IN GET POI")
     val url = URL(baseUrlFriend + "?user=" + URLEncoder.encode(user, "UTF-8"))
     println(url)
@@ -43,6 +45,7 @@ fun getFriend(user:String): JSONObject {
 //https://casadiso.ddns.net:3000/friend/confirm
 
 fun confirmFriend(jsonToAdd:String){
+    Log.v("serverFriendUtils", "confirmFriend")
     val url = URL(baseUrlFriend + confirmFriendUrl)
     val body: RequestBody = RequestBody.create(JSON, jsonToAdd)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
@@ -68,6 +71,7 @@ fun confirmFriend(jsonToAdd:String){
 //https://casadiso.ddns.net:3000/friend/remove
 
 fun removeFriend(jsonToRemove:String){
+    Log.v("serverFriendUtils", "removeFriend")
     val url = URL(baseUrlFriend + removeFriendUrl)
     val body: RequestBody = RequestBody.create(JSON, jsonToRemove)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
@@ -89,6 +93,7 @@ fun removeFriend(jsonToRemove:String){
 
 //https://casadiso.ddns.net:3000/friend/add
 fun sendFriendRequest(jsonToAdd:String){
+    Log.v("serverFriendUtils", "sendFriendRequest")
     val url = URL(baseUrlFriend + addFriendUrl)
     val body: RequestBody = RequestBody.create(JSON, jsonToAdd)
     val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()

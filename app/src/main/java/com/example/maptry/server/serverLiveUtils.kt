@@ -1,5 +1,6 @@
 package com.example.maptry.server
 
+import android.util.Log
 import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
@@ -17,6 +18,7 @@ val baseUrlLive = "https://${ip}${port}/$endpointLive"
 
 //https://casadiso.ddns.net:3000/live-events/
 fun getLivePoi(user:String): JSONObject {
+    Log.v("serverLiveUtils", "getLivePoi")
     println("IN GET LIVE POI")
     val url = URL(baseUrlLive + "?user=" + URLEncoder.encode(user, "UTF-8"))
     var result = JSONObject()
@@ -42,6 +44,7 @@ fun getLivePoi(user:String): JSONObject {
 //https://casadiso.ddns.net:3000/live-events/add
 
 fun addLivePOI(poiToAdd:String){
+    Log.v("serverLiveUtils", "addLivePOI")
     println("IN ADD POI")
     val body: RequestBody = RequestBody.create(JSON, poiToAdd)
 

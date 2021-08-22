@@ -54,6 +54,7 @@ var notificationJson = JSONObject()
 
 // re draw all poi
 fun reDraw(){
+    Log.v("Utils", "reDraw")
     mMap.clear()
     val tmp = mymarker
     mymarker = JSONObject()
@@ -90,6 +91,7 @@ fun reDraw(){
 
 // move Frame of activity_maps layout
 fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
+    Log.v("Utils", "switchFrame")
     toHide.forEach { frame ->
         frame.invalidate()
         frame.visibility = View.GONE
@@ -107,7 +109,7 @@ fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
 // show a dialog with information of friend's poi selected, can be add to user's poi
 @SuppressLint("SetTextI18n")
 fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, mark:Marker){
-
+    Log.v("Utils", "showPOIPreferences")
     val dialogView: View = inflater.inflate(R.layout.dialog_custom_friend_poi, null)
     var added = 0
     val address: TextView = dialogView.findViewById(R.id.txt_addressattr)
@@ -164,6 +166,7 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
 }
 
 fun setHomeLayout(navBar : View){
+    Log.v("Utils", "setHomeLayout")
     println("IN SHOW HOME")
     val imageView = navBar.findViewById<ImageView>(R.id.imageView)
     val user = navBar.findViewById<TextView>(R.id.user)

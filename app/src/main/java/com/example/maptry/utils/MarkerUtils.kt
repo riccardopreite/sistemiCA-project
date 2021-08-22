@@ -30,6 +30,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 fun createLiveMarker(liveMarker: JSONObject){
+    Log.v("MarkerUtils", "createLiveMarker")
     val address = liveMarker.get("address") as String
     listAddr = geocoder.getFromLocationName(address, 1)
     val lat = listAddr?.get(0)?.latitude!!
@@ -46,6 +47,7 @@ fun createLiveMarker(liveMarker: JSONObject){
 }
 
 fun createUserMarker(userMarker: JSONObject){
+    Log.v("MarkerUtils", "createUserMarker")
     val address = userMarker.get("address") as String
     listAddr = geocoder.getFromLocationName(address, 1)
     println("LISTADDR")
@@ -74,7 +76,7 @@ fun createJsonMarker(
     url: String,
     id: String
 ): JSONObject {
-
+    Log.v("MarkerUtils", "createJsonMarker")
     val userMark = UserMarker(name, address, type, visibility, lat, lon, url, phone, "temp")
     val addPOIClass = AddPointOfInterest(id, userMark)
     val jsonToAdd = gson.toJson(addPOIClass)
@@ -89,7 +91,7 @@ fun createLiveJsonMarker(
     timer: String,
     id: String
 ): JSONObject {
-
+    Log.v("MarkerUtils", "createLiveJsonMarker")
     val userLive = UserLive(name, address, timer,id)
     val addPOIClass = AddLiveEvent(id, userLive)
     val jsonToAdd = gson.toJson(addPOIClass)
@@ -100,7 +102,7 @@ fun createLiveJsonMarker(
 }
 
 fun createMarker(p0: LatLng): Marker? {
-
+    Log.v("MarkerUtils", "createMarker")
     val background = object : Runnable {
         override fun run() {
             try {
@@ -138,6 +140,7 @@ fun createMarker(p0: LatLng): Marker? {
 }
 
 fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit){
+    Log.v("MarkerUtils", "deletePOI")
     for (i in myList.keys()){
         if(toRemove == myList.getJSONObject(i).get("name") as String) {
 

@@ -1,5 +1,6 @@
 package com.example.maptry.server
 
+import android.util.Log
 import com.example.maptry.activity.MapsActivity.Companion.firebaseAuth
 import com.example.maptry.activity.MapsActivity.Companion.ip
 import com.example.maptry.activity.MapsActivity.Companion.port
@@ -19,6 +20,7 @@ val JSON = MediaType.parse("application/json; charset=utf-8")
 
 //https://casadiso.ddns.net:3000/points-of-interest/
 fun getPoi(user:String): JSONObject {
+    Log.v("serverPOIUtils", "getPoi")
     println("IN GET POI")
     val url = URL(baseUrl + "?user=" + URLEncoder.encode(user, "UTF-8"))
     var result = JSONObject()
@@ -45,6 +47,7 @@ fun getPoi(user:String): JSONObject {
 
 //https://casadiso.ddns.net:3000/points-of-interest/
 fun getPoiFromFriend(user:String,friend:String): JSONObject {
+    Log.v("serverPOIUtils", "getPoiFromFriend")
     println("IN GET POI of friend")
     val url = URL(baseUrl + "?user=" + URLEncoder.encode(user, "UTF-8") + "&friend=" + URLEncoder.encode(friend, "UTF-8"))
     var result = JSONObject()
@@ -69,6 +72,7 @@ fun getPoiFromFriend(user:String,friend:String): JSONObject {
 }
 //https://casadiso.ddns.net:3000/points-of-interest/add/
 fun addPOI(poiToAdd:String): String{
+    Log.v("serverPOIUtils", "addPOI")
     println("IN ADD POI")
     println(poiToAdd)
     val body: RequestBody = RequestBody.create(JSON, poiToAdd)
@@ -96,6 +100,7 @@ fun addPOI(poiToAdd:String): String{
 
 //https://casadiso.ddns.net:3000/points-of-interest/remove/
 fun removePOI(poiId:String,user: String) {
+    Log.v("serverPOIUtils", "removePOI")
     println("IN REMOVE POI")
     val formBody: RequestBody = FormBody.Builder()
         .add("poiId", poiId)

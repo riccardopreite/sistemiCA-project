@@ -69,6 +69,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     private var error = Runnable { println("error") }
     private var run = object : Runnable {
         override fun run() {
+            Log.v("MapsActivity", "run")
             if(drawed) { // wait firebase to load JSON or 1.5 sec
                 switchFrame(homeLayout,listOf(listLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
                 mainHandler.removeCallbacksAndMessages(null)
@@ -150,6 +151,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*Start Initialize Function*/
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Log.v("MapsActivity", "onRequestPermissionsResult")
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if(requestCode == 1) {
             if (permissions[0] == android.Manifest.permission.ACCESS_FINE_LOCATION ) {
@@ -159,12 +161,14 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onDestroy() {
+        Log.v("MapsActivity", "onDestroy")
         super.onDestroy()
         println("onDestroy distrutto")
         isRunning = false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v("MapsActivity", "onCreate")
         super.onCreate(savedInstanceState)
         println("onCreate")
         if(isRunning) {
@@ -212,6 +216,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     @SuppressLint("RestrictedApi")
     override fun onMapReady(googleMap: GoogleMap) {
+        Log.v("MapsActivity", "onMapReady")
         mMap = googleMap
         supportManager = supportFragmentManager
         mMap.setOnMarkerClickListener(this)
@@ -236,7 +241,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*This Function open a dialog with the information of the marker which was clicked*/
     @SuppressLint("SetTextI18n")
     override fun onMarkerClick(p0: Marker): Boolean {
-
+        Log.v("MapsActivity", "onMarkerClick")
         try {
             val myPos = LatLng(lastLocation.latitude, lastLocation.longitude)
 
@@ -263,6 +268,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*Open Dialog to create new POI in the position clicked*/
     @SuppressLint("SetTextI18n")
     override fun onMapClick(p0: LatLng) {
+        Log.v("MapsActivity", "onMapClick")
         val inflater: LayoutInflater = this.layoutInflater
         val dialogView = showCreateMarkerView(inflater,p0)
         val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -278,6 +284,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     /*Start Activity for result Function*/
     @SuppressLint("ResourceType", "CutPasteId")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.v("MapsActivity", "onActivityResult")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CHECK_SETTINGS) {
             if (resultCode == Activity.RESULT_OK) {
@@ -365,6 +372,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        Log.v("MapsActivity", "onNavigationItemSelected")
         println("MENU")
         return when (item.itemId) {
             id.list -> {
@@ -391,6 +399,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // populate ListView with poi list
     @SuppressLint("WrongViewCast")
     fun showPOI() {
+        Log.v("MapsActivity", "showPOI")
         show = {
             var index = 0
             val txt: TextView = findViewById(id.nosrc)
@@ -448,6 +457,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // populate ListView with live list
     fun showLive(){
+        Log.v("MapsActivity", "showLive")
         val len = myLive.length()
         var index = 0
         val txt: TextView = findViewById(id.nolive)
@@ -477,6 +487,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     // populate ListView with friend list
     @SuppressLint("ShowToast")
     fun showFriend(){
+        Log.v("MapsActivity", "showFriend")
         println("friendJson")
         println(friendJson)
         val len = friendJson.length()
@@ -496,14 +507,14 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
         val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
         lv.setOnItemLongClickListener { parent, view, position, _ -> //id
-
+            Log.v("MapsActivity", "lv.setOnItemLongClickListener")
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
             val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)
 
             eliminateBtn.setOnClickListener {
                 val selectedItem = parent.getItemAtPosition(position) as String
-
+                Log.v("MapsActivity", "eliminateBtn.setOnClickListener")
                 for(i in friendJson.keys()){
                     if(selectedItem == friendJson[i] as String) {
                         friendJson.remove(i)
@@ -663,6 +674,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
 
     // show menu or home and reDraw all poi
     fun closeDrawer(view: View) {
+        Log.v("MapsActivity", "closeDrawer")
         println(view)
         if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         else {
@@ -672,6 +684,7 @@ class MapsActivity  : AppCompatActivity(), OnMapReadyCallback,
     }
     //get email inserted to send a request via server
     fun addFriend(view: View) {
+        Log.v("MapsActivity", "addFriend")
         println(view)
         val inflater: LayoutInflater = this.layoutInflater
         val dialogView: View = inflater.inflate(R.layout.add_friend, null)
