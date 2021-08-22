@@ -68,29 +68,3 @@ fun addPOI(poiToAdd:String): String{
     }
     return result
 }
-
-//https://casadiso.ddns.net:3000/points-of-interest/remove/
-fun removePOI(poiId:String,user: String) {
-    println("IN REMOVE POI")
-    val formBody: RequestBody = FormBody.Builder()
-        .add("poiId", poiId)
-        .add("user", user)
-        .build()
-
-    val url = URL(baseUrl + removePOIUrl)
-    val client = OkHttpClient().newBuilder().sslSocketFactory(sslContext.socketFactory,trustManager).hostnameVerifier(hostnameVerifier).build()
-    val request = Request.Builder()
-        .addHeader("Authorization", "Bearer ${Auth.userToken}")
-        .url(url)
-        .delete(formBody)
-        .build()
-
-    val response = client.newCall(request).execute()
-    if (response.isSuccessful){
-        println("Remove poi is success")
-    }
-    else{
-        println("Remove poi is error")
-        println(response.message)
-    }
-}

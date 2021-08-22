@@ -3,15 +3,11 @@ package com.example.maptry.utils
 import android.util.Log
 import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.drawed
-import com.example.maptry.activity.MapsActivity.Companion.friendJson
+import com.example.maptry.activity.MapsActivity.Companion.friendsList
 import com.example.maptry.api.Retrofit
-import com.example.maptry.server.getFriend
-//import com.example.maptry.server.getLivePoi
-//import com.example.maptry.server.getPoi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -19,23 +15,22 @@ import java.io.IOException
 
 // retrieve friends collection from Server
 fun createFriendList(id:String){
-    var count = 0
-    friendJson = JSONObject()
-    val userFriend = getFriend(id)
-    if (userFriend.length() > 0){
-        val userKeys = userFriend.keys()
-        println("AMICO")
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = try {
+            Retrofit.friendsApi.getFriends(id)
+        } catch (e: IOException) {
+            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+            return@launch
+        } catch (e: HttpException) {
+            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+            return@launch
+        }
 
-        println(userFriend)
-        userKeys.forEach{ key ->
-            val tempJson = userFriend.get(key) as JSONObject
-            println(tempJson.get("friendUsername"))
-            friendJson.put(count.toString(),tempJson.get("friendUsername"))
-            count++
+        if(response.isSuccessful && response.body() != null) {
+            friendsList.clear()
+            friendsList.addAll(response.body()!!)
         }
     }
-
-
 }
 
 // retrieve poi collection from Firebase

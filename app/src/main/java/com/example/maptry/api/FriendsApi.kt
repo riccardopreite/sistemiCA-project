@@ -5,14 +5,11 @@ import com.example.maptry.model.friends.AddFriendshipRequest
 import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.friends.RemoveFriendshipRequest
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.POST
+import retrofit2.http.*
 
 interface FriendsApi {
     @GET("/friends")
-    suspend fun getFriends(): Response<List<Friend>>
+    suspend fun getFriends(@Query("user") user: String): Response<List<Friend>>
 
     @POST("/friends/add")
     suspend fun addFriend(@Body addFriendshipRequest: AddFriendshipRequest): Response<Unit>

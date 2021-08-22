@@ -27,7 +27,6 @@ import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.example.maptry.model.pointofinterests.RemovePointOfInterest
 import com.example.maptry.server.addLivePOI
 import com.example.maptry.server.addPOI
-import com.example.maptry.server.removePOI
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -68,26 +67,27 @@ fun createUserMarker(poi: PointOfInterest) {
 }
 
 
-fun createJsonMarker(
-    name: String,
-    address: String,
-    type: String,
-    visibility: String,
-    lat: Double,
-    lon: Double,
-    phone: String,
-    url: String,
-    id: String
-): JSONObject {
+//fun createJsonMarker(
+//    name: String,
+//    address: String,
+//    type: String,
+//    visibility: String,
+//    lat: Double,
+//    lon: Double,
+//    phone: String,
+//    url: String,
+//    id: String
+//): JSONObject {
+//
+//    val userMark = UserMarker(name, address, type, visibility, lat, lon, url, phone, "temp")
+//    val addPOIClass = AddPointOfInterest(id, userMark)
+//    val jsonToAdd = gson.toJson(addPOIClass)
+//    val markId = addPOI(jsonToAdd)
+//    userMark.markId = markId
+//
+//    return JSONObject(gson.toJson(userMark))
+//}
 
-    val userMark = UserMarker(name, address, type, visibility, lat, lon, url, phone, "temp")
-    val addPOIClass = AddPointOfInterest(id, userMark)
-    val jsonToAdd = gson.toJson(addPOIClass)
-    val markId = addPOI(jsonToAdd)
-    userMark.markId = markId
-
-    return JSONObject(gson.toJson(userMark))
-}
 fun createLiveJsonMarker(
     name: String,
     address: String,
@@ -170,11 +170,6 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
 
             showPOI()
         }
-    snackbar.setActionTextColor(Color.DKGRAY)
-    val snackView = snackbar.view
-    snackView.setBackgroundColor(Color.BLACK)
-    snackbar.show()
-
 
     snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
         override fun onShown(transientBottomBar: Snackbar?) {
@@ -185,8 +180,6 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
             if(!willDeletePoi) {
                 return
             }
-            //remove from db the poi
-//            removePOI(poiToRemove.markId, userId)
             CoroutineScope(Dispatchers.IO).launch {
                 val response = try {
                     Retrofit.pointOfInterestsApi.removePointOfInterest(RemovePointOfInterest(userId, poiToRemove.markId))
@@ -206,63 +199,11 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
             }
         }
     })
+
+    snackbar.setActionTextColor(Color.DKGRAY)
+    val snackView = snackbar.view
+    snackView.setBackgroundColor(Color.BLACK)
+    snackbar.show()
+
     alertDialog.dismiss()
-
-    /*
-    for (i in myList.keys()){
-        if(toRemove == myList.getJSONObject(i).get("name") as String) {
-
-            val mark = mymarker[i] as Marker
-            val removed = myList.getJSONObject(i)
-            mark.remove()
-            mymarker.remove(i)
-            myList.remove(i)
-            val cancel = "Annulla"
-            val text = "Rimosso $toRemove"
-            val id = Auth.signInAccount?.email?.replace("@gmail.com","")!!
-            // create a Toast to undo the operation of removing
-            val snackbar = Snackbar.make(view, text, 5000)
-                .setAction(cancel) {
-//                    val (name,address,type,visibility,lat,lon,phone,url) = generateValue(removed)
-                    val name = removed.get("name").toString()
-                    val address = removed.get("address").toString()
-                    val type = removed.get("type").toString()
-                    val visibility =  removed.get("visibility").toString()
-                    val lat = removed.get("latitude") as Double
-                    val lon = removed.get("longitude") as Double
-                    val phone = removed.get("phoneNumber").toString()
-                    val url = removed.get("url").toString()
-
-                    val newJsonMark = createJsonMarker(name,address,type,visibility,lat,lon,phone,url,id)
-                    myList.put(mark.position.toString(), newJsonMark)
-                    mymarker.put(mark.position.toString(), mark)
-                    Toast.makeText(
-                        mapsActivityContext,
-                        "Annullata rimozione di $toRemove",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                    showPOI()
-                }
-            snackbar.setActionTextColor(Color.DKGRAY)
-            val snackView = snackbar.view
-            snackView.setBackgroundColor(Color.BLACK)
-            snackbar.show()
-
-
-            snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                override fun onShown(transientBottomBar: Snackbar?) {
-                    super.onShown(transientBottomBar)
-                }
-                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                    super.onDismissed(transientBottomBar, event)
-                    //remove from db the poi
-                    removePOI(removed.get("markId").toString(),id)
-                }
-            })
-            alertDialog.dismiss()
-            break
-        }
-    }
-    */
 }

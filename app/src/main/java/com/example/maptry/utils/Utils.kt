@@ -9,15 +9,18 @@ import android.graphics.BlendModeColorFilter
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.core.content.ContextCompat.startActivity
 import com.example.maptry.R
+import com.example.maptry.activity.MapsActivity
 import com.example.maptry.activity.MapsActivity.Companion.alertDialog
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
+import com.example.maptry.activity.MapsActivity.Companion.friendPointOfInterest
 import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.lastLocation
@@ -30,15 +33,24 @@ import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
+import com.example.maptry.api.Retrofit
 import com.example.maptry.changeUI.CircleTransform
 import com.example.maptry.config.Auth
+import com.example.maptry.model.pointofinterests.AddPointOfInterest
+import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import retrofit2.HttpException
+import java.io.IOException
 import java.lang.Exception
 
 var notificationJson = JSONObject()
@@ -99,53 +111,89 @@ fun switchFrame(toView: FrameLayout, toHide: List<FrameLayout>) {
 // show a dialog with information of friend's poi selected, can be add to user's poi
 @SuppressLint("SetTextI18n")
 fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, mark:Marker){
-
     val dialogView: View = inflater.inflate(R.layout.dialog_custom_friend_poi, null)
-    var added = 0
+    var added = true
     val address: TextView = dialogView.findViewById(R.id.txt_addressattr)
     val phone: TextView = dialogView.findViewById(R.id.phone_contentattr)
     val header: TextView = dialogView.findViewById(R.id.headerattr)
     val url: TextView = dialogView.findViewById(R.id.uri_lblattr)
-    val text : String =  friendTempPoi.getJSONObject(p0).get("type") as String+": "+ friendTempPoi.getJSONObject(p0).get("name") as String
-    header.text =  text
-    address.text = friendTempPoi.getJSONObject(p0).get("address") as String
-    url.text = friendTempPoi.getJSONObject(p0).get("url") as String
-    phone.text = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
+    friendPointOfInterest?.let {
+        val text : String =  it.type + ": " + it.name
+        header.text =  text
+        address.text = it.address
+        url.text = it.url
+        phone.text = it.phoneNumber
+    }
+
     val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
     val addbutton: Button = dialogView.findViewById(R.id.removeBtnattr)
-    addbutton.text = "Aggiungi"
+    addbutton.text = context.getString(R.string.add_to_user_pois)
     addbutton.setOnClickListener {
-
         val markAdd = mymarker.get(p0) as Marker
-//        myList.put(p0,friendTempPoi.getJSONObject(p0))
-        added = 1
+        added = true
         markAdd.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         alertDialog.dismiss()
     }
     routebutton.setOnClickListener {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" + address.text))
-        added = 0
+        added = false
         startActivity(context,intent,null)
         alertDialog.dismiss()
     }
 
     val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
     dialogBuilder.setOnDismissListener {
-        if (added == 0) {
+        if (!added) {
             mymarker.remove(p0)
             mark.remove()
         } else {
-            val name = friendTempPoi.getJSONObject(p0).get("name") as String
-            val addr = friendTempPoi.getJSONObject(p0).get("address") as String
-            val type = friendTempPoi.getJSONObject(p0).get("type") as String
-            val visibility =  friendTempPoi.getJSONObject(p0).get("visibility") as String
-            val lat = mark.position.latitude
-            val lon = mark.position.longitude
-            val phoneFriend = friendTempPoi.getJSONObject(p0).get("url") as String
-            val urlFriend = friendTempPoi.getJSONObject(p0).get("phoneNumber") as String
-            val id = Auth.signInAccount?.email?.replace("@gmail.com", "") as String
-            val newJsonMark = createJsonMarker(name,addr,type,visibility,lat,lon,phoneFriend,urlFriend,id)
-            myList.put(p0, newJsonMark)
+            val userId = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
+            CoroutineScope(Dispatchers.IO).launch {
+                val response = try {
+                    friendPointOfInterest?.let {
+                        Retrofit.pointOfInterestsApi.addPointOfInterest(
+                            AddPointOfInterest(
+                                userId,
+                                AddPointOfInterestPoi(
+                                    it.address,
+                                    it.type,
+                                    it.latitude,
+                                    it.longitude,
+                                    it.name,
+                                    it.phoneNumber,
+                                    it.visibility,
+                                    it.url
+                                )
+                            )
+                        )
+                    }
+                } catch (e: IOException) {
+                    e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                    return@launch
+                } catch (e: HttpException) {
+                    e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                    return@launch
+                }
+
+                if(response?.isSuccessful == true && response?.body() != null) {
+                    MapsActivity.poisList.add(
+                        PointOfInterest(
+                            response.body()!!,
+                            friendPointOfInterest!!.address,
+                            friendPointOfInterest!!.type,
+                            friendPointOfInterest!!.latitude,
+                            friendPointOfInterest!!.longitude,
+                            friendPointOfInterest!!.name,
+                            friendPointOfInterest!!.phoneNumber,
+                            friendPointOfInterest!!.visibility,
+                            friendPointOfInterest!!.url
+                        )
+                    )
+                    Log.i(MapsActivity.TAG, "Point of interest originally of a friend successfully added")
+                } else {
+                    Log.e(MapsActivity.TAG, "Point of interest originally of a friend not added")
+                }
+            }
         }
 
     }

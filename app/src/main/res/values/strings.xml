@@ -72,6 +72,7 @@
     <string name="noteseturi">No website</string>
     <string name="cancel">Cancel</string>
     <string name="removed_poi">Point of interest removed</string>
+    <string name="removed_friend">Friend removed</string>
     <string name="canceled_removal">Canceled removal</string>
     <string name="friend">Friends</string>
     <string name="addfriend">Add friend</string>
@@ -86,4 +87,5 @@
     <string name="timer">Timer:</string>
     <string name="nolive">No live events are registered!</string>
     <string name="location_services_required">This app requires location services to be enabled to work properly.</string>
+    <string name="add_to_user_pois">Add to mine</string>
 </resources>
