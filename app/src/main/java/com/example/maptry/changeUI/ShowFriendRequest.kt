@@ -32,7 +32,7 @@ import com.example.maptry.dataclass.ConfirmRequest
 import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.server.confirmFriend
 import com.example.maptry.server.sendFriendRequest
-import com.example.maptry.utils.reDraw
+//import com.example.maptry.utils.reDraw
 import com.example.maptry.utils.switchFrame
 
 class ShowFriendRequest : AppCompatActivity() {
@@ -107,7 +107,7 @@ class ShowFriendRequest : AppCompatActivity() {
             finish()
         }
         else {
-            reDraw()
+//            reDraw()
             if(!isRunning) {
                 println("STARTO ACTIVITY")
                 val main = Intent(mapsActivityContext, MapsActivity::class.java)

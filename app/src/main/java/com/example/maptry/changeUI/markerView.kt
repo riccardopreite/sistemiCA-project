@@ -24,8 +24,6 @@ import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveEventsList
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.mMap
-import com.example.maptry.activity.MapsActivity.Companion.myList
-import com.example.maptry.activity.MapsActivity.Companion.myLive
 import com.example.maptry.activity.MapsActivity.Companion.myjson
 import com.example.maptry.activity.MapsActivity.Companion.poisList
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
@@ -50,6 +48,7 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 val gson = Gson()
 
@@ -63,24 +62,27 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
     val header: TextView = dialogView.findViewById(R.id.headerattr)
     val url: TextView = dialogView.findViewById(R.id.uri_lblattr)
     val urlCap: TextView = dialogView.findViewById(R.id.uri_lbl)
-    val poi = poisList.first { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude }
-    val text : String =  poi.type +  ": "+ poi.name
-    header.text =  text
-    address.text = myList.getJSONObject(p0.position.toString()).get("address") as String
-    url.text = myList.getJSONObject(p0.position.toString()).get("url") as String
-    phone.text = myList.getJSONObject(p0.position.toString()).get("phoneNumber") as String
     when {
-        myList.getJSONObject(p0.position.toString()).get("type") as String == "Live" -> {
-            phone.text = myLive.getJSONObject(p0.position.toString()).get("timer") as String + " minuti"
-            phoneCap.text = "Timer"
-            url.text = myLive.getJSONObject(p0.position.toString()).get("owner") as String
-            urlCap.text = "Proprietario"
-
+        poisList.any { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude } -> {
+            val poi = poisList.first { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude }
+            header.text = poi.type +  ": "+ poi.name
+            address.text = poi.address
+            phone.text = poi.phoneNumber
+            url.text = poi.url
+            phoneCap.text = "Phone"
+            urlCap.text = "Website"
         }
-        else -> {
-            phoneCap.text = "N.cellulare"
-            urlCap.text = "WebSite"
+        liveEventsList.any { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude } -> {
+            val liveEvent = liveEventsList.first { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude }
+            header.text = "Live" + ": " + liveEvent.name
+            address.text = liveEvent.address
+            phoneCap.text = "Ending on"
+            phone.text = LocalDateTime.ofEpochSecond(liveEvent.expirationDate.toLong(), 0, OffsetDateTime.now().offset).format(
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME
+            )
+            urlCap.text = "Owner"
         }
+        else -> {}
     }
 
     val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
@@ -89,8 +91,9 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
         val shareIntent = Intent()
         shareIntent.action = Intent.ACTION_SEND
         shareIntent.type="text/plain"
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ myList.getJSONObject(p0.position.toString()).get("lat")+","+ myList.getJSONObject(p0.position.toString()).get("lon"))
-        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo "+ myList.getJSONObject(p0.position.toString()).get("name"))
+        val liveEvent = liveEventsList.first { it.latitude == p0.position.latitude && it.longitude == p0.position.longitude }
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ p0.position.latitude +","+ p0.position.longitude)
+        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo "+ liveEvent.name)
         startActivity(mapsActivityContext,createdIntent,null)
         alertDialog.dismiss()
     }
@@ -184,7 +187,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
         // show timepicker for live
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
             val type = parent?.getItemAtPosition(position) as String
-            if(type == "Live"){
+            if(type == "Live event"){
                 radioGroup.visibility = View.GONE
                 timePicker.setIs24HourView(true)
                 timePickerLayout.visibility = View.VISIBLE
@@ -216,20 +219,15 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                 gender = privateButton.text.toString()
 
             when {
-                spinner.selectedItem.toString() == "Live" -> {
-                    for (i: String in myLive.keys()) {
-                        try {
-                            val x: String = myLive.getJSONObject(i).get("name") as String
-                            if (text == x) {
-                                makeRedLine(lname,red)
-                                return@setOnClickListener
-                            }
-                            if (address.text == myLive.getJSONObject(i).get("address") as String) {
-                                makeRedLine(lname,red)
-                                return@setOnClickListener
-                            }
-                        } catch (e: java.lang.Exception) {
-                            println("ops")
+                spinner.selectedItem.toString() == "Live event" -> {
+                    liveEventsList.forEach {
+                        if(text == it.name) {
+                            makeRedLine(lname,red)
+                            return@setOnClickListener
+                        }
+                        if(address.text == it.address) {
+                            makeRedLine(lname, red)
+                            return@setOnClickListener
                         }
                     }
                     time = timePicker.hour * 60 + timePicker.minute
@@ -269,7 +267,7 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                                 text,
                                 id,
                                 date.plusMinutes(time.toLong()).toEpochSecond(
-                                    OffsetDateTime.now().offset).toInt()
+                                    OffsetDateTime.now().offset)
                             ))
                             Log.i(MapsActivity.TAG, "Point of interest successfully added")
                         } else {
@@ -283,23 +281,14 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                 }
                 //                spinner on item selected
                 else -> {
-                    for (i: String in myList.keys()) {
-                        try {
-
-                            if(myList.getJSONObject(i).has("type")){
-                                val x: String = myList.getJSONObject(i).get("name") as String
-                                if (text == x) {
-                                    makeRedLine(lname,red)
-                                    return@setOnClickListener
-                                }
-                                if (address.text == myList.getJSONObject(i).get("address") as String) {
-                                    makeRedLine(lname,red)
-                                    return@setOnClickListener
-                                }
-                            }
-
-                        } catch (e: java.lang.Exception) {
-                            println("ops")
+                    liveEventsList.forEach {
+                        if(it.name == text) {
+                            makeRedLine(lname,red)
+                            return@setOnClickListener
+                        }
+                        if(address.text == it.address) {
+                            makeRedLine(lname,red)
+                            return@setOnClickListener
                         }
                     }
                     val marker = createMarker(p0)

@@ -7,5 +7,5 @@ data class LiveEvent(
     val longitude: Double,
     val name: String,
     val owner: String,
-    val expirationDate: Int
+    val expirationDate: Long
 )

@@ -27,7 +27,6 @@ import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.mAnimation
 import com.example.maptry.activity.MapsActivity.Companion.mMap
-import com.example.maptry.activity.MapsActivity.Companion.myList
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
 import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
@@ -56,39 +55,39 @@ var notificationJson = JSONObject()
 
 
 // re draw all poi
-fun reDraw(){
-    Log.v("Utils", "reDraw")
-    mMap.clear()
-    val tmp = mymarker
-    mymarker = JSONObject()
-    for(i in tmp.keys()){
-        //control in myList for color
-        val mark : Marker = tmp[i] as Marker
-        val marker = createMarker(mark.position)
-        try{
-            val cont = myList.getJSONObject(i).get("type")
-            println(cont)
-            when (cont) {
-                "Live" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                else -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-            }
-        }
-        catch(e: Exception){
-            println("some error")
-            println(e)
-        }
-    }
-    try{
-        val x = LatLng(lastLocation.latitude, lastLocation.longitude)
-        oldPos?.remove()
-        oldPos = createMarker(x)
-    }
-    catch (e:Exception){
-        println("first time")
-    }
-
-    mymarker.remove(oldPos?.position.toString())
-}
+//fun reDraw(){
+//    Log.v("Utils", "reDraw")
+//    mMap.clear()
+//    val tmp = mymarker
+//    mymarker = JSONObject()
+//    for(i in tmp.keys()){
+//        //control in myList for color
+//        val mark : Marker = tmp[i] as Marker
+//        val marker = createMarker(mark.position)
+//        try{
+//            val cont = myList.getJSONObject(i).get("type")
+//            println(cont)
+//            when (cont) {
+//                "Live" -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+//                else -> marker?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+//            }
+//        }
+//        catch(e: Exception){
+//            println("some error")
+//            println(e)
+//        }
+//    }
+//    try{
+//        val x = LatLng(lastLocation.latitude, lastLocation.longitude)
+//        oldPos?.remove()
+//        oldPos = createMarker(x)
+//    }
+//    catch (e:Exception){
+//        println("first time")
+//    }
+//
+//    mymarker.remove(oldPos?.position.toString())
+//}
 
 
 

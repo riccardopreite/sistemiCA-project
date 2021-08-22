@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
@@ -20,7 +21,6 @@ import com.example.maptry.activity.MapsActivity.Companion.isRunning
 import com.example.maptry.activity.MapsActivity.Companion.zoom
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
-import com.example.maptry.activity.MapsActivity.Companion.friendJson
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
@@ -29,9 +29,11 @@ import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.config.Auth
 import com.example.maptry.dataclass.ConfirmRequest
 import com.example.maptry.dataclass.FriendRequest
+import com.example.maptry.model.friends.RemoveFriendshipRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
@@ -44,6 +46,12 @@ import com.example.maptry.server.removeFriend
 import com.example.maptry.server.sendFriendRequest
 import com.example.maptry.utils.createMarker
 import com.example.maptry.utils.showPOIPreferences
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 
 @SuppressLint("Registered")
@@ -108,222 +116,166 @@ class ShowFriendList : AppCompatActivity() {
     }
 
     private fun showFriendActivity(){
-        val len = friendJson.length()
-        var index = 0
         val txt: TextView = findViewById(R.id.nofriend)
-        println("mostro frame")
-        switchFrame(friendLayout,listOf(listLayout,homeLayout,drawerLayout,friendFrame,splashLayout,liveLayout))
+        switchFrame(friendLayout,listOf(homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout,liveLayout))
 
+        val lv:ListView = findViewById(R.id.fv)
 
-        val  lv: ListView = findViewById(R.id.fv)
-        val friendList = MutableList(len) { "" }
-        if(len == 0) txt.visibility = View.VISIBLE
-        else txt.visibility = View.INVISIBLE
-        for (i in friendJson.keys()){
-            friendList[index] = friendJson[i] as String
-            index++
-        }
+        txt.visibility = if(MapsActivity.friendsList.size == 0) View.VISIBLE else View.INVISIBLE
 
-        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, friendList)
-        lv.setOnItemLongClickListener { parent, view, position, _ -> //id
+        val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, MapsActivity.friendsList.map { it.friendUsername })
 
+        lv.setOnItemLongClickListener { parent, view, position, _ -> // _ refers to an id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
             val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)
+
             eliminateBtn.setOnClickListener {
+                val toRemove = parent.getItemAtPosition(position) as String
+                // poisToRemove is a list in this code but it can actually only be of size 0 or 1 because of how the api are implemented.
+                val friendsToRemove = MapsActivity.friendsList.filter { friend -> friend.friendUsername == toRemove }
+                if(friendsToRemove.isEmpty()) {
+                    return@setOnClickListener
+                }
+                var willDeleteFriend = true
+                val friendToRemove = friendsToRemove.first()
+                MapsActivity.friendsList.remove(friendToRemove)
+                val userId = Auth.signInAccount?.email?.replace("@gmail.com","")!!
 
-                val selectedItem = parent.getItemAtPosition(position) as String
+                val snackbar = Snackbar.make(view, R.string.removed_friend, 5000)
+                    .setAction(R.string.cancel) {
+                        willDeleteFriend = false
+                        MapsActivity.friendsList.add(friendToRemove)
+                        Toast.makeText(
+                            mapsActivityContext,
+                            view.resources.getString(R.string.canceled_removal),
+                            Toast.LENGTH_LONG
+                        ).show()
+//                        showFriend()
+                    }
 
-                for(i in friendJson.keys()){
-                    if(selectedItem == friendJson[i] as String) {
-                        friendJson.remove(i)
-                        val cancelString = "Annulla"
-                        val text = "Rimosso $selectedItem"
-                        val id = Auth.signInAccount?.email?.replace("@gmail.com","")
-                        val snackbar = Snackbar.make(view, text, 2000)
-                            .setAction(cancelString) {
-
-                                id?.let { _ ->
-                                    friendJson.put(i, selectedItem)
-                                    val confirm = ConfirmRequest(id, selectedItem)
-                                    val jsonToAdd = gson.toJson(confirm)
-                                    confirmFriend(jsonToAdd)
-                                    Toast.makeText(this, "undo$selectedItem", Toast.LENGTH_LONG)
-                                        .show()
-                                    showFriendActivity()
-
-                                }
+                snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    override fun onShown(transientBottomBar: Snackbar?) {
+                        super.onShown(transientBottomBar)
+                    }
+                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        super.onDismissed(transientBottomBar, event)
+                        if(!willDeleteFriend) {
+                            return
+                        }
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val response = try {
+                                RetrofitInstances.friendsApi.removeFriend(
+                                    RemoveFriendshipRequest(friendToRemove.friendUsername, userId)
+                                )
+                            } catch (e: IOException) {
+                                e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                                return@launch
+                            } catch (e: HttpException) {
+                                e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                                return@launch
                             }
 
-                        snackbar.setActionTextColor(Color.DKGRAY)
-                        val snackbarView = snackbar.view
-                        snackbarView.setBackgroundColor(Color.BLACK)
-                        snackbar.show()
-                        if (id != null) {
-                            val remove = FriendRequest(selectedItem,id)
-                            val jsonToRemove = gson.toJson(remove)
-                            removeFriend(jsonToRemove)
-                            showFriendActivity()
+                            if(response.isSuccessful) {
+                                Log.i(MapsActivity.TAG, "Friend successfully removed")
+                            }
+
                             alertDialog.dismiss()
-                            return@setOnClickListener
                         }
                     }
-                }
+                })
 
+                snackbar.setActionTextColor(Color.DKGRAY)
+                val snackView = snackbar.view
+                snackView.setBackgroundColor(Color.BLACK)
+                snackbar.show()
+
+                alertDialog.dismiss()
             }
+
             val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(this)
-            dialogBuilder.setOnDismissListener { }
             dialogBuilder.setView(dialogView)
 
             alertDialog = dialogBuilder.create()
             alertDialog.show()
 
-
             return@setOnItemLongClickListener true
         }
-
-
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val inflater: LayoutInflater = this.layoutInflater
             val dialogView: View = inflater.inflate(R.layout.dialog_friend_view, null)
             val txtName :TextView = dialogView.findViewById(R.id.friendNameTxt)
-            val spinner : Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
+            val spinner :Spinner = dialogView.findViewById(R.id.planets_spinner_POI)
             val selectedItem = parent.getItemAtPosition(position) as String
 
             val context = this
             txtName.text = selectedItem
-            //try to replace with function call
-            val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-            dialogBuilder.setOnDismissListener { }
-            dialogBuilder.setView(dialogView)
+            // ask public friend's poi with a server call
+            val userId = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
+            CoroutineScope(Dispatchers.IO).launch {
+                val response = try {
+                    RetrofitInstances.pointOfInterestsApi.getPointsOfInterest(userId, selectedItem)
+                } catch (e: IOException) {
+                    e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                    return@launch
+                } catch (e: HttpException) {
+                    e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                    return@launch
+                }
 
-            val alertDialog2 = dialogBuilder.create()
-            val id = Auth.signInAccount?.email?.replace("@gmail.com", "")!!
-            val result: JSONObject = getPoiFromFriend(id,selectedItem)
-            this@ShowFriendList.runOnUiThread {
-                try {
-                    alertDialog2.show()
-                    val length = result.length()
-                    val markerList = MutableList(length + 1) { "" }
-                    var indexMarker = 1
-                    markerList[0] = ""
-                    for (i in result.keys()) {
-                        markerList[indexMarker] =
-                            result.getJSONObject(i).get("name") as String
-                        indexMarker++
-                    }
-                    val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
-                        context,
-                        R.layout.support_simple_spinner_dropdown_item, markerList
-                    )
-                    spinner.onItemSelectedListener =
-                        object : AdapterView.OnItemSelectedListener {
-                            override fun onNothingSelected(parent: AdapterView<*>?) {
+                if(response.isSuccessful && response.body() != null) {
+                    val friendsPois = response.body()!!
 
-                            }
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val dialogBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+                        dialogBuilder.setView(dialogView)
+                        val alertDialog2 = dialogBuilder.create()
+                        alertDialog2.show()
 
-                            override fun onItemSelected(
-                                parent: AdapterView<*>?,
-                                view: View?,
-                                position: Int,
-                                id: Long
-                            ) {
-                                if (parent?.getItemAtPosition(position) as String != "") {
-                                    var key = ""
-                                    val selectedMarker =
-                                        parent.getItemAtPosition(position) as String
-                                    var lat = 0.0
-                                    var lon = 0.0
-                                    for (i in result.keys()) {
+                        val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
+                            context,
+                            R.layout.support_simple_spinner_dropdown_item,
+                            friendsPois.map { it.name }.plus("")
+                        )
 
-                                        if (result.getJSONObject(i)
-                                                .get("name") == selectedMarker
-                                        ) {
-                                            key = i
-                                            lat = result.getJSONObject(i).get("latitude")
-                                                .toString()
-                                                .toDouble()
-                                            lon = result.getJSONObject(i).get("longitude")
-                                                .toString()
-                                                .toDouble()
-                                        }
-
+                        spinner.onItemSelectedListener =
+                            object : AdapterView.OnItemSelectedListener {
+                                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                                override fun onItemSelected(
+                                    parent: AdapterView<*>?,
+                                    view: View?,
+                                    position: Int,
+                                    id: Long
+                                ) {
+                                    val selectedItem = parent?.getItemAtPosition(position) as String
+                                    if (selectedItem == "") {
+                                        return
                                     }
 
-                                    val pos = LatLng(
-                                        lat,
-                                        lon
-                                    )
+                                    val selectedPoi = friendsPois.first { it.name == selectedItem }
 
-                                    val mark = createMarker(pos)
-                                    friendTempPoi.put(
-                                        pos.toString(),
-                                        result.getJSONObject(key)
-                                    )
-                                    mMap.moveCamera(
-                                        CameraUpdateFactory.newLatLngZoom(
-                                            LatLng(
-                                                lat,
-                                                lon
-                                            ), 20F
-                                        )
-                                    )
-
-                                    if (!isRunning) {
-                                        val main = Intent(context, MapsActivity::class.java)
-                                        zoom = 1
-                                        startActivity(main)
-
-                                    }
+                                    val pos = LatLng(selectedPoi.latitude, selectedPoi.longitude)
+                                    val marker = createMarker(pos)
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 20F))
                                     switchFrame(
                                         homeLayout,
-                                        listOf(friendLayout,
-                                        listLayout,
-                                        drawerLayout,
-                                        friendFrame,
-                                        splashLayout,
-                                        liveLayout)
+                                        listOf(
+                                            friendLayout,
+                                            listLayout,
+                                            drawerLayout,
+                                            friendFrame,
+                                            splashLayout,
+                                            liveLayout
+                                        )
                                     )
                                     alertDialog2.dismiss()
-                                    showPOIPreferences(
-                                        pos.toString(),
-                                        inflater,
-                                        context,
-                                        mark!!
-                                    )
-                                    finish()
+                                    showPOIPreferences(pos.toString(), inflater, context, marker!!)
                                 }
                             }
-
-                        }
-                    spinner.adapter = arrayAdapter2
-
-                } catch (e: JSONException) {
-                    e.printStackTrace()
+                        spinner.adapter = arrayAdapter2
+                    }
                 }
             }
-
-
-//            val url = URL("https://"+ip+port+"/getPoiFromFriend?"+ URLEncoder.encode("friend", "UTF-8") + "=" + URLEncoder.encode(selectedItem, "UTF-8"))
-//
-//            val client = OkHttpClient()
-//
-//
-//            val request = Request.Builder()
-//                .url(url)
-//                .build()
-//
-//            client.newCall(request).enqueue(object : Callback {
-//                override fun onFailure(call: okhttp3.Call, e: IOException) {
-//                    println("something went wrong")
-//                }
-//
-//                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-//                    println("ON RESPONSE")
-//
-//
-//                }
-//            })
         }
         lv.adapter = arrayAdapter
     }

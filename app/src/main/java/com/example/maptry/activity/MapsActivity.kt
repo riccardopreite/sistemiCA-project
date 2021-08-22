@@ -15,7 +15,9 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnTouchListener
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.*
@@ -37,7 +39,7 @@ import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.friends.RemoveFriendshipRequest
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.PointOfInterest
-import com.example.maptry.notification.NotifyService
+//import com.example.maptry.notification.NotifyService
 import com.example.maptry.server.*
 import com.example.maptry.utils.*
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -62,6 +64,8 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
 
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
@@ -194,26 +198,6 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
          * HashMap of Google Maps markers with key=LatLng::toString and value the LatLng object.
          */
         var mymarker = JSONObject() //marker
-
-        /**
-         * HashMap of PoIs and Live Events with key=LatLng::toString and value the json object of the point of interest or live event.
-         */
-        var myList = JSONObject() // POI json
-
-        /**
-         * HashMap of Live Events with key=LatLng::toString and value the json object of the live event.
-         */
-        val myLive = JSONObject() // live json
-
-        /**
-         * HashMap of Friends with key=index and value the json object of the friend.
-         */
-        var friendJson = JSONObject() // friend json
-
-        /**
-         * Reference to a temporary object for showing the PoI of the friend onto Google Maps.
-         */
-        var friendTempPoi = JSONObject()
 
         // TODO SECOND Remove all the following that are a replacement of the previous ones
 
@@ -437,8 +421,8 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                     }
     //                checkUser(id)
 
-                    val intent = Intent(this, NotifyService::class.java)
-                    startService(intent)
+//                    val intent = Intent(this, NotifyService::class.java)
+//                    startService(intent)
                     createPoiList(id)
                     createFriendList(id)
                     createLiveList(id)
@@ -536,28 +520,23 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     // populate ListView with live list
     fun showLive(){
         Log.v(TAG, "showLive")
-        val len = myLive.length()
-        var index = 0
         val txt: TextView = findViewById(id.nolive)
         switchFrame(liveLayout,listOf(listLayout,homeLayout,drawerLayout,friendLayout,friendFrame,splashLayout))
 
-        val  lv:ListView = findViewById(id.lvLive)
-        val userList = MutableList(len) { "" }
-        if(len == 0) txt.visibility = View.VISIBLE
-        else txt.visibility = View.INVISIBLE
-        for (i in myLive.keys()){
-            userList[index] = myLive.getJSONObject(i).get("name") as String
-            index++
-        }
+        val lv: ListView = findViewById(id.lvLive)
+        txt.visibility = if (liveEventsList.isEmpty()) View.VISIBLE else View.INVISIBLE
 
-        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, userList)
+        val validLiveEvents = liveEventsList.filter { it.expirationDate > LocalDateTime.now().atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli() }
+        liveEventsList.clear()
+        liveEventsList.addAll(validLiveEvents)
+
+        val  arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
 
         lv.setOnItemClickListener { parent, _, position, _ -> //view e id
             val selectedItem = parent.getItemAtPosition(position) as String
-            for (i in myLive.keys()){
-                if(selectedItem == myLive.getJSONObject(i).get("name") as String)
-                    onMarkerClick(mymarker[i] as Marker)
-            }
+            val liveEvent = liveEventsList.first { it.name == selectedItem }
+            val markerId = LatLng(liveEvent.latitude, liveEvent.longitude).toString()
+            onMarkerClick(mymarker.get(markerId) as Marker)
         }
         lv.adapter = arrayAdapter
     }
@@ -682,11 +661,14 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                         val alertDialog2 = dialogBuilder.create()
                         alertDialog2.show()
 
+                        val nameList = MutableList(friendsPois.size + 1) { "" }
+                        nameList.addAll(friendsPois.map { it.name })
                         val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(
                             context,
                             R.layout.support_simple_spinner_dropdown_item,
-                            friendsPois.map { it.name }.plus("")
+                            nameList
                         )
+
 
                         spinner.onItemSelectedListener =
                             object : AdapterView.OnItemSelectedListener {
@@ -698,13 +680,13 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                                     id: Long
                                 ) {
                                     val selectedItem = parent?.getItemAtPosition(position) as String
-                                    if (selectedItem == "") {
+                                    if(selectedItem == "") {
                                         return
                                     }
 
-                                    val selectedPoi = friendsPois.first { it.name == selectedItem }
+                                    friendPointOfInterest = friendsPois.first { it.name == selectedItem }
 
-                                    val pos = LatLng(selectedPoi.latitude, selectedPoi.longitude)
+                                    val pos = LatLng(friendPointOfInterest!!.latitude, friendPointOfInterest!!.longitude)
                                     val marker = createMarker(pos)
                                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 20F))
                                     switchFrame(
@@ -736,7 +718,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
         println(view)
         if(drawerLayout.visibility == View.GONE) switchFrame(drawerLayout,listOf(homeLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         else {
-            reDraw()
+//            reDraw()
             switchFrame(homeLayout,listOf(drawerLayout,listLayout,splashLayout,friendLayout,friendFrame,liveLayout))
         }
     }

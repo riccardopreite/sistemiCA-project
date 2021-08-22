@@ -31,7 +31,7 @@ import com.example.maptry.R
 import com.example.maptry.config.Auth
 import com.example.maptry.dataclass.FriendRequest
 import com.example.maptry.server.sendFriendRequest
-import com.example.maptry.utils.reDraw
+//import com.example.maptry.utils.reDraw
 import com.example.maptry.utils.switchFrame
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
@@ -121,7 +121,7 @@ class ShowLiveEvent: AppCompatActivity() {
             finish()
         }
         else {
-            reDraw()
+//            reDraw()
             if(!isRunning) {
                 println("STARTO ACTIVITY")
                 val main = Intent(mapsActivityContext, MapsActivity::class.java)
