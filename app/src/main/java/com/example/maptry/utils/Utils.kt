@@ -130,9 +130,9 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     val addbutton: Button = dialogView.findViewById(R.id.removeBtnattr)
     addbutton.text = context.getString(R.string.add_to_user_pois)
     addbutton.setOnClickListener {
-        val markAdd = mymarker.get(p0) as Marker
+        val markAdd = mymarker[p0]
         added = true
-        markAdd.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        markAdd?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
         alertDialog.dismiss()
     }
     routebutton.setOnClickListener {

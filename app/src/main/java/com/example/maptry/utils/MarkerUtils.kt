@@ -44,7 +44,7 @@ fun createLiveMarker(liveEvent: LiveEvent){
     )
     CoroutineScope(Dispatchers.Main).launch {
         val mark = createMarker(point)
-        mymarker.put(point.toString(), mark)
+        mymarker[point.toString()] = mark
         liveEventsList.add(liveEvent)
         mark?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
     }
@@ -58,7 +58,7 @@ fun createUserMarker(poi: PointOfInterest) {
     )
     CoroutineScope(Dispatchers.Main).launch {
         val mark = createMarker(point)
-        mymarker.put(point.toString(), mark) // Non eseguita ma va tenuta in una futura rimozione di createUserMarker(userMarker: JSONObject)
+        mymarker[point.toString()] = mark // Non eseguita ma va tenuta in una futura rimozione di createUserMarker(userMarker: JSONObject)
         poisList.add(poi)
         mark?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
     }
@@ -114,7 +114,7 @@ fun createMarker(p0: LatLng): Marker? {
             .alpha(0.7f)
     )
 
-    mymarker.put(p0.toString(),x)
+    mymarker[p0.toString()] = x
     return x
 }
 
@@ -128,8 +128,8 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
     var willDeletePoi = true
     val poiToRemove = poisToRemove.first()
     var markerId = LatLng(poiToRemove.latitude, poiToRemove.longitude).toString()
-    val marker = (mymarker.get(markerId) as Marker)
-    marker.remove()
+    val marker = mymarker[markerId]
+    marker?.remove()
     mymarker.remove(markerId)
     poisList.remove(poiToRemove)
     val userId = Auth.signInAccount?.email?.replace("@gmail.com","")!!
@@ -138,7 +138,7 @@ fun deletePOI(toRemove: String, view: View, showPOI:() -> Unit) {
         .setAction(R.string.cancel) {
             willDeletePoi = false
             poisList.add(poiToRemove)
-            mymarker.put(markerId, marker)
+            mymarker[markerId] = marker
             Toast.makeText(
                 mapsActivityContext,
                 view.resources.getString(R.string.canceled_removal),

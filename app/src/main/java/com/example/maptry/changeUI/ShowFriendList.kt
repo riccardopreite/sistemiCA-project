@@ -22,7 +22,7 @@ import com.example.maptry.activity.MapsActivity.Companion.zoom
 import com.example.maptry.activity.MapsActivity.Companion.drawerLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
-import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
+//import com.example.maptry.activity.MapsActivity.Companion.friendTempPoi
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout

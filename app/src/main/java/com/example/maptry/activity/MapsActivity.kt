@@ -67,6 +67,7 @@ import java.io.IOException
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
+import kotlin.collections.HashMap
 
 @Suppress("DEPRECATION", "DEPRECATED_IDENTITY_EQUALS",
     "NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS"
@@ -197,7 +198,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
         /**
          * HashMap of Google Maps markers with key=LatLng::toString and value the LatLng object.
          */
-        var mymarker = JSONObject() //marker
+        var mymarker = HashMap<String, Marker?>() //marker
 
         // TODO SECOND Remove all the following that are a replacement of the previous ones
 
@@ -510,7 +511,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
                 val selectedItem = parent.getItemAtPosition(position) as String
                 val selectedPoi = poisList.first { it.name == selectedItem }
                 val markerId = LatLng(selectedPoi.latitude, selectedPoi.longitude).toString()
-                onMarkerClick(mymarker.get(markerId) as Marker)
+                onMarkerClick(mymarker[markerId]!!)
             }
             lv.adapter = arrayAdapter
         }
@@ -536,7 +537,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
             val selectedItem = parent.getItemAtPosition(position) as String
             val liveEvent = liveEventsList.first { it.name == selectedItem }
             val markerId = LatLng(liveEvent.latitude, liveEvent.longitude).toString()
-            onMarkerClick(mymarker.get(markerId) as Marker)
+            onMarkerClick(mymarker[markerId]!!)
         }
         lv.adapter = arrayAdapter
     }
