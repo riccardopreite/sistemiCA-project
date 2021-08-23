@@ -110,6 +110,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
     }
     private lateinit var show: () -> Unit
     companion object {
+
         val TAG: String = MapsActivity::class.qualifiedName!!
 
         lateinit var locationCallback: LocationCallback
@@ -489,7 +490,7 @@ class MapsActivity: AppCompatActivity(), OnMapReadyCallback,
 
             val arrayAdapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, poisList.map { it.name })
 
-            lv.setOnItemLongClickListener { parent, view, position, _ -> // _ refers to an id
+            lv.setOnItemLongClickListener { parent, view, position, _ ->
                 val inflater: LayoutInflater = this.layoutInflater
                 val dialogView: View = inflater.inflate(R.layout.dialog_custom_eliminate, null)
                 val eliminateBtn: Button = dialogView.findViewById(R.id.eliminateBtn)

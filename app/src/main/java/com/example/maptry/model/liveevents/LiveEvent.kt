@@ -1,5 +1,9 @@
 package com.example.maptry.model.liveevents
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class LiveEvent(
     val id: String,
     val address: String,
@@ -8,4 +12,4 @@ data class LiveEvent(
     val name: String,
     val owner: String,
     val expirationDate: Long
-)
+): Parcelable

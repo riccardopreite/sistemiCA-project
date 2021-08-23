@@ -88,4 +88,6 @@
     <string name="nolive">No live events are registered!</string>
     <string name="location_services_required">This app requires location services to be enabled to work properly.</string>
     <string name="add_to_user_pois">Add to mine</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

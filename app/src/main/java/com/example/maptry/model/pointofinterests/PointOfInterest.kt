@@ -1,5 +1,9 @@
 package com.example.maptry.model.pointofinterests
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class PointOfInterest(
     val markId: String,
     val address: String,
@@ -10,4 +14,4 @@ data class PointOfInterest(
     val phoneNumber: String,
     val visibility: String,
     val url: String
-)
+): Parcelable
