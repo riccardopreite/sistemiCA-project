@@ -1,5 +1,6 @@
 package com.example.maptry.fragment
 
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,71 +12,71 @@ import com.example.maptry.R
 import com.example.maptry.config.CreatePointOfInterestOrLiveEvent
 import com.example.maptry.config.GetPointOfInterestDetail
 import com.example.maptry.config.GoogleMapsManager
+import com.example.maptry.databinding.FragmentLiveEventsBinding
+import com.example.maptry.databinding.FragmentMapBinding
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import java.io.Serializable
 
-/**
- * A simple [Fragment] subclass.
- * Use the [MapFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class MapFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var getPointOfInterestDetail: GetPointOfInterestDetail<AppCompatActivity>? = null
-    private var createPointOfInterestOrLiveEvent: CreatePointOfInterestOrLiveEvent<AppCompatActivity>? = null
+class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener,
+    GoogleMap.OnMyLocationClickListener {
+
+    private var _binding: FragmentMapBinding? = null
+    private val binding get() = _binding!!
+
+    companion object {
+        val TAG = MapFragment::class.qualifiedName
+
+        @JvmStatic
+        fun newInstance() =
+            MapFragment().apply {
+                arguments = Bundle().apply {}
+            }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            getPointOfInterestDetail = it.getSerializable("getPointOfInterestDetail") as GetPointOfInterestDetail<AppCompatActivity>
-            createPointOfInterestOrLiveEvent = it.getSerializable("createPointOfInterestOrLiveEvent") as CreatePointOfInterestOrLiveEvent<AppCompatActivity>
-        }
+        arguments?.let {}
     }
 
-    companion object {
-        val TAG = MapFragment::class.qualifiedName
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param getPointOfInterestDetail function reference that should display the details of a point of interest (if exists) in the position given as argument to the function
-         * @param createPointOfInterestOrLiveEvent function reference that should allow creating a new point of interest/live event.
-         * @return A new instance of fragment MapFragment.
-         */
-        @JvmStatic
-        fun newInstance(getPointOfInterestDetail: GetPointOfInterestDetail<AppCompatActivity>, createPointOfInterestOrLiveEvent: CreatePointOfInterestOrLiveEvent<AppCompatActivity>) =
-            MapFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(
-                        "getPointOfInterestDetail",
-                        getPointOfInterestDetail
-                    )
-                    putSerializable(
-                        "createPointOfInterestOrLiveEvent",
-                        createPointOfInterestOrLiveEvent
-                    )
-                }
-            }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.v(TAG, "onViewCreated")
+        super.onViewCreated(view, savedInstanceState)
+
+        _binding = FragmentMapBinding.bind(view)
+        val supportMapFragment = childFragmentManager.findFragmentById(binding.map.id) as SupportMapFragment
+
+        supportMapFragment.getMapAsync(this)
+        // TODO LocationServices.getFusedLocationProviderClient(this)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        Log.v(TAG, "onCreateView")
-        val view = inflater.inflate(R.layout.fragment_map, container, false)
+    override fun onDestroyView() {
+        Log.v(TAG, "onDestroyView")
+        super.onDestroyView()
+        _binding = null
+    }
 
-        val supportMapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+    override fun onMapReady(googleMap: GoogleMap) {
+        googleMap.setOnMarkerClickListener(this)
+        googleMap.setOnMapClickListener(this)
+        // startLocationUpdates()
+        // setUpMap()
+        googleMap.setOnMyLocationClickListener(this)
+    }
 
-//        supportMapFragment.getMapAsync(
-//            GoogleMapsManager(
-//                getPointOfInterestDetail.getPointOfInterestDetail,
-//                createPointOfInterestOrLiveEvent.createPointOfInterestOrLiveEvent
-//            )
-//        )
+    override fun onMapClick(positionOnMap: LatLng) {
+        TODO("Not yet implemented")
+    }
 
-        return view
+    override fun onMarkerClick(marker: Marker): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun onMyLocationClick(location: Location) {
+        TODO("Not yet implemented")
     }
 }

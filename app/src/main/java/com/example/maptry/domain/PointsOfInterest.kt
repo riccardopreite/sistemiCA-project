@@ -12,29 +12,29 @@ import java.io.IOException
 object PointsOfInterest {
     private const val TAG = "domain.PointsOfInterest"
 
-    val api by lazy {
+    private val api by lazy {
         RetrofitInstances.pointOfInterestsApi
     }
 
-    lateinit var userId: String
+    private lateinit var userId: String
 
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
     suspend fun getPointsOfInterest(user: String = "", forceSync: Boolean = false): List<PointOfInterest> {
-        if(!forceSync) {
+        if((user == "" && !forceSync) || (user != "" && user == userId && !forceSync)) {
             return pointsOfInterest
         }
 
         val response = try {
             api.getPointsOfInterest(userId, user)
         } catch (e: IOException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty points of interest list.")
             }
             return emptyList()
         } catch (e: HttpException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty points of interest list.")
             }
@@ -54,15 +54,19 @@ object PointsOfInterest {
 
     suspend fun addPointOfInterest(addPointOfInterest: AddPointOfInterest): String {
         val response = try {
-            api.addPointOfInterest(addPointOfInterest)
+            if(addPointOfInterest.user == "") {
+                api.addPointOfInterest(addPointOfInterest.copy(user = userId))
+            } else {
+                api.addPointOfInterest(addPointOfInterest)
+            }
         } catch (e: IOException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty point of interest id.")
             }
             return ""
         } catch (e: HttpException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty point of interest id.")
             }
@@ -83,10 +87,10 @@ object PointsOfInterest {
         val response = try {
             api.removePointOfInterest(RemovePointOfInterest(userId, pointOfInterest.markId))
         } catch (e: IOException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         } catch (e: HttpException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         }
 

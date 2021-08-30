@@ -1,6 +1,5 @@
 package com.example.maptry.fragment
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
@@ -8,7 +7,6 @@ import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.ArrayAdapter
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity
 import com.example.maptry.databinding.DialogCustomEliminateBinding
 import com.example.maptry.databinding.FragmentPointsOfInterestBinding
 import com.example.maptry.model.pointofinterests.PointOfInterest
@@ -16,22 +14,22 @@ import com.example.maptry.utils.deletePOI
 import com.google.android.gms.maps.model.LatLng
 
 
-class PointsOfInterest : Fragment(R.layout.fragment_points_of_interest) {
+class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) {
     private var _binding: FragmentPointsOfInterestBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var poisList: List<PointOfInterest>
 
     companion object {
-        private val TAG: String = PointsOfInterest::class.qualifiedName!!
+        private val TAG: String = PointsOfInterestFragment::class.qualifiedName!!
 
         private const val ARG_POISLIST = "poisList"
 
         @JvmStatic
-        fun newInstance(poisList: List<PointOfInterest>) =
-            PointsOfInterest().apply {
+        fun newInstance(pois: List<PointOfInterest>) =
+            PointsOfInterestFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+                    putParcelableArray(ARG_POISLIST, pois.toTypedArray())
                 }
             }
     }
@@ -41,9 +39,9 @@ class PointsOfInterest : Fragment(R.layout.fragment_points_of_interest) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             val pArray = it.getParcelableArray(ARG_POISLIST)
-            pArray?.let { pArray ->
+            pArray?.let { p ->
                 Log.d(TAG, "Loading poisList from savedInstanceState")
-                poisList = List(pArray.size) { i -> pArray[i] as PointOfInterest }
+                poisList = List(p.size) { i -> p[i] as PointOfInterest }
             } ?: run {
                 Log.e(TAG, "poisList inside savedInstanceState was null. Loading an emptyList.")
                 poisList = emptyList()
@@ -60,13 +58,13 @@ class PointsOfInterest : Fragment(R.layout.fragment_points_of_interest) {
 
         binding.lv.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, poisList.map { it.name })
 
-        binding.lv.setOnItemLongClickListener { parent, view, position, id ->
-            val dialog = Dialog(view.context)
+        binding.lv.setOnItemLongClickListener { parent, v, position, id ->
+            val dialog = Dialog(v.context)
             val dialogAlertCommonBinding = DialogCustomEliminateBinding.inflate(layoutInflater)
             dialog.setContentView(dialogAlertCommonBinding.root)
             dialogAlertCommonBinding.eliminateBtn.setOnClickListener {
                 val selectedPoiName = parent.getItemAtPosition(position) as String
-                deletePOI(selectedPoiName, view, {  }) // TODO Fix perché richiesta show di MapsActivity
+                deletePOI(selectedPoiName, v, {  }) // TODO Fix perché richiesta show di MapsActivity
             }
 
             dialog.show()
@@ -74,7 +72,7 @@ class PointsOfInterest : Fragment(R.layout.fragment_points_of_interest) {
             return@setOnItemLongClickListener true
         }
 
-        binding.lv.setOnItemClickListener { parent, view, position, id ->
+        binding.lv.setOnItemClickListener { parent, v, position, id ->
             val selectedPoiName = parent.getItemAtPosition(position) as String
             val poi = poisList.first { it.name == selectedPoiName }
             val markerId = LatLng(poi.latitude, poi.longitude)

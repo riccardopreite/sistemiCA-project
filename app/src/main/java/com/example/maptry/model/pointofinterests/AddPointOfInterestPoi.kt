@@ -9,4 +9,6 @@ data class AddPointOfInterestPoi(
     val phoneNumber: String,
     val visibility: String,
     val url: String,
-)
+) {
+    constructor(poi: PointOfInterest): this(poi.address, poi.type, poi.latitude, poi.longitude, poi.name, poi.phoneNumber, poi.visibility, poi.url)
+}

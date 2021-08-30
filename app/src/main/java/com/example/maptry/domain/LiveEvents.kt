@@ -11,11 +11,11 @@ import java.io.IOException
 object LiveEvents {
     private const val TAG = "domain.LiveEvents"
 
-    val api by lazy {
+    private val api by lazy {
         RetrofitInstances.liveEventsApi
     }
 
-    lateinit var userId: String
+    private lateinit var userId: String
 
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
@@ -27,13 +27,13 @@ object LiveEvents {
         val response = try {
             api.getLiveEvents(userId)
         } catch (e: IOException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty live events list.")
             }
             return emptyList()
         } catch (e: HttpException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty live events list.")
             }
@@ -55,10 +55,10 @@ object LiveEvents {
         val response = try {
             api.addLiveEvent(addLiveEvent)
         } catch (e: IOException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         } catch (e: HttpException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         }
 

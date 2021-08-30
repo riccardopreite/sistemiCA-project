@@ -13,13 +13,13 @@ import java.io.IOException
 object Friends {
     private const val TAG = "domain.Friends"
 
-    val api by lazy {
+    private val api by lazy {
         RetrofitInstances.friendsApi
     }
 
-    lateinit var userId: String
+    private lateinit var userId: String
 
-    val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
+    private val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
 
     suspend fun getFriends(forceSync: Boolean = false): List<Friend> {
         if(!forceSync) {
@@ -29,13 +29,13 @@ object Friends {
         val response = try {
             api.getFriends(userId)
         } catch (e: IOException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty friends list.")
             }
             return emptyList()
         } catch (e: HttpException) {
-            e?.message?.let {
+            e.message?.let {
                 Log.e(TAG, it)
                 Log.e(TAG, "Returning empty friends list.")
             }
@@ -57,10 +57,10 @@ object Friends {
         val response = try {
             api.addFriend(AddFriendshipRequest(friendUsername, userId))
         } catch (e: IOException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         } catch (e: HttpException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         }
 
@@ -75,10 +75,10 @@ object Friends {
         val response = try {
            api.confirmFriend(AddFriendshipConfirmation(userId, otherUserUsername))
         } catch (e: IOException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         } catch (e: HttpException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         }
 
@@ -93,10 +93,10 @@ object Friends {
         val response = try {
             api.removeFriend(RemoveFriendshipRequest(friendUsername, userId))
         } catch (e: IOException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         } catch (e: HttpException) {
-            e?.message?.let { Log.e(TAG, it) }
+            e.message?.let { Log.e(TAG, it) }
             return
         }
 

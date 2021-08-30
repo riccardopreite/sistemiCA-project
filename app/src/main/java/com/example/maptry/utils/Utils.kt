@@ -22,13 +22,10 @@ import com.example.maptry.activity.MapsActivity.Companion.friendFrame
 import com.example.maptry.activity.MapsActivity.Companion.friendLayout
 import com.example.maptry.activity.MapsActivity.Companion.friendPointOfInterest
 import com.example.maptry.activity.MapsActivity.Companion.homeLayout
-import com.example.maptry.activity.MapsActivity.Companion.lastLocation
 import com.example.maptry.activity.MapsActivity.Companion.listLayout
 import com.example.maptry.activity.MapsActivity.Companion.liveLayout
 import com.example.maptry.activity.MapsActivity.Companion.mAnimation
-import com.example.maptry.activity.MapsActivity.Companion.mMap
 import com.example.maptry.activity.MapsActivity.Companion.mymarker
-import com.example.maptry.activity.MapsActivity.Companion.oldPos
 import com.example.maptry.activity.MapsActivity.Companion.splashLayout
 import com.example.maptry.activity.MapsActivity.Companion.supportManager
 import com.example.maptry.api.RetrofitInstances
@@ -38,7 +35,6 @@ import com.example.maptry.model.pointofinterests.AddPointOfInterest
 import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.squareup.picasso.Picasso
@@ -49,7 +45,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
-import java.lang.Exception
 
 var notificationJson = JSONObject()
 
@@ -127,8 +122,8 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
     }
 
     val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
-    val addbutton: Button = dialogView.findViewById(R.id.removeBtnattr)
-    addbutton.text = context.getString(R.string.add_to_user_pois)
+    val addbutton: Button = dialogView.findViewById(R.id.addToPoisBtnattr)
+
     addbutton.setOnClickListener {
         val markAdd = mymarker[p0]
         added = true
@@ -154,7 +149,6 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
                     friendPointOfInterest?.let {
                         RetrofitInstances.pointOfInterestsApi.addPointOfInterest(
                             AddPointOfInterest(
-                                userId,
                                 AddPointOfInterestPoi(
                                     it.address,
                                     it.type,
@@ -164,7 +158,8 @@ fun showPOIPreferences(p0 : String, inflater:LayoutInflater, context:Context, ma
                                     it.phoneNumber,
                                     it.visibility,
                                     it.url
-                                )
+                                ),
+                                userId
                             )
                         )
                     }

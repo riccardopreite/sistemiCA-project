@@ -19,15 +19,15 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
     private lateinit var liveEventsList: MutableList<LiveEvent>
 
     companion object {
-        private val TAG: String = PointsOfInterest::class.qualifiedName!!
+        private val TAG: String = LiveEventsFragment::class.qualifiedName!!
 
-        private const val ARG_FRIENDSLIST = "friendsList"
+        private const val ARG_LIVEEVENTSLIST = "liveEventsList"
 
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(liveEvents: MutableList<LiveEvent>) =
             LiveEventsFragment().apply {
                 arguments = Bundle().apply {
-                    putParcelableArray(ARG_FRIENDSLIST, liveEventsList.toTypedArray())
+                    putParcelableArray(ARG_LIVEEVENTSLIST, liveEvents.toTypedArray())
                 }
             }
     }
@@ -36,10 +36,10 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         arguments?.let {
-            val pArray = it.getParcelableArray(ARG_FRIENDSLIST)
-            pArray?.let { pArray ->
+            val pArray = it.getParcelableArray(ARG_LIVEEVENTSLIST)
+            pArray?.let { p ->
                 Log.d(TAG, "Loading liveEventsList from savedInstanceState")
-                liveEventsList = MutableList(pArray.size) { i -> pArray[i] as LiveEvent }
+                liveEventsList = MutableList(p.size) { i -> p[i] as LiveEvent }
             } ?: run {
                 Log.e(TAG, "liveEventsList inside savedInstanceState was null. Loading an emptyList.")
                 liveEventsList = emptyList<LiveEvent>().toMutableList()
@@ -58,7 +58,7 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
 
         binding.lvLive.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
 
-        binding.lvLive.setOnItemClickListener { parent, view, position, id ->
+        binding.lvLive.setOnItemClickListener { parent, v, position, id ->
             val selectedLiveEventName = parent.getItemAtPosition(position) as String
             val liveEvent = liveEventsList.first { it.name == selectedLiveEventName }
             val markerId = LatLng(liveEvent.latitude, liveEvent.longitude)
@@ -78,8 +78,6 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         liveEventsList.clear()
         liveEventsList.addAll(validLiveEvents)
 
-        arguments?.let {
-            it.putParcelableArray(ARG_FRIENDSLIST, liveEventsList.toTypedArray())
-        }
+        arguments?.putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
     }
 }

@@ -86,7 +86,7 @@ fun markerView(inflater: LayoutInflater, p0: Marker): View{
     }
 
     val routebutton: Button = dialogView.findViewById(R.id.routeBtn)
-    val routeBtn: Button = dialogView.findViewById(R.id.removeBtnattr)
+    val routeBtn: Button = dialogView.findViewById(R.id.addToPoisBtnattr)
     routeBtn.setOnClickListener {
         val shareIntent = Intent()
         shareIntent.action = Intent.ACTION_SEND
@@ -311,7 +311,6 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                         val response = try {
                             RetrofitInstances.pointOfInterestsApi.addPointOfInterest(
                                 AddPointOfInterest(
-                                    id!!,
                                     AddPointOfInterestPoi(
                                         address.text.toString(),
                                         spinner.selectedItem.toString(),
@@ -321,14 +320,15 @@ fun showCreateMarkerView(inflater: LayoutInflater, p0: LatLng): View{
                                         phone,
                                         gender,
                                         url
-                                    )
+                                    ),
+                                    id!!
                                 )
                             )
                         } catch (e: IOException) {
-                            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                            e.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
                             return@launch
                         } catch (e: HttpException) {
-                            e?.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
+                            e.message?.let { it1 -> Log.e(MapsActivity.TAG, it1) }
                             return@launch
                         }
 

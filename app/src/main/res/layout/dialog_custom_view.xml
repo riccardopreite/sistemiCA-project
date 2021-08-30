@@ -105,7 +105,7 @@
                 android:layout_marginTop="32dp">
 
                 <Button
-                    android:id="@+id/removeBtnattr"
+                    android:id="@+id/addToPoisBtnattr"
                     android:layout_width="138dp"
                     android:layout_height="34dp"
                     android:layout_gravity="start"
@@ -118,7 +118,7 @@
                     android:id="@+id/routeBtn"
                     android:layout_width="138dp"
                     android:layout_height="34dp"
-                    android:layout_alignEnd="@+id/removeBtnattr"
+                    android:layout_alignEnd="@+id/addToPoisBtnattr"
                     android:layout_alignParentEnd="true"
                     android:layout_gravity="center_vertical"
                     android:layout_marginEnd="0dp"
