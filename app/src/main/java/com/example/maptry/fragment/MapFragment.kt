@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.maptry.R
 import com.example.maptry.config.CreatePointOfInterestOrLiveEvent
 import com.example.maptry.config.GetPointOfInterestDetail
-import com.example.maptry.config.GoogleMapsManager
 import com.example.maptry.databinding.FragmentLiveEventsBinding
 import com.example.maptry.databinding.FragmentMapBinding
 import com.google.android.gms.maps.GoogleMap
