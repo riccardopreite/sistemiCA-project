@@ -24,7 +24,7 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         private const val ARG_LIVEEVENTSLIST = "liveEventsList"
 
         @JvmStatic
-        fun newInstance(liveEvents: MutableList<LiveEvent>) =
+        fun newInstance(liveEvents: List<LiveEvent>) =
             LiveEventsFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEvents.toTypedArray())
@@ -73,8 +73,10 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
     }
 
     private fun keepOnlyValidLiveEvents() {
-        val validLiveEvents = liveEventsList.filter { it.expirationDate > LocalDateTime.now().atZone(
-            ZoneOffset.systemDefault()).toInstant().toEpochMilli() }
+        val currentMillis = LocalDateTime.now()
+            .atZone(ZoneOffset.systemDefault())
+            .toInstant().toEpochMilli()
+        val validLiveEvents = liveEventsList.filter { it.expirationDate > currentMillis }
         liveEventsList.clear()
         liveEventsList.addAll(validLiveEvents)
 
