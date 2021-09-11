@@ -1,22 +1,18 @@
-package com.example.maptry.dialog
+package com.example.maptry.fragment.dialog
 
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
-import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
-import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.model.liveevents.AddLiveEvent
-import com.example.maptry.model.pointofinterests.AddPointOfInterest
 import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
-import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.example.maptry.utils.makeRedLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

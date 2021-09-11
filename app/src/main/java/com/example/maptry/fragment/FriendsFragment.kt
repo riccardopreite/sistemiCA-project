@@ -10,9 +10,9 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentFriendsBinding
-import com.example.maptry.dialog.EliminateFriendDialogFragment
-import com.example.maptry.dialog.FriendDialogFragment
-import com.example.maptry.dialog.FriendPoiDialogFragment
+import com.example.maptry.fragment.dialog.EliminateFriendDialogFragment
+import com.example.maptry.fragment.dialog.FriendDialogFragment
+import com.example.maptry.fragment.dialog.FriendPoiDialogFragment
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.model.friends.Friend

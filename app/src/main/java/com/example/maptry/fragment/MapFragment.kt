@@ -5,17 +5,11 @@ import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
-import com.example.maptry.config.CreatePointOfInterestOrLiveEvent
-import com.example.maptry.config.GetPointOfInterestDetail
-import com.example.maptry.databinding.FragmentLiveEventsBinding
 import com.example.maptry.databinding.FragmentMapBinding
-import com.example.maptry.dialog.CreatePoiDialogFragment
+import com.example.maptry.fragment.dialog.CreatePoiDialogFragment
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.model.liveevents.AddLiveEvent
@@ -29,7 +23,6 @@ import com.google.android.gms.maps.model.Marker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.Serializable
 
 class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener,
     GoogleMap.OnMyLocationClickListener,

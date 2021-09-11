@@ -1,9 +1,7 @@
-package com.example.maptry.dialog
+package com.example.maptry.fragment.dialog
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -11,14 +9,9 @@ import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.domain.PointsOfInterest
-import com.example.maptry.fragment.FriendsFragment
-import com.example.maptry.fragment.MapFragment
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class FriendDialogFragment: DialogFragment() {
