@@ -49,6 +49,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         private val TAG: String = FriendsFragment::class.qualifiedName!!
 
         private const val ARG_FRIENDSLIST = "friendsList"
+        private const val ARG_REMOVEDFRIEND = "removedFriend"
+        private const val ARG_FRIENDPOSITION = "friendPosition"
+        private const val ARG_WILLDELETEFRIEND = "willDeleteFriend"
 
         @JvmStatic
         fun newInstance(friends: List<Friend>) =
@@ -71,6 +74,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
                 Log.e(TAG, "friendsList inside savedInstanceState was null. Loading an emptyList.")
                 friendsList = emptyList<Friend>().toMutableList()
             }
+            removedFriend = it.getParcelable(ARG_REMOVEDFRIEND)
+            friendPosition = it.getInt(ARG_FRIENDPOSITION)
+            willDeleteFriend = it.getBoolean(ARG_WILLDELETEFRIEND)
         }
     }
 
@@ -107,12 +113,24 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         willDeleteFriend = true // TODO Non necessario se tutto va correttamente
         friendsList.removeAt(friendPosition!!)
 
+        arguments?.let {
+            it.putParcelable(ARG_REMOVEDFRIEND, removedFriend)
+            it.putInt(ARG_FRIENDPOSITION, friendPosition!!)
+            it.putBoolean(ARG_WILLDELETEFRIEND, willDeleteFriend!!)
+            it.putParcelableArray(ARG_FRIENDSLIST, friendsList.toTypedArray())
+        }
+
         CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
     }
 
     override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
         willDeleteFriend = false
         friendsList.add(friendPosition!!, removedFriend!!)
+
+        arguments?.let {
+            it.putBoolean(ARG_WILLDELETEFRIEND, willDeleteFriend!!)
+            it.putParcelableArray(ARG_FRIENDSLIST, friendsList.toTypedArray())
+        }
     }
 
     override fun onDeletionConfirmation(dialog: DialogFragment) {

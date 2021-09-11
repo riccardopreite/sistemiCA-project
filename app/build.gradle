@@ -46,7 +46,7 @@ android {
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 dependencies {
-    def work_version = '2.5.0'
+    def work_version = '2.6.0'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleDependency
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -100,8 +100,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:19.0.1'
     implementation 'com.google.code.gson:gson:2.8.8'
     annotationProcessor 'androidx.annotation:annotation:1.2.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1-native-mt'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2-native-mt'
 
     implementation 'com.google.firebase:firebase-firestore-ktx:23.0.3'
 
@@ -132,8 +132,8 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.2'
 
     /* Kotlin coroutines */
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1-native-mt'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2-native-mt'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2-native-mt'
 
     /* Kotlin coroutine lifecycle scopes */
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'

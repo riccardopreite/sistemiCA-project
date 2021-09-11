@@ -1,5 +1,6 @@
 package com.example.maptry.fragment
 
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -8,23 +9,46 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.config.CreatePointOfInterestOrLiveEvent
 import com.example.maptry.config.GetPointOfInterestDetail
 import com.example.maptry.databinding.FragmentLiveEventsBinding
 import com.example.maptry.databinding.FragmentMapBinding
+import com.example.maptry.dialog.CreatePoiDialogFragment
+import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.PointsOfInterest
+import com.example.maptry.model.liveevents.AddLiveEvent
+import com.example.maptry.model.pointofinterests.AddPointOfInterest
+import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.Serializable
 
 class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener,
-    GoogleMap.OnMyLocationClickListener {
+    GoogleMap.OnMyLocationClickListener,
+    CreatePoiDialogFragment.CreatePoiDialogListener {
 
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
+
+    val geocoder by lazy {
+        Geocoder(this.requireContext())
+    }
+
+    val liveEvents by lazy {
+        LiveEvents
+    }
+
+    val pointsOfInterest by lazy {
+        PointsOfInterest
+    }
 
     companion object {
         val TAG = MapFragment::class.qualifiedName
@@ -77,5 +101,28 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
 
     override fun onMyLocationClick(location: Location) {
         TODO("Not yet implemented")
+    }
+
+    override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
+        CoroutineScope(Dispatchers.IO).launch {
+            liveEvents.addLiveEvent(addLiveEvent)
+
+            CoroutineScope(Dispatchers.Main).launch {
+                dialog.dismiss()
+            }
+        }
+    }
+
+    override fun onAddPointOfInterest(
+        dialog: DialogFragment,
+        addPointOfInterest: AddPointOfInterestPoi
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            pointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterest))
+
+            CoroutineScope(Dispatchers.Main).launch {
+                dialog.dismiss()
+            }
+        }
     }
 }

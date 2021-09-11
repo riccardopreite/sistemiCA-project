@@ -76,6 +76,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/txt_address"
+                    android:text="@string/no_address"
+                    android:enabled="false"
                     android:layout_toEndOf="@+id/lbl_address" />
 
             </RelativeLayout>
@@ -158,7 +160,7 @@
 
             </RelativeLayout>
 
-            <RelativeLayout
+            <!--<RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/buttonlayout"
@@ -186,7 +188,7 @@
                     android:drawableStart="@drawable/ic_add"
                     android:text="@string/add" />
 
-            </RelativeLayout>
+            </RelativeLayout>-->
 
         </LinearLayout>
 

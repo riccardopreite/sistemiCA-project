@@ -42,6 +42,10 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         private val TAG: String = PointsOfInterestFragment::class.qualifiedName!!
 
         private const val ARG_POISLIST = "poisList"
+        private const val ARG_REMOVEDPOI = "removedPoi"
+        private const val ARG_POIPOSITION = "poiPosition"
+        private const val ARG_SELECTEDPOINAME = "selectedPoiName"
+        private const val ARG_WILLDELETEPOI = "willDeletePoi"
 
         @JvmStatic
         fun newInstance(pois: List<PointOfInterest>) =
@@ -64,6 +68,10 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
                 Log.e(TAG, "poisList inside savedInstanceState was null. Loading an emptyList.")
                 poisList = emptyList<PointOfInterest>().toMutableList()
             }
+            removedPoi = it.getParcelable(ARG_REMOVEDPOI)
+            poiPosition = it.getInt(ARG_POIPOSITION)
+            selectedPoiName = it.getString(ARG_SELECTEDPOINAME)
+            willDeletePoi = it.getBoolean(ARG_WILLDELETEPOI)
         }
     }
 
@@ -77,17 +85,20 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         binding.lv.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, poisList.map { it.name })
 
         binding.lv.setOnItemLongClickListener { parent, v, position, id ->
-            val eliminateFriendDialog = EliminatePointOfInterestDialogFragment()
+            val eliminatePoiDialog = EliminatePointOfInterestDialogFragment()
 
             activity?.let {
-                eliminateFriendDialog.show(it.supportFragmentManager, "EliminatePointOfInterestDialogFragment")
+                eliminatePoiDialog.show(it.supportFragmentManager, "EliminatePointOfInterestDialogFragment")
             }
 
             return@setOnItemLongClickListener true
         }
 
         binding.lv.setOnItemClickListener { parent, v, position, id ->
-            val selectedPoiName = parent.getItemAtPosition(position) as String
+            selectedPoiName = parent.getItemAtPosition(position) as String
+            arguments?.let {
+                it.putString(ARG_SELECTEDPOINAME, selectedPoiName)
+            }
             val poi = poisList.first { it.name == selectedPoiName }
             val markerId = LatLng(poi.latitude, poi.longitude)
             // TODO Sarebbe da invocare MapsActivity.onMarkerClick(mymarker[markerId]!!)
@@ -106,12 +117,24 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         willDeletePoi = true // TODO Non necessario se tutto va correttamente
         poisList.removeAt(poiPosition!!)
 
+        arguments?.let {
+            it.putParcelable(ARG_REMOVEDPOI, removedPoi)
+            it.putInt(ARG_POIPOSITION, poiPosition!!)
+            it.putBoolean(ARG_WILLDELETEPOI, willDeletePoi!!)
+            it.putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+        }
+
         CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
     }
 
     override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
         willDeletePoi = false
         poisList.add(poiPosition!!, removedPoi!!)
+
+        arguments?.let {
+            it.putBoolean(ARG_WILLDELETEPOI, willDeletePoi!!)
+            it.putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+        }
     }
 
     override fun onDeletionConfirmation(dialog: DialogFragment) {

@@ -53,7 +53,11 @@ object LiveEvents {
 
     suspend fun addLiveEvent(addLiveEvent: AddLiveEvent) {
         val response = try {
-            api.addLiveEvent(addLiveEvent)
+            if(addLiveEvent.owner == "") {
+                api.addLiveEvent(addLiveEvent.copy(owner = userId))
+            } else {
+                api.addLiveEvent(addLiveEvent)
+            }
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
             return
