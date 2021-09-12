@@ -14,6 +14,7 @@ import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class FriendPoiDialogFragment: DialogFragment() {
+    // Listener
     interface FriendPoiDialogListener {
         fun onAddButtonPressed(dialog: DialogFragment, poi: PointOfInterest)
         fun onRouteButtonPressed(dialog: DialogFragment, address: String)
@@ -21,6 +22,7 @@ class FriendPoiDialogFragment: DialogFragment() {
 
     internal lateinit var listener: FriendPoiDialogListener
 
+    // App state
     private lateinit var friendPoi: PointOfInterest
 
     companion object {

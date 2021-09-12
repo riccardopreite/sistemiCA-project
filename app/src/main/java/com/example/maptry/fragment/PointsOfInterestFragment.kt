@@ -19,16 +19,18 @@ import kotlinx.coroutines.launch
 
 class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest),
 EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
+    // UI
     private var _binding: FragmentPointsOfInterestBinding? = null
     private val binding get() = _binding!!
 
+    // App state
     private lateinit var poisList: MutableList<PointOfInterest>
-
     private var removedPoi: PointOfInterest? = null
     private var poiPosition: Int? = null
     private var selectedPoiName: String? = null
     private var willDeletePoi: Boolean? = null
 
+    // API
     private val pois by lazy {
         PointsOfInterest
     }
@@ -107,6 +109,7 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
     }
 
     override fun onDeleteButtonPressed(dialog: DialogFragment) {
+        Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeleteButtonPressed")
         removedPoi = poisList.first { it.name == selectedPoiName }
         poiPosition = poisList.indexOf(removedPoi)
         willDeletePoi = true // TODO Non necessario se tutto va correttamente
@@ -123,6 +126,7 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
     }
 
     override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
+        Log.v(TAG, "EliminatePointOfInterestDialogListener.onCancelDeletionButtonPressed")
         willDeletePoi = false
         poisList.add(poiPosition!!, removedPoi!!)
 
@@ -133,6 +137,7 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
     }
 
     override fun onDeletionConfirmation(dialog: DialogFragment) {
+        Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeletionConfirmation")
         if(!(willDeletePoi!!)) {
             return
         }

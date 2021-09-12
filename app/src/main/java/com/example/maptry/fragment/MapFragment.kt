@@ -28,18 +28,20 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
     GoogleMap.OnMyLocationClickListener,
     CreatePoiDialogFragment.CreatePoiDialogListener {
 
+    // UI
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
-    val geocoder by lazy {
+    // API
+    private val geocoder by lazy {
         Geocoder(this.requireContext())
     }
 
-    val liveEvents by lazy {
+    private val liveEvents by lazy {
         LiveEvents
     }
 
-    val pointsOfInterest by lazy {
+    private val pointsOfInterest by lazy {
         PointsOfInterest
     }
 
@@ -77,6 +79,7 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
+        Log.v(TAG, "OnMapReadyCallback.onMapReady")
         googleMap.setOnMarkerClickListener(this)
         googleMap.setOnMapClickListener(this)
         // startLocationUpdates()
@@ -85,18 +88,22 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
     }
 
     override fun onMapClick(positionOnMap: LatLng) {
+        Log.v(TAG, "GoogleMap.OnMapClickListener.onMapClick")
         TODO("Not yet implemented")
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
+        Log.v(TAG, "GoogleMap.OnMarkerClickListener.onMarkerClick")
         TODO("Not yet implemented")
     }
 
     override fun onMyLocationClick(location: Location) {
+        Log.v(TAG, "GoogleMap.OnMyLocationClickListener.onMyLocationClick")
         TODO("Not yet implemented")
     }
 
     override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
+        Log.v(TAG, "CreatePoiDialogListener.onAddLiveEvent")
         CoroutineScope(Dispatchers.IO).launch {
             liveEvents.addLiveEvent(addLiveEvent)
 
@@ -110,6 +117,7 @@ class MapFragment : Fragment(R.layout.fragment_map), OnMapReadyCallback, GoogleM
         dialog: DialogFragment,
         addPointOfInterest: AddPointOfInterestPoi
     ) {
+        Log.v(TAG, "CreatePoiDialogListener.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
             pointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterest))
 

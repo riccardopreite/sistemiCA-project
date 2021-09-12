@@ -21,6 +21,7 @@ import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class CreatePoiDialogFragment: DialogFragment() {
+    // Listener
     interface CreatePoiDialogListener {
         fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent)
         fun onAddPointOfInterest(dialog: DialogFragment, addPointOfInterest: AddPointOfInterestPoi)
@@ -28,19 +29,21 @@ class CreatePoiDialogFragment: DialogFragment() {
 
     internal lateinit var listener: CreatePoiDialogListener
 
-    val liveEvents by lazy {
-        LiveEvents
-    }
-
-    val pointsOfInterest by lazy {
-        PointsOfInterest
-    }
-
+    // App state
     private var latitude: Double ?= null
     private var longitude: Double ?= null
     private var address: String ?= null
     private var url: String ?= null
     private var phoneNumber: String ?= null
+
+    // API
+    private val liveEvents by lazy {
+        LiveEvents
+    }
+
+    private val pointsOfInterest by lazy {
+        PointsOfInterest
+    }
 
     companion object {
         private val TAG = CreatePoiDialogFragment::class.qualifiedName

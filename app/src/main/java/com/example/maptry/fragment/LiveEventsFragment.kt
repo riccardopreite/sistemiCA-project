@@ -13,9 +13,11 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
+    // UI
     private var _binding: FragmentLiveEventsBinding? = null
     private val binding get() = _binding!!
 
+    // App state
     private lateinit var liveEventsList: MutableList<LiveEvent>
 
     companion object {
@@ -73,6 +75,7 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
     }
 
     private fun keepOnlyValidLiveEvents() {
+        Log.v(TAG, "keepOnlyValidLiveEvents")
         val currentMillis = LocalDateTime.now()
             .atZone(ZoneOffset.systemDefault())
             .toInstant().toEpochMilli()

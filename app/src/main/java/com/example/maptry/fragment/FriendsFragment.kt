@@ -27,16 +27,18 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     EliminateFriendDialogFragment.EliminateFriendDialogListener,
     FriendPoiDialogFragment.FriendPoiDialogListener {
 
+    // UI
     private var _binding: FragmentFriendsBinding? = null
     private val binding get() = _binding!!
 
+    // App state
     private lateinit var friendsList: MutableList<Friend>
-
     private var removedFriend: Friend? = null
     private var friendPosition: Int? = null
     private var selectedFriendName: String? = null
     private var willDeleteFriend: Boolean? = null
 
+    // API
     private val friends by lazy {
         Friends
     }
@@ -51,13 +53,15 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         private const val ARG_FRIENDSLIST = "friendsList"
         private const val ARG_REMOVEDFRIEND = "removedFriend"
         private const val ARG_FRIENDPOSITION = "friendPosition"
+        private const val ARG_SELECTEDFRIENDNAME = "selectedFriendName"
         private const val ARG_WILLDELETEFRIEND = "willDeleteFriend"
 
         @JvmStatic
-        fun newInstance(friends: List<Friend>) =
+        fun newInstance(friends: List<Friend>, selectedFriendName: String) =
             FriendsFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_FRIENDSLIST, friends.toTypedArray())
+                    putString(ARG_SELECTEDFRIENDNAME, selectedFriendName)
                 }
             }
     }
@@ -76,6 +80,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
             }
             removedFriend = it.getParcelable(ARG_REMOVEDFRIEND)
             friendPosition = it.getInt(ARG_FRIENDPOSITION)
+            selectedFriendName = it.getString(ARG_SELECTEDFRIENDNAME)
             willDeleteFriend = it.getBoolean(ARG_WILLDELETEFRIEND)
         }
     }
@@ -108,6 +113,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     }
 
     override fun onDeleteButtonPressed(dialog: DialogFragment) {
+        Log.v(TAG, "EliminateFriendDialogListener.onDeleteButtonPressed")
         removedFriend = friendsList.first { it.friendUsername == selectedFriendName }
         friendPosition = friendsList.indexOf(removedFriend)
         willDeleteFriend = true // TODO Non necessario se tutto va correttamente
@@ -124,6 +130,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     }
 
     override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
+        Log.v(TAG, "EliminateFriendDialogListener.onCancelDeletionButtonPressed")
         willDeleteFriend = false
         friendsList.add(friendPosition!!, removedFriend!!)
 
@@ -134,6 +141,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     }
 
     override fun onDeletionConfirmation(dialog: DialogFragment) {
+        Log.v(TAG, "EliminateFriendDialogListener.onDeletionConfirmation")
         if(!(willDeleteFriend!!)) {
             return
         }
@@ -145,6 +153,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     }
 
     override fun onAddButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
+        Log.v(TAG, "FriendPoiDialogListener.onAddButtonPressed")
         CoroutineScope(Dispatchers.IO).launch {
             pois.addPointOfInterest(AddPointOfInterest(AddPointOfInterestPoi(poi)))
             pois.getPointsOfInterest(forceSync = true)
@@ -153,6 +162,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     }
 
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
+        Log.v(TAG, "FriendPoiDialogListener.onRouteButtonPressed")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
         dialog.dismiss()
         startActivity(intent)

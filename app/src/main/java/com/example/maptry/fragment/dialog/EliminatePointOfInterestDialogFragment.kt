@@ -16,6 +16,7 @@ import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class EliminatePointOfInterestDialogFragment: DialogFragment() {
+    // Listener
     interface EliminatePointOfInterestDialogListener {
         fun onDeleteButtonPressed(dialog: DialogFragment)
         fun onCancelDeletionButtonPressed(dialog: DialogFragment)

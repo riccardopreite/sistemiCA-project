@@ -16,6 +16,7 @@ import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class EliminateFriendDialogFragment: DialogFragment() {
+    // Listener
     interface EliminateFriendDialogListener {
         fun onDeleteButtonPressed(dialog: DialogFragment)
         fun onCancelDeletionButtonPressed(dialog: DialogFragment)

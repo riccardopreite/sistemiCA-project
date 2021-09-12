@@ -15,9 +15,10 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
 class FriendDialogFragment: DialogFragment() {
-
+    // App state
     private lateinit var friendName: String
 
+    // API
     private val pois by lazy {
         PointsOfInterest
     }
