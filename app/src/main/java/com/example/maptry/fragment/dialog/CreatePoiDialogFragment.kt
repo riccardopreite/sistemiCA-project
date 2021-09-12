@@ -55,7 +55,7 @@ class CreatePoiDialogFragment: DialogFragment() {
         private const val ARG_PHONENUMBER = "phoneNumber"
 
         @JvmStatic
-        fun newInstance(latitude: Double, longitude: Double, address: String?, url: String?, phoneNumber: String?) =
+        fun newInstance(latitude: Double, longitude: Double, address: String? = null, url: String? = null, phoneNumber: String? = null) =
             CreatePoiDialogFragment().apply {
                 arguments = Bundle().apply {
                     putDouble(ARG_LATITUDE, latitude)

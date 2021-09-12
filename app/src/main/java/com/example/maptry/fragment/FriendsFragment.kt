@@ -148,6 +148,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
 
         CoroutineScope(Dispatchers.IO).launch {
             friends.removeFriend(removedFriend!!.friendUsername)
+            friends.getFriends(forceSync = true)
             CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
         }
     }
