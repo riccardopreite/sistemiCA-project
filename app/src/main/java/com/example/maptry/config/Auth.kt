@@ -3,6 +3,7 @@ package com.example.maptry.config
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import com.example.maptry.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -79,4 +80,19 @@ object Auth {
      * @see FirebaseAuth
      */
     fun getGoogleCredential(idToken: String): AuthCredential = GoogleAuthProvider.getCredential(idToken, null)
+
+    /**
+     * Returns the user profile picture, if available.
+     */
+    fun getUserProfileIcon(): Uri? = signInAccount?.photoUrl
+
+    /**
+     * Returns the user full name, if available.
+     */
+    fun getUserFullName(): String? = signInAccount?.displayName
+
+    /**
+     * Returns the user email address, if available.
+     */
+    fun getUserEmailAddress(): String? = signInAccount?.email
 }
