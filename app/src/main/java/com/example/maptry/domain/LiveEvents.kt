@@ -19,6 +19,10 @@ object LiveEvents {
 
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
+    fun setUserId(user: String) {
+        userId = user
+    }
+
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
         if(!forceSync) {
             return liveEvents

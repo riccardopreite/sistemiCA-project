@@ -8,6 +8,9 @@ import android.util.Log
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity.Companion.newBundy
 import com.example.maptry.config.Auth
+import com.example.maptry.domain.Friends
+import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.PointsOfInterest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -50,7 +53,12 @@ class LoginActivity : AppCompatActivity() {
                 setResult(resultCodeSignedIn, Intent().apply {
                     this.data = Uri.parse("signed-in") // this is referred to the Intent.
                 })
-                val token = Auth.getToken()
+                val username = Auth.getUsername()
+                username?.let {
+                    Friends.setUserId(username)
+                    LiveEvents.setUserId(username)
+                    PointsOfInterest.setUserId(username)
+                }
                 // Carica su tutte api
             } else {
                 CoroutineScope(Dispatchers.Main).launch {

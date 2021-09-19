@@ -20,6 +20,10 @@ object PointsOfInterest {
 
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
+    fun setUserId(user: String) {
+        userId = user
+    }
+
     suspend fun getPointsOfInterest(user: String = "", forceSync: Boolean = false): List<PointOfInterest> {
         if((user == "" && !forceSync) || (user != "" && user == userId && !forceSync)) {
             return pointsOfInterest

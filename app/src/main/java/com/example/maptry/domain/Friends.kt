@@ -21,6 +21,10 @@ object Friends {
 
     private val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
 
+    fun setUserId(user: String) {
+        userId = user
+    }
+
     suspend fun getFriends(forceSync: Boolean = false): List<Friend> {
         if(!forceSync) {
             return friends

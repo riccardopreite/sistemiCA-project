@@ -107,6 +107,9 @@ object Auth {
 
     private lateinit var userToken: String
 
+    /**
+     * Loads the last signed in account with Google and the Firebase Authentication instance.
+     */
     fun loadAuthenticationManager(context: Context) {
         Firebase.loadAuthenticationManager()
         Google.loadLastSignedInAccount(context)
@@ -169,9 +172,7 @@ object Auth {
     /**
      * Returns the user token, if available.
      */
-    fun getToken(): String {
-        return userToken
-    }
+    fun getToken(): String = userToken
 
     /**
      * Returns the user profile picture, if available.
@@ -187,4 +188,17 @@ object Auth {
      * Returns the user email address, if available.
      */
     fun getUserEmailAddress(): String? = Google.signInAccount?.email
+
+    /**
+     * Returns the username, if available.
+     */
+    fun getUsername(): String? {
+        val email = Google.signInAccount?.email
+
+        return if(email != null) {
+            email.split("@")[0]
+        } else {
+            null
+        }
+    }
 }
