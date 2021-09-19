@@ -27,9 +27,9 @@ class SplashActivity : AppCompatActivity() {
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {
             val intent = if(Auth.isUserAuthenticated()) {
-                Intent(this, LoginActivity::class.java)
+                Intent(this@SplashActivity, LoginActivity::class.java)
             } else {
-                Intent(this, MainActivity::class.java)
+                Intent(this@SplashActivity, MainActivity::class.java)
             }
             CoroutineScope(Dispatchers.Main).launch {
                 progressBar.visibility = View.GONE
