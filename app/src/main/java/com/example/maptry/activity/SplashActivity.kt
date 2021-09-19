@@ -8,6 +8,9 @@ import android.view.View
 import android.widget.ProgressBar
 import com.example.maptry.R
 import com.example.maptry.config.Auth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
     companion object {
@@ -21,16 +24,17 @@ class SplashActivity : AppCompatActivity() {
 
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
         progressBar.visibility = View.VISIBLE
-        Auth.loadAuthenticationManager()
-        val intent = if(Auth.getLastSignedInAccount(this) == null) {
-            progressBar.visibility = View.VISIBLE
-            Intent(this, LoginActivity::class.java)
-        } else {
-            progressBar.visibility = View.VISIBLE
-            Intent(this, MainActivity::class.java).apply {
-
+        Auth.loadAuthenticationManager(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            val intent = if(Auth.isUserAuthenticated()) {
+                Intent(this, LoginActivity::class.java)
+            } else {
+                Intent(this, MainActivity::class.java)
+            }
+            CoroutineScope(Dispatchers.Main).launch {
+                progressBar.visibility = View.GONE
+                startActivity(intent)
             }
         }
-        startActivity(intent)
     }
 }
