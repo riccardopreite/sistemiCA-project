@@ -6,19 +6,26 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.location.Location
-import android.os.Build
+import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 
 class LocationService: Service() {
+    interface LocationListener {
+        fun onLocationChanged(service: Service, location: Location)
+    }
+
+    inner class LocationBinder: Binder() {
+        fun getService(): LocationService = this@LocationService
+    }
+    
     companion object {
         private const val TAG = "LocationService"
-        const val REQUEST_LOCATION_PERMISSIONS = 1
-        const val REQUEST_CHECK_SETTINGS = 2
 
         const val START_LOCATION_SERVICE = "startLocationService"
         const val STOP_LOCATION_SERVICE = "stopLocationService"
@@ -28,13 +35,15 @@ class LocationService: Service() {
         const val CHANNEL_NAME = "Maptry: Background Location Retrieval Service"
     }
 
-    private lateinit var _fusedLocationProviderClient: FusedLocationProviderClient
+    private val binder = LocationBinder()
 
-    private val fusedLocationProviderClient get() = _fusedLocationProviderClient
+    private var listener: LocationListener? = null
+
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     private val locationRequest: LocationRequest = LocationRequest.create().apply {
-        interval = 20000
-        fastestInterval = 10000
+        interval = 5000
+        fastestInterval = 2000
 //            priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Forse un po' troppo.
         priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
     }
@@ -42,8 +51,9 @@ class LocationService: Service() {
     private val locationUpdateCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
             Log.v(TAG, "LocationCallback.onLocationResult")
-            _lastLocation = locationResult.lastLocation
+            lastLocation = locationResult.lastLocation
             Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
+            listener?.onLocationChanged(this@LocationService, lastLocation)
         }
     }
 
@@ -56,9 +66,11 @@ class LocationService: Service() {
         lockscreenVisibility = Notification.VISIBILITY_PRIVATE
     }
 
-    private lateinit var _lastLocation: Location
+    private lateinit var lastLocation: Location
 
-    val lastLocation get(): Location = _lastLocation
+    fun setListener(l: LocationListener) {
+        listener = l
+    }
 
     private fun createLocationSettingsRequest(): LocationSettingsRequest {
         Log.v(TAG, "createLocationSettingsRequest")
@@ -69,9 +81,9 @@ class LocationService: Service() {
             .build()
     }
 
-    fun settings(context: Context): Task<LocationSettingsResponse> {
+    private fun checkSettings(): Task<LocationSettingsResponse> {
         Log.v(TAG, "settings")
-        val client: SettingsClient = LocationServices.getSettingsClient(context)
+        val client: SettingsClient = LocationServices.getSettingsClient(this)
         return client.checkLocationSettings(createLocationSettingsRequest())
     }
 
@@ -81,16 +93,26 @@ class LocationService: Service() {
      */
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
-        _fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-
         Log.v(TAG, "startLocationUpdates")
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationUpdateCallback,
-            Looper.getMainLooper()
-        )
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        createNotificationChannel()
+        val settings = checkSettings()
+        settings.apply {
+            addOnSuccessListener {
+                fusedLocationProviderClient.requestLocationUpdates(
+                    locationRequest,
+                    locationUpdateCallback,
+                    Looper.getMainLooper()
+                )
+
+                createNotificationChannel()
+            }
+            addOnFailureListener {
+                Log.v(TAG, "Could not start the location service because")
+            }
+        }
+
+
     }
 
     /**
@@ -106,7 +128,7 @@ class LocationService: Service() {
 
     private fun createNotification(pendingIntent: PendingIntent): Notification {
         Log.v(TAG, "createNotification")
-        val notificationBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         return notificationBuilder
             .setOngoing(true)
             .setContentTitle(CHANNEL_NAME)
@@ -122,24 +144,30 @@ class LocationService: Service() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(channel)
         val resultIntent = Intent()
-        val pendingIntent = PendingIntent.getActivity(applicationContext, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
         val notification = createNotification(pendingIntent)
         startForeground(NOTIFICATION_ID, notification)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-       intent?.let {
+        intent?.let {
            it.action?.let { action ->
-                when(action) {
-                    START_LOCATION_SERVICE -> startLocationUpdates()
-                    STOP_LOCATION_SERVICE -> stopLocationUpdates()
-                    else -> Unit
-                }
+               when (action) {
+                   START_LOCATION_SERVICE -> startLocationUpdates()
+                   STOP_LOCATION_SERVICE -> stopLocationUpdates()
+                   else -> Unit
+               }
            }
-       }
-        return super.onStartCommand(intent, flags, startId)
+        }
+        return START_NOT_STICKY
     }
-    override fun onBind(intent: Intent?): IBinder? {
-        throw UnsupportedOperationException("Not yet implemented.")
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopLocationUpdates()
+    }
+
+    override fun onBind(intent: Intent?): IBinder {
+        return binder
     }
 }

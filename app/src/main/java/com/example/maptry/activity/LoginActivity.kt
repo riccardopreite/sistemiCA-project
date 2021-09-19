@@ -101,7 +101,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                Auth.signInAccount = Auth.getLastSignedInAccount(this)
+                Auth.getLastSignedInAccount(this)
                 signInWithGoogle()
             }
         }
@@ -142,7 +142,7 @@ class LoginActivity : AppCompatActivity() {
                 // addition rationale should be displayed
                 val builder: AlertDialog.Builder = AlertDialog.Builder(this)
                 builder.setTitle(title)
-                    .setMessage(R.string.location_services_required)
+                    .setMessage(R.string.location_permission_required)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
                         requestPermissionLauncher.launch(
                             Manifest.permission.ACCESS_FINE_LOCATION
@@ -165,7 +165,7 @@ class LoginActivity : AppCompatActivity() {
      */
     private fun retrieveGoogleAccountAndSignInOnFirebase() {
         Log.v(TAG, "retrieveGoogleAccountAndSignInOnFirebase")
-        Auth.signInAccount = Auth.getLastSignedInAccount(this)
+        Auth.getLastSignedInAccount(this)
         if(Auth.signInAccount == null) {
             Log.i(TAG, "Asking the user to log in.")
             signInWithGoogle()

@@ -9,12 +9,17 @@ import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
 import com.example.maptry.R
 import com.example.maptry.activity.MapsActivity
+import com.example.maptry.changeUI.CircleTransform
+import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMapBinding
 import com.example.maptry.fragment.dialog.CreatePoiDialogFragment
 import com.example.maptry.domain.LiveEvents
@@ -33,6 +38,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -113,12 +120,30 @@ class MapFragment : Fragment(R.layout.fragment_map),
         super.onViewCreated(view, savedInstanceState)
 
         _binding = FragmentMapBinding.bind(view)
+
         val supportMapFragment = childFragmentManager.findFragmentById(binding.map.id) as SupportMapFragment
-
         updateMapUI(supportMapFragment)
-
         supportMapFragment.getMapAsync(this)
-        // TODO LocationServices.getFusedLocationProviderClient(this)
+
+        activity?.let { a ->
+            val autoCompleteFragment = binding.autocompleteFragment as AutocompleteSupportFragment
+            val layout: LinearLayout = autoCompleteFragment.view as LinearLayout
+            val menuIcon: ImageView = layout.getChildAt(0) as ImageView
+            Picasso.get()
+                .load(Auth.getUserProfileIcon())
+                .transform(CircleTransform())
+                .resize(100, 100)
+                .into(menuIcon)
+
+            menuIcon.setOnClickListener {
+                val mainMenuFragment = MainMenuFragment()
+                a.supportFragmentManager.beginTransaction().apply {
+                    replace(R.id.main_menu_fragment, mainMenuFragment)
+                    addToBackStack("MainMenuFragment")
+                    commit()
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

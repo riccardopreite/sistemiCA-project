@@ -13,6 +13,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlin.math.sign
 
 object Auth {
     lateinit var authManager: FirebaseAuth
@@ -62,10 +63,14 @@ object Auth {
 
     /**
      * Returns the last signed in account (if available, otherwise `null`).
+     * Updates [signInAccount].
      *
      * @return the account signed in last time (could be `null`).
      */
-    fun getLastSignedInAccount(context: Context): GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(context)
+    fun getLastSignedInAccount(context: Context): GoogleSignInAccount? {
+        signInAccount = GoogleSignIn.getLastSignedInAccount(context)
+        return signInAccount
+    }
 
     /**
      * The account signed in via the activity pushed through [getSignInIntent].

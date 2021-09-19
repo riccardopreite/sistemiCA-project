@@ -12,10 +12,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:allowBackup="true"
+        android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -23,87 +23,105 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
-
-        <service android:name=".notification.NotifyService"
+        <!-- <service android:name=".notification.NotifyService" -->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="false" -->
+        <!-- android:description="Maptry Location Service for accessing the device location in real time."/> -->
+        <service
+            android:name=".service.LocationService"
+            android:description="@string/location_service_description"
             android:enabled="true"
             android:exported="false"
-            android:description="Maptry Location Service for accessing the device location in real time."/>
-
-        <service android:name=".service.LocationService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="location"/>
+            android:foregroundServiceType="location" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".activity.MapsActivity"
-            android:label="@string/title_activity_maps"
+            android:name=".activity.SplashActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
+            android:name=".activity.MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+        <!-- <activity -->
+        <!-- android:name=".activity.MapsActivity" -->
+        <!-- android:label="@string/title_activity_maps" -->
+        <!-- android:theme="@style/AppTheme.NoActionBar" -->
+        <!-- android:configChanges="orientation|screenSize|keyboardHidden"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
+        <activity
             android:name=".activity.LoginActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Login"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".changeUI.ShowFriendRequest"
-            android:label="friendRequest"
-            android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:parentActivityName=".activity.MapsActivity">
+            android:label="friendRequest"
+            android:parentActivityName=".activity.MapsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MapsActivity"/>
+                android:value=".activity.MapsActivity" />
+
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".changeUI.ShowFriendList"
-            android:label="friendList"
-            android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:parentActivityName=".activity.MapsActivity">
+            android:label="friendList"
+            android:parentActivityName=".activity.MapsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MapsActivity"/>
+                android:value=".activity.MapsActivity" />
+
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".changeUI.ShowLiveEvent"
-            android:label="showLiveEvent"
-            android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize|keyboardHidden"
+            android:excludeFromRecents="true"
+            android:label="showLiveEvent"
             android:launchMode="singleTask"
             android:taskAffinity=""
-            android:excludeFromRecents="true" />
-
-        <receiver android:name=".server.AcceptFriend"/>
-        <receiver android:name=".server.DeclineFriend"/>
-
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
