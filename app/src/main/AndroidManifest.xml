@@ -23,10 +23,6 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
-        <!-- <service android:name=".notification.NotifyService" -->
-        <!-- android:enabled="true" -->
-        <!-- android:exported="false" -->
-        <!-- android:description="Maptry Location Service for accessing the device location in real time."/> -->
         <service
             android:name=".service.LocationService"
             android:description="@string/location_service_description"
@@ -61,16 +57,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <!-- <activity -->
-        <!-- android:name=".activity.MapsActivity" -->
-        <!-- android:label="@string/title_activity_maps" -->
-        <!-- android:theme="@style/AppTheme.NoActionBar" -->
-        <!-- android:configChanges="orientation|screenSize|keyboardHidden"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.MAIN" /> -->
-        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-        <!-- </intent-filter> -->
-        <!-- </activity> -->
         <activity
             android:name=".activity.LoginActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -82,46 +68,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".changeUI.ShowFriendRequest"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="friendRequest"
-            android:parentActivityName=".activity.MapsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MapsActivity" />
-
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".changeUI.ShowFriendList"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="friendList"
-            android:parentActivityName=".activity.MapsActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MapsActivity" />
-
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".changeUI.ShowLiveEvent"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:excludeFromRecents="true"
-            android:label="showLiveEvent"
-            android:launchMode="singleTask"
-            android:taskAffinity=""
-            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>
