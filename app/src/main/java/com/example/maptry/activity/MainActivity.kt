@@ -188,6 +188,7 @@ class MainActivity: AppCompatActivity(),
     }
 
     private fun startLocationService() {
+        Log.v(TAG, "startLocationService")
         val startIntent = Intent(applicationContext, LocationService::class.java)
         startIntent.action = LocationService.START_LOCATION_SERVICE
         startService(startIntent)
@@ -197,6 +198,7 @@ class MainActivity: AppCompatActivity(),
     }
 
     private fun stopLocationService() {
+        Log.v(TAG, "stopLocationService")
         val stopIntent = Intent(applicationContext, LocationService::class.java)
         stopIntent.action = LocationService.STOP_LOCATION_SERVICE
         startService(stopIntent)
@@ -204,6 +206,7 @@ class MainActivity: AppCompatActivity(),
     }
 
     override fun onStop() {
+        Log.v(TAG, "onStop")
         super.onStop()
         unbindService(connection)
         locationServiceIsBound = false

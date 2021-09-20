@@ -21,10 +21,12 @@ object PointsOfInterest {
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
     fun setUserId(user: String) {
+        Log.v(TAG, "setUserId")
         userId = user
     }
 
     suspend fun getPointsOfInterest(user: String = "", forceSync: Boolean = false): List<PointOfInterest> {
+        Log.v(TAG, "getPointsOfInterest")
         if((user == "" && !forceSync) || (user != "" && user == userId && !forceSync)) {
             return pointsOfInterest
         }
@@ -57,6 +59,7 @@ object PointsOfInterest {
     }
 
     suspend fun addPointOfInterest(addPointOfInterest: AddPointOfInterest): String {
+        Log.v(TAG, "addPointOfInterest")
         val response = try {
             if(addPointOfInterest.user == "") {
                 api.addPointOfInterest(addPointOfInterest.copy(user = userId))
@@ -88,6 +91,7 @@ object PointsOfInterest {
     }
 
     suspend fun removePointOfInterest(pointOfInterest: PointOfInterest) {
+        Log.v(TAG, "removePointOfInterest")
         val response = try {
             api.removePointOfInterest(RemovePointOfInterest(userId, pointOfInterest.markId))
         } catch (e: IOException) {

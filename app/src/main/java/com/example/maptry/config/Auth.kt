@@ -34,7 +34,7 @@ object Auth {
          * Updates [signInAccount].
          */
         fun loadLastSignedInAccount(context: Context) {
-            Log.v(TAG, "loadLastSignedInAccount")
+            Log.v(TAG, "Google.loadLastSignedInAccount")
             signInAccount = GoogleSignIn.getLastSignedInAccount(context)
         }
 
@@ -60,7 +60,7 @@ object Auth {
          * @see FirebaseAuth
          */
         fun loadGoogleCredential() {
-            Log.v(TAG, "loadGoogleCredential")
+            Log.v(TAG, "Google.loadGoogleCredential")
             signInAccount?.let {
                 it.idToken?.let { token ->
                     authCredential = GoogleAuthProvider.getCredential(token, null)
@@ -99,7 +99,7 @@ object Auth {
         lateinit var authManager: FirebaseAuth
 
         fun loadAuthenticationManager() {
-            Log.v(TAG, "loadAuthenticationManager")
+            Log.v(TAG, "Firebase.loadAuthenticationManager")
             authManager = FirebaseAuth.getInstance()
         }
 

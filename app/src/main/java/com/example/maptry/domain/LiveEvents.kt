@@ -20,10 +20,12 @@ object LiveEvents {
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
     fun setUserId(user: String) {
+        Log.v(TAG, "setUserId")
         userId = user
     }
 
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
+        Log.v(TAG, "getLiveEvents")
         if(!forceSync) {
             return liveEvents
         }
@@ -56,6 +58,7 @@ object LiveEvents {
     }
 
     suspend fun addLiveEvent(addLiveEvent: AddLiveEvent) {
+        Log.v(TAG, "addLiveEvent")
         val response = try {
             if(addLiveEvent.owner == "") {
                 api.addLiveEvent(addLiveEvent.copy(owner = userId))

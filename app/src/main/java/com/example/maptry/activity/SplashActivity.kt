@@ -30,6 +30,7 @@ class SplashActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.Main).launch {
                     progressBar.visibility = View.GONE
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                    finish()
                 }
             } else {
                 CoroutineScope(Dispatchers.Main).launch {
@@ -44,11 +45,12 @@ class SplashActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.v(TAG, "onActivityResult")
         super.onActivityResult(requestCode, resultCode, data)
 
         if(requestCode == Auth.getLoginActivityRequestCode()) {
-
             startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            finish()
         }
     }
 }

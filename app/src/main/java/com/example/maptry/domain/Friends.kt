@@ -22,10 +22,12 @@ object Friends {
     private val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
 
     fun setUserId(user: String) {
+        Log.v(TAG, "setUserId")
         userId = user
     }
 
     suspend fun getFriends(forceSync: Boolean = false): List<Friend> {
+        Log.v(TAG, "getFriends")
         if(!forceSync) {
             return friends
         }
@@ -58,6 +60,7 @@ object Friends {
     }
 
     suspend fun addFriend(friendUsername: String) {
+        Log.v(TAG, "addFriend")
         val response = try {
             api.addFriend(AddFriendshipRequest(friendUsername, userId))
         } catch (e: IOException) {
@@ -76,6 +79,7 @@ object Friends {
     }
 
     suspend fun confirmFriend(otherUserUsername: String) {
+        Log.v(TAG, "confirmFriend")
         val response = try {
            api.confirmFriend(AddFriendshipConfirmation(userId, otherUserUsername))
         } catch (e: IOException) {
@@ -94,6 +98,7 @@ object Friends {
     }
 
     suspend fun removeFriend(friendUsername: String) {
+        Log.v(TAG, "removeFriend")
         val response = try {
             api.removeFriend(RemoveFriendshipRequest(friendUsername, userId))
         } catch (e: IOException) {
