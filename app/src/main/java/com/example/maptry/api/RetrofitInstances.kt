@@ -1,7 +1,6 @@
 package com.example.maptry.api
 
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity
 import com.example.maptry.config.Api
 import com.example.maptry.config.Auth
 import okhttp3.Interceptor
@@ -15,20 +14,20 @@ import javax.net.ssl.*
 object RetrofitInstances {
 
     // SSL certificate configuration
-    private val trustStore: KeyStore = KeyStore.getInstance("BKS")
-    private const val keyPair = "SistemiContextAware2021@*"
+//    private val trustStore: KeyStore = KeyStore.getInstance("BKS")
+//    private const val keyPair = "SistemiContextAware2021@*"
 
-    val res = MapsActivity.mapsActivityContext.resources.openRawResource(R.raw.mystore).use {
-        trustStore.load(it,keyPair.toCharArray())
-    }
-
-    private val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
-        init(trustStore)
-    }
-    private val sslContext: SSLContext = SSLContext.getInstance("TLS").apply {
-        init(null, tmf.trustManagers, SecureRandom())
-    }
-    private val trustManager = tmf.trustManagers[0] as X509TrustManager
+//    val res = MapsActivity.mapsActivityContext.resources.openRawResource(R.raw.mystore).use {
+//        trustStore.load(it,keyPair.toCharArray())
+//    }
+//
+//    private val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
+//        init(trustStore)
+//    }
+//    private val sslContext: SSLContext = SSLContext.getInstance("TLS").apply {
+//        init(null, tmf.trustManagers, SecureRandom())
+//    }
+//    private val trustManager = tmf.trustManagers[0] as X509TrustManager
 
     private val hostnameVerifier = HostnameVerifier { _, session -> //first
         val hv: HostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
@@ -38,7 +37,7 @@ object RetrofitInstances {
 
     private val client: OkHttpClient by lazy { // TODO Sicuri che basti creare un'istanza unica?
         OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustManager)
+//            .sslSocketFactory(sslContext.socketFactory, trustManager)
             .hostnameVerifier(hostnameVerifier)
             .addInterceptor(Interceptor { chain ->
                 val request = chain.request()
