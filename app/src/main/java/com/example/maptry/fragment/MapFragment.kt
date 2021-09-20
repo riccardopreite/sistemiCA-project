@@ -14,11 +14,8 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.add
-import androidx.fragment.app.commit
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity
-import com.example.maptry.changeUI.CircleTransform
+import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMapBinding
 import com.example.maptry.fragment.dialog.CreatePoiDialogFragment

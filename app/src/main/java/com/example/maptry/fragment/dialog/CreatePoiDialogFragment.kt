@@ -3,17 +3,19 @@ package com.example.maptry.fragment.dialog
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
-import com.example.maptry.utils.makeRedLine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -126,10 +128,14 @@ class CreatePoiDialogFragment: DialogFragment() {
             }
 
             builder.setPositiveButton(R.string.add) { dialog, arg ->
-                val red = R.color.quantum_googred
                 val name = nameEt.text.toString()
                 if(name == "") {
-                    makeRedLine(nameEt, red)
+                    nameEt.background.mutate().apply {
+                        colorFilter = BlendModeColorFilter(
+                            ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                            BlendMode.SRC_IN
+                        )
+                    }
                     return@setPositiveButton
                 }
 
@@ -143,7 +149,12 @@ class CreatePoiDialogFragment: DialogFragment() {
                     CoroutineScope(Dispatchers.IO).launch {
                         if (liveEvents.getLiveEvents().any { le ->
                             return@any if(name == le.name || addressTv.text == le.address) {
-                                makeRedLine(nameEt, red)
+                                nameEt.background.mutate().apply {
+                                    colorFilter = BlendModeColorFilter(
+                                        ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                                        BlendMode.SRC_IN
+                                    )
+                                }
                                 true
                             } else { false }
                         }) { return@launch }
@@ -165,7 +176,12 @@ class CreatePoiDialogFragment: DialogFragment() {
                 CoroutineScope(Dispatchers.IO).launch {
                     if(pointsOfInterest.getPointsOfInterest().any { poi ->
                         return@any if(name == poi.name || addressTv.text == poi.address) {
-                            makeRedLine(nameEt, red)
+                            nameEt.background.mutate().apply {
+                                colorFilter = BlendModeColorFilter(
+                                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                                    BlendMode.SRC_IN
+                                )
+                            }
                             true
                         } else { false }
                     }) { return@launch }

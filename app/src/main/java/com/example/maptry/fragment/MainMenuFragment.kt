@@ -3,21 +3,14 @@ package com.example.maptry.fragment
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.FragmentManager
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity
-import com.example.maptry.changeUI.CircleTransform
 import com.example.maptry.config.Auth
-import com.example.maptry.databinding.FragmentLiveEventsBinding
 import com.example.maptry.databinding.FragmentMainMenuBinding
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.Picasso
 
