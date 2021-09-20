@@ -26,15 +26,29 @@ class SplashActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {
-            val intent = if(Auth.isUserAuthenticated()) {
-                Intent(this@SplashActivity, LoginActivity::class.java)
+            if(Auth.isUserAuthenticated()) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    progressBar.visibility = View.GONE
+                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                }
             } else {
-                Intent(this@SplashActivity, MainActivity::class.java)
+                CoroutineScope(Dispatchers.Main).launch {
+                    startActivityForResult(
+                        Intent(this@SplashActivity, LoginActivity::class.java),
+                        Auth.getLoginActivityRequestCode()
+                    )
+                }
             }
-            CoroutineScope(Dispatchers.Main).launch {
-                progressBar.visibility = View.GONE
-                startActivity(intent)
-            }
+
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == Auth.getLoginActivityRequestCode()) {
+
+            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
         }
     }
 }
