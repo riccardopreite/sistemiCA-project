@@ -17,19 +17,15 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.maptry.R
+import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.PointsOfInterest
+import com.example.maptry.fragment.MapFragment
 import com.example.maptry.service.LocationService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class MainActivity: AppCompatActivity(),
-    LocationService.LocationListener {
-    /**
-     * Flag to memorize whether the user requested to utilize location services (foreground) or not.
-     */
-    private var locationPermissionAllowed: Boolean? = null
-    /**
-     * Flag to memorize whether the user requested to utilize location services (background) or not.
-     */
-    private var backgroundLocationPermissionAllowed: Boolean? = null
-
+class MainActivity: AppCompatActivity(), LocationService.LocationListener {
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -45,6 +41,14 @@ class MainActivity: AppCompatActivity(),
         }
     }
 
+    private val pois by lazy {
+        PointsOfInterest
+    }
+
+    private val liveEvents by lazy {
+        LiveEvents
+    }
+
 
     /**
      * Permission request launcher (for location permission).
@@ -52,11 +56,9 @@ class MainActivity: AppCompatActivity(),
     private val requestLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             isGranted: Boolean ->
         if(isGranted) {
-            locationPermissionAllowed = true
-            Log.i(TAG, "Permission to use (background) location GRANTED.")
+            Log.i(TAG, "Permission to use location GRANTED.")
         } else {
-            locationPermissionAllowed = false
-            Log.i(TAG, "Permission to use (background) location DENIED.")
+            Log.i(TAG, "Permission to use location DENIED.")
         }
     }
 
@@ -66,10 +68,8 @@ class MainActivity: AppCompatActivity(),
     private val requestBackgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             isGranted: Boolean ->
         if(isGranted) {
-            backgroundLocationPermissionAllowed = true
             Log.i(TAG, "Permission to use (background) location GRANTED.")
         } else {
-            backgroundLocationPermissionAllowed = false
             Log.i(TAG, "Permission to use (background) location DENIED.")
         }
     }
@@ -84,18 +84,26 @@ class MainActivity: AppCompatActivity(),
         setContentView(R.layout.activity_main)
 
         checkLocationPermissions()
-        checkBackgroundLocationPermissions()
-        if(locationPermissionAllowed != null &&
-            backgroundLocationPermissionAllowed != null &&
-            locationPermissionAllowed!! &&
-            backgroundLocationPermissionAllowed!!) {
-            startLocationService()
+    }
+
+    private fun loadPoisAndLiveEvents(force: Boolean = false) {
+        Log.v(TAG, "loadPoisAndLiveEvents")
+        CoroutineScope(Dispatchers.IO).launch {
+            val poisList = pois.getPointsOfInterest(forceSync = force)
+            val leList = liveEvents.getLiveEvents(forceSync = force)
+            val mapFragment = MapFragment.newInstance(poisList, leList)
+            CoroutineScope(Dispatchers.Main).launch {
+                supportFragmentManager.beginTransaction().apply {
+                    replace(R.id.map_fragment, mapFragment)
+                    addToBackStack("MapFragment")
+                    commit()
+                }
+            }
         }
     }
 
     /**
-     * This method checks permissions to ACCESS_FINE_LOCATION and if enabled:
-     * - enables the retrieval of location updates
+     * This method checks permissions to ACCESS_FINE_LOCATION and later calls [checkBackgroundLocationPermissions].
      */
     private fun checkLocationPermissions() {
         Log.v(TAG, "checkLocationPermissions")
@@ -106,7 +114,7 @@ class MainActivity: AppCompatActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.i(TAG, "Enabling location services since permissions were given.")
-                locationPermissionAllowed = true
+                checkBackgroundLocationPermissions()
             }
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
@@ -146,7 +154,8 @@ class MainActivity: AppCompatActivity(),
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.i(TAG, "Enabling background location services since permissions were given.")
-                locationPermissionAllowed = true
+                startLocationService()
+                loadPoisAndLiveEvents(force = true)
             }
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
@@ -177,13 +186,22 @@ class MainActivity: AppCompatActivity(),
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         Log.v(TAG, "onRequestPermissionsResult")
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        // Login independently of the result of the permission request (of course the app functions are limited)
-        if(locationPermissionAllowed != null && backgroundLocationPermissionAllowed != null) {
-            if(locationPermissionAllowed!! && backgroundLocationPermissionAllowed!!) {
-                startLocationService()
-            } else {
-                Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_SHORT).show()
+        // Since background location is checked later, this check must be done earlier.
+        when(permissions[0]) {
+             Manifest.permission.ACCESS_BACKGROUND_LOCATION -> {
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startLocationService()
+                }
+                loadPoisAndLiveEvents(force = true)
             }
+            Manifest.permission.ACCESS_FINE_LOCATION -> {
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    checkBackgroundLocationPermissions()
+                } else {
+                    Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_SHORT).show()
+                }
+            }
+            else -> Unit
         }
     }
 

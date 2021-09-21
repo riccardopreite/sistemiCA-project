@@ -40,7 +40,6 @@ class LoginActivity : AppCompatActivity() {
                     LiveEvents.setUserId(username)
                     PointsOfInterest.setUserId(username)
                 }
-                // Carica su tutte api
             } else {
                 CoroutineScope(Dispatchers.Main).launch {
                     startActivityForResult(Auth.signInIntent(this@LoginActivity), Auth.getLoginSystemRequestCode())

@@ -8,6 +8,9 @@ import android.view.View
 import android.widget.ProgressBar
 import com.example.maptry.R
 import com.example.maptry.config.Auth
+import com.example.maptry.domain.Friends
+import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.PointsOfInterest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +30,12 @@ class SplashActivity : AppCompatActivity() {
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {
             if(Auth.isUserAuthenticated()) {
+                val username = Auth.getUsername()
+                username?.let {
+                    Friends.setUserId(username)
+                    LiveEvents.setUserId(username)
+                    PointsOfInterest.setUserId(username)
+                }
                 CoroutineScope(Dispatchers.Main).launch {
                     progressBar.visibility = View.GONE
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))
