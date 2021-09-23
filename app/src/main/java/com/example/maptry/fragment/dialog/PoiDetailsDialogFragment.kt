@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
@@ -58,7 +57,7 @@ class PoiDetailsDialogFragment : DialogFragment() {
             val addressTv = dialogView.findViewById<TextView>(R.id.txt_addressattr)
             val urlTv = dialogView.findViewById<TextView>(R.id.uri_lblattr)
             val phoneTv = dialogView.findViewById<TextView>(R.id.phone_contentattr)
-            val addPoiToMyPoisBtn = dialogView.findViewById<Button>(R.id.addToPoisBtnattr)
+            val shareBtn = dialogView.findViewById<Button>(R.id.shareButton)
             val routeBtn = dialogView.findViewById<Button>(R.id.routeBtn)
 
             titleTv.text = poi.type + ": " + poi.name
@@ -66,7 +65,7 @@ class PoiDetailsDialogFragment : DialogFragment() {
             urlTv.text = poi.url
             phoneTv.text = poi.phoneNumber
 
-            addPoiToMyPoisBtn.setOnClickListener {
+            shareBtn.setOnClickListener {
                 listener.onShareButtonPressed(this, poi)
             }
 

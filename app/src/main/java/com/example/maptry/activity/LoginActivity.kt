@@ -22,7 +22,6 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_maps)
 
         Auth.loadAuthenticationManager(this)
 
@@ -30,22 +29,24 @@ class LoginActivity : AppCompatActivity() {
          * First the user tries to login via Google through the Android system interface.
          * Then the user is logged in (perhaps even registered if they are not) onto Firebase.
          */
-        CoroutineScope(Dispatchers.IO).launch {
-            if(Auth.isUserAuthenticated()) {
-                Log.i(TAG, "The user has already logged in.")
-                setResult(Auth.getLoginSuccessResultCode())
-                val username = Auth.getUsername()
-                username?.let {
-                    Friends.setUserId(username)
-                    LiveEvents.setUserId(username)
-                    PointsOfInterest.setUserId(username)
-                }
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
-                    startActivityForResult(Auth.signInIntent(this@LoginActivity), Auth.getLoginSystemRequestCode())
-                }
-            }
-        }
+//        CoroutineScope(Dispatchers.IO).launch {
+//            if(Auth.isUserAuthenticated()) {
+//                Log.i(TAG, "The user has already logged in.")
+//                setResult(Auth.getLoginSuccessResultCode())
+//                val username = Auth.getUsername()
+//                username?.let {
+//                    Friends.setUserId(username)
+//                    LiveEvents.setUserId(username)
+//                    PointsOfInterest.setUserId(username)
+//                }
+//                finish()
+//            } else {
+//                CoroutineScope(Dispatchers.Main).launch {
+//                    startActivityForResult(Auth.signInIntent(this@LoginActivity), Auth.getLoginSystemRequestCode())
+//                }
+//            }
+//        }
+        startActivityForResult(Auth.signInIntent(this@LoginActivity), Auth.getLoginSystemRequestCode())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -57,6 +58,12 @@ class LoginActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.IO).launch {
                 if(Auth.isUserAuthenticated()) {
                     setResult(Auth.getLoginSuccessResultCode())
+                    val username = Auth.getUsername()
+                    username?.let {
+                        Friends.setUserId(username)
+                        LiveEvents.setUserId(username)
+                        PointsOfInterest.setUserId(username)
+                    }
                 } else {
                     setResult(Auth.getLoginFailureResultCode())
                 }

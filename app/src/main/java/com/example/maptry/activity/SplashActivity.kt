@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import com.example.maptry.R
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.config.Auth
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
@@ -24,6 +25,8 @@ class SplashActivity : AppCompatActivity() {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+
+        RetrofitInstances.loadStore(resources.openRawResource(R.raw.mystore))
 
         val progressBar = findViewById<ProgressBar>(R.id.progressBar)
         progressBar.visibility = View.VISIBLE

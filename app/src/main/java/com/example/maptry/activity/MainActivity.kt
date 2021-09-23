@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -16,16 +17,27 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.MapFragment
+import com.example.maptry.fragment.dialog.CreatePoiDialogFragment
+import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
+import com.example.maptry.model.liveevents.AddLiveEvent
+import com.example.maptry.model.pointofinterests.AddPointOfInterest
+import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.example.maptry.service.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity: AppCompatActivity(), LocationService.LocationListener {
+class MainActivity: AppCompatActivity(),
+    LocationService.LocationListener,
+    CreatePoiDialogFragment.CreatePoiDialogListener,
+    PoiDetailsDialogFragment.PoiDetailsDialogListener {
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -41,7 +53,7 @@ class MainActivity: AppCompatActivity(), LocationService.LocationListener {
         }
     }
 
-    private val pois by lazy {
+    private val pointsOfInterest by lazy {
         PointsOfInterest
     }
 
@@ -89,7 +101,7 @@ class MainActivity: AppCompatActivity(), LocationService.LocationListener {
     private fun loadPoisAndLiveEvents(force: Boolean = false) {
         Log.v(TAG, "loadPoisAndLiveEvents")
         CoroutineScope(Dispatchers.IO).launch {
-            val poisList = pois.getPointsOfInterest(forceSync = force)
+            val poisList = pointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = liveEvents.getLiveEvents(forceSync = force)
             val mapFragment = MapFragment.newInstance(poisList, leList)
             CoroutineScope(Dispatchers.Main).launch {
@@ -226,9 +238,11 @@ class MainActivity: AppCompatActivity(), LocationService.LocationListener {
     override fun onStop() {
         Log.v(TAG, "onStop")
         super.onStop()
-        unbindService(connection)
-        locationServiceIsBound = false
-        stopLocationService()
+        if(locationServiceIsBound) {
+            unbindService(connection)
+            locationServiceIsBound = false
+            stopLocationService()
+        }
     }
 
     override fun onDestroy() {
@@ -238,5 +252,46 @@ class MainActivity: AppCompatActivity(), LocationService.LocationListener {
 
     override fun onLocationChanged(service: Service, location: Location) {
         Log.d(TAG, "Location reached MainActivity: $location")
+    }
+
+    override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
+        Log.v(MapFragment.TAG, "CreatePoiDialogListener.onAddLiveEvent")
+        CoroutineScope(Dispatchers.IO).launch {
+            liveEvents.addLiveEvent(addLiveEvent)
+
+            CoroutineScope(Dispatchers.Main).launch {
+                dialog.dismiss()
+            }
+        }
+    }
+
+    override fun onAddPointOfInterest(
+        dialog: DialogFragment,
+        addPointOfInterestPoi: AddPointOfInterestPoi
+    ) {
+        Log.v(MapFragment.TAG, "CreatePoiDialogListener.onAddPointOfInterest")
+        CoroutineScope(Dispatchers.IO).launch {
+            pointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
+
+            CoroutineScope(Dispatchers.Main).launch {
+                dialog.dismiss()
+            }
+        }
+    }
+
+    override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
+        Log.v(MapFragment.TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.type = "text/plain"
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ poi.latitude +","+ poi.longitude)
+        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo " + poi.name)
+        ContextCompat.startActivity(this, createdIntent, null)
+    }
+
+    override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
+        Log.v(MapFragment.TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
+        dialog.dismiss()
+        startActivity(intent)
     }
 }

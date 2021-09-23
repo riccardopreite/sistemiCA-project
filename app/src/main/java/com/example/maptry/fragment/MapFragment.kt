@@ -46,9 +46,7 @@ class MapFragment : Fragment(R.layout.fragment_map),
     OnMapReadyCallback,
     GoogleMap.OnMapClickListener,
     GoogleMap.OnMarkerClickListener,
-    GoogleMap.OnMyLocationClickListener,
-    CreatePoiDialogFragment.CreatePoiDialogListener,
-    PoiDetailsDialogFragment.PoiDetailsDialogListener {
+    GoogleMap.OnMyLocationClickListener {
 
     // UI
     private var _binding: FragmentMapBinding? = null
@@ -62,14 +60,6 @@ class MapFragment : Fragment(R.layout.fragment_map),
     // API
     private val geocoder by lazy {
         Geocoder(this.requireContext())
-    }
-
-    private val liveEvents by lazy {
-        LiveEvents
-    }
-
-    private val pointsOfInterest by lazy {
-        PointsOfInterest
     }
 
     companion object {
@@ -123,22 +113,29 @@ class MapFragment : Fragment(R.layout.fragment_map),
         supportMapFragment.getMapAsync(this)
 
         activity?.let { a ->
-            val autoCompleteFragment = binding.autocompleteFragment as AutocompleteSupportFragment
-            val layout: LinearLayout = autoCompleteFragment.view as LinearLayout
-            val menuIcon: ImageView = layout.getChildAt(0) as ImageView
-            Picasso.get()
-                .load(Auth.getUserProfileIcon())
-                .transform(CircleTransform())
-                .resize(100, 100)
-                .into(menuIcon)
+            val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+            autoCompleteFragment.view?.let {
+                val layout = it as LinearLayout
+                Log.d(TAG, "autoCompleteFragment.view exists.")
+                val menuIcon = layout.getChildAt(0) as ImageView
 
-            menuIcon.setOnClickListener {
-                val mainMenuFragment = MainMenuFragment()
-                a.supportFragmentManager.beginTransaction().apply {
-                    replace(R.id.main_menu_fragment, mainMenuFragment)
-                    addToBackStack("MainMenuFragment")
-                    commit()
+                Picasso.get()
+                    .load(Auth.getUserProfileIcon())
+                    .transform(CircleTransform())
+                    .resize(100, 100)
+                    .into(menuIcon)
+
+                menuIcon.setOnClickListener {
+                    val mainMenuFragment = MainMenuFragment()
+                    a.supportFragmentManager.beginTransaction().apply {
+                        replace(R.id.main_menu_fragment, mainMenuFragment)
+                        setReorderingAllowed(true)
+//                        addToBackStack("MainMenuFragment")
+                        commit()
+                    }
                 }
+            } ?: run {
+                Log.e(TAG, "autoCompleteFragment.view is null!")
             }
         }
     }
@@ -161,7 +158,7 @@ class MapFragment : Fragment(R.layout.fragment_map),
                 MarkerOptions()
                     .position(LatLng(it.latitude, it.longitude))
                     .title(it.name + " - " + it.address)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     .alpha(0.7f)
             )
             markers[it.markId] = marker
@@ -252,46 +249,5 @@ class MapFragment : Fragment(R.layout.fragment_map),
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
             layoutParams.setMargins(0, 0, 30, 30)
         }
-    }
-
-    override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
-        Log.v(TAG, "CreatePoiDialogListener.onAddLiveEvent")
-        CoroutineScope(Dispatchers.IO).launch {
-            liveEvents.addLiveEvent(addLiveEvent)
-
-            CoroutineScope(Dispatchers.Main).launch {
-                dialog.dismiss()
-            }
-        }
-    }
-
-    override fun onAddPointOfInterest(
-        dialog: DialogFragment,
-        addPointOfInterest: AddPointOfInterestPoi
-    ) {
-        Log.v(TAG, "CreatePoiDialogListener.onAddPointOfInterest")
-        CoroutineScope(Dispatchers.IO).launch {
-            pointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterest))
-
-            CoroutineScope(Dispatchers.Main).launch {
-                dialog.dismiss()
-            }
-        }
-    }
-
-    override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
-        Log.v(TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
-        val shareIntent = Intent(Intent.ACTION_SEND)
-        shareIntent.type = "text/plain"
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ poi.latitude +","+ poi.longitude)
-        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo " + poi.name)
-        ContextCompat.startActivity(requireContext(), createdIntent, null)
-    }
-
-    override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
-        Log.v(TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
-        dialog.dismiss()
-        startActivity(intent)
     }
 }
