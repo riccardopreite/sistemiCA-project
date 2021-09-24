@@ -6,7 +6,7 @@
     android:layout_width="match_parent">
 
     <fragment
-        android:name="com.example.maptry.fragment.MapFragment"
+        android:name="com.example.maptry.fragment.MainFragment"
         android:id="@+id/map_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

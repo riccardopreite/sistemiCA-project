@@ -1,10 +1,8 @@
 package com.example.maptry.fragment
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.location.Geocoder
 import android.location.Location
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -12,21 +10,14 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
-import com.example.maptry.databinding.FragmentMapBinding
+import com.example.maptry.databinding.FragmentMainBinding
 import com.example.maptry.fragment.dialog.CreatePoiDialogFragment
-import com.example.maptry.domain.LiveEvents
-import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.dialog.LiveEventDetailsDialogFragment
 import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
-import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
-import com.example.maptry.model.pointofinterests.AddPointOfInterest
-import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -37,19 +28,16 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.IOException
 
-class MapFragment : Fragment(R.layout.fragment_map),
+class MainFragment : Fragment(R.layout.fragment_main),
     OnMapReadyCallback,
     GoogleMap.OnMapClickListener,
     GoogleMap.OnMarkerClickListener,
     GoogleMap.OnMyLocationClickListener {
 
     // UI
-    private var _binding: FragmentMapBinding? = null
+    private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
 
     // App state
@@ -63,14 +51,14 @@ class MapFragment : Fragment(R.layout.fragment_map),
     }
 
     companion object {
-        val TAG = MapFragment::class.qualifiedName
+        val TAG = MainFragment::class.qualifiedName
 
         private const val ARG_POISLIST = "poisList"
         private const val ARG_LIVEEVENTSLIST = "liveEventsList"
 
         @JvmStatic
         fun newInstance(poisList: List<PointOfInterest>, liveEventsList: List<LiveEvent>) =
-            MapFragment().apply {
+            MainFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
@@ -106,7 +94,7 @@ class MapFragment : Fragment(R.layout.fragment_map),
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
 
-        _binding = FragmentMapBinding.bind(view)
+        _binding = FragmentMainBinding.bind(view)
 
         val supportMapFragment = childFragmentManager.findFragmentById(binding.map.id) as SupportMapFragment
         updateMapUI(supportMapFragment)
