@@ -1,6 +1,7 @@
 package com.example.maptry.fragment
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -26,6 +27,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.squareup.picasso.Picasso
 import java.io.IOException
@@ -88,6 +90,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 liveEventsList = emptyList<LiveEvent>().toMutableList()
             }
         }
+
+        Places.initialize(requireContext(),getString(R.string.google_api_key))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -99,32 +103,33 @@ class MainFragment : Fragment(R.layout.fragment_main),
         val supportMapFragment = childFragmentManager.findFragmentById(binding.map.id) as SupportMapFragment
         updateMapUI(supportMapFragment)
         supportMapFragment.getMapAsync(this)
+        val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+        Log.d(TAG, "autocompleteFragment")
+        println(autoCompleteFragment.view)
+        autoCompleteFragment.view?.let {
+            val layout = it as LinearLayout
+            val menuIcon = layout.getChildAt(0) as ImageView
 
-        activity?.let { a ->
-            val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
-            autoCompleteFragment.view?.let {
-                val layout = it as LinearLayout
+            Picasso.get()
+                .load(Auth.getUserProfileIcon())
+                .transform(CircleTransform())
+                .resize(100, 100)
+                .into(menuIcon)
+            layout.setBackgroundColor(Color.WHITE)
+            activity?.let { a ->
                 Log.d(TAG, "autoCompleteFragment.view exists.")
-                val menuIcon = layout.getChildAt(0) as ImageView
-
-                Picasso.get()
-                    .load(Auth.getUserProfileIcon())
-                    .transform(CircleTransform())
-                    .resize(100, 100)
-                    .into(menuIcon)
-
                 menuIcon.setOnClickListener {
                     val mainMenuFragment = MainMenuFragment()
                     a.supportFragmentManager.beginTransaction().apply {
                         replace(R.id.main_menu_fragment, mainMenuFragment)
                         setReorderingAllowed(true)
-//                        addToBackStack("MainMenuFragment")
+                        addToBackStack("MainMenuFragment")
                         commit()
                     }
                 }
-            } ?: run {
-                Log.e(TAG, "autoCompleteFragment.view is null!")
             }
+        } ?: run {
+            Log.e(TAG, "autoCompleteFragment.view is null!")
         }
     }
 

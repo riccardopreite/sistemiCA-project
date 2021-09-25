@@ -103,11 +103,11 @@ class MainActivity: AppCompatActivity(),
         CoroutineScope(Dispatchers.IO).launch {
             val poisList = pointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = liveEvents.getLiveEvents(forceSync = force)
-            val mapFragment = MainFragment.newInstance(poisList, leList)
+            val mainFragment = MainFragment.newInstance(poisList, leList)
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
-                    replace(R.id.map_fragment, mapFragment)
-                    addToBackStack("MapFragment")
+                    replace(R.id.main_fragment, mainFragment)
+                    addToBackStack("MainFragment")
                     commit()
                 }
             }
