@@ -113,7 +113,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             Picasso.get()
                 .load(Auth.getUserProfileIcon())
                 .transform(CircleTransform())
-                .resize(100, 100)
+                .resize(130, 130)
                 .into(menuIcon)
             layout.setBackgroundColor(Color.WHITE)
             activity?.let { a ->
