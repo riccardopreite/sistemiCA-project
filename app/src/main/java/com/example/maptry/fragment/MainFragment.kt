@@ -1,7 +1,6 @@
 package com.example.maptry.fragment
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -21,6 +20,7 @@ import com.example.maptry.fragment.dialog.LiveEventDetailsDialogFragment
 import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.PointOfInterest
+import com.google.android.gms.common.api.Status
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -29,7 +29,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.squareup.picasso.Picasso
 import java.io.IOException
 
@@ -106,9 +108,19 @@ class MainFragment : Fragment(R.layout.fragment_main),
         updateMapUI(supportMapFragment)
         supportMapFragment.getMapAsync(this)
         val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+        autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME))
 
-        Log.d(TAG, "autocompleteFragment")
-        println(autoCompleteFragment.view)
+        // Set up a PlaceSelectionListener to handle the response.
+        autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+            override fun onPlaceSelected(p0: Place) {
+                // TODO: Get info about the selected place.
+                Log.i(TAG, "Place: ${p0.name}, ${p0.id}")
+            }
+            override fun onError(status: Status) {
+                // TODO: Handle the error.
+                Log.i(TAG, "An error occurred: $status")
+            }
+        })
         autoCompleteFragment.view?.let {
             val layout = it as LinearLayout
             val menuIcon = layout.getChildAt(0) as ImageView
