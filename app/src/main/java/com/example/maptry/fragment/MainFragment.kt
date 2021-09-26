@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat
 import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
@@ -91,9 +92,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
         }
 
-        Places.initialize(requireContext(),getString(R.string.google_api_key))
+        Places.initialize(requireContext(),getString(R.string.places_api))
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
@@ -104,6 +106,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         updateMapUI(supportMapFragment)
         supportMapFragment.getMapAsync(this)
         val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+
         Log.d(TAG, "autocompleteFragment")
         println(autoCompleteFragment.view)
         autoCompleteFragment.view?.let {
@@ -113,9 +116,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
             Picasso.get()
                 .load(Auth.getUserProfileIcon())
                 .transform(CircleTransform())
-                .resize(130, 130)
+                .resize(140, 140)
                 .into(menuIcon)
-            layout.setBackgroundColor(Color.WHITE)
+
+            layout.background = ContextCompat.getDrawable(this.requireContext(), R.drawable.layout_bg)
             activity?.let { a ->
                 Log.d(TAG, "autoCompleteFragment.view exists.")
                 menuIcon.setOnClickListener {
