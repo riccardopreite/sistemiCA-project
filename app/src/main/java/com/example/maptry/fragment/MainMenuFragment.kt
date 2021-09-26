@@ -1,5 +1,6 @@
 package com.example.maptry.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentManager
 import com.example.maptry.R
+import com.example.maptry.activity.ListActivity
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainMenuBinding
 import com.google.android.material.navigation.NavigationView
@@ -28,7 +30,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentMainMenuBinding.bind(view)
-
+        binding.navView.setNavigationItemSelectedListener(this)
         val navBar = binding.navView.getHeaderView(0)
 
         val icon = navBar.findViewById<ImageView>(R.id.imageView)
@@ -60,8 +62,15 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         Log.v(TAG, "onNavigationItemSelected")
-        return when(item.itemId) {
+        val menuIntent = Intent(this.context,ListActivity::class.java)
+        print("ITEM ID " + item.itemId)
+        menuIntent.putExtra("screen",item.itemId)
+        println("START LIST ACTIVITY")
+        startActivity(menuIntent)
+        return true
+        /*return when(item.itemId) {
             R.id.list -> {
+
                 return true
             }
             R.id.friend -> {
@@ -71,7 +80,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
                 return true
             }
             else -> super.onOptionsItemSelected(item)
-        }
+        }*/
     }
 
     override fun onDestroyView() {

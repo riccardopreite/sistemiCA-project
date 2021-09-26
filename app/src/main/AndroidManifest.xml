@@ -67,6 +67,20 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.ListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="List"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+
     </application>
 
 </manifest>

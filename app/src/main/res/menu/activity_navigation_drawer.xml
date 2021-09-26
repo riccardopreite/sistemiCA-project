@@ -8,19 +8,19 @@
         android:id="@+id/firstgroup">
 
         <item
-            android:id="@+id/list"
+            android:id="@+id/pois_list"
             android:icon="@drawable/ic_list"
             android:title="@string/list"
             app:showAsAction="always"/>
 
         <item
-            android:id="@+id/friend"
+            android:id="@+id/friends_list"
             android:icon="@drawable/ic_friend_black"
             android:title="@string/friend"
             app:showAsAction="always"/>
 
         <item
-            android:id="@+id/live"
+            android:id="@+id/lives_list"
             android:icon="@drawable/ic_live"
             android:title="@string/live"
             app:showAsAction="always"/>

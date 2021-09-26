@@ -57,11 +57,12 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         private const val ARG_WILLDELETEFRIEND = "willDeleteFriend"
 
         @JvmStatic
-        fun newInstance(friends: List<Friend>, selectedFriendName: String) =
+        fun newInstance(friends: List<Friend>/*, selectedFriendName: String*/) =
             FriendsFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_FRIENDSLIST, friends.toTypedArray())
-                    putString(ARG_SELECTEDFRIENDNAME, selectedFriendName)
+                    //putString(ARG_SELECTEDFRIENDNAME, selectedFriendName)
+                    // TODO check in listener
                 }
             }
     }

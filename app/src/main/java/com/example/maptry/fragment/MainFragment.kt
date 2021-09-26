@@ -132,6 +132,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 .into(menuIcon)
 
             layout.background = ContextCompat.getDrawable(this.requireContext(), R.drawable.layout_bg)
+
             activity?.let { a ->
                 Log.d(TAG, "autoCompleteFragment.view exists.")
                 menuIcon.setOnClickListener {
@@ -170,7 +171,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     .alpha(0.7f)
             )
-            markers[it.markId] = marker
+            marker?.let { mark ->
+                markers[it.markId] = mark
+            }
+
         }
 
         liveEventsList.forEach {
@@ -181,7 +185,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                     .alpha(0.7f)
             )
-            markers[it.id] = marker
+            marker?.let { mark ->
+                markers[it.id] = mark
+            }
+
         }
     }
 
