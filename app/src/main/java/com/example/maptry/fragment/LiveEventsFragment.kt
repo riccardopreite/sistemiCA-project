@@ -54,13 +54,13 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentLiveEventsBinding.bind(view)
 
-        binding.nolive.visibility = if(liveEventsList.isEmpty()) View.VISIBLE else View.INVISIBLE
+        binding.noLiveeventsItems.visibility = if(liveEventsList.isEmpty()) View.VISIBLE else View.INVISIBLE
 
         keepOnlyValidLiveEvents()
 
-        binding.lvLive.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
+        binding.liveeventsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
 
-        binding.lvLive.setOnItemClickListener { parent, v, position, id ->
+        binding.liveeventsListView.setOnItemClickListener { parent, v, position, id ->
             val selectedLiveEventName = parent.getItemAtPosition(position) as String
             val liveEvent = liveEventsList.first { it.name == selectedLiveEventName }
             val markerId = LatLng(liveEvent.latitude, liveEvent.longitude)

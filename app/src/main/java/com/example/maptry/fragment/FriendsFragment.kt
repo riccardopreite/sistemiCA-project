@@ -82,11 +82,11 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentFriendsBinding.bind(view)
 
-        binding.nofriend.visibility = if(friendsList.isEmpty()) View.VISIBLE else View.INVISIBLE
+        binding.noFriendsItems.visibility = if(friendsList.isEmpty()) View.VISIBLE else View.INVISIBLE
 
-        binding.fv.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, friendsList.map { it.friendUsername })
+        binding.friendsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, friendsList.map { it.friendUsername })
 
-        binding.fv.setOnItemLongClickListener { parent, v, position, id ->
+        binding.friendsListView.setOnItemLongClickListener { parent, v, position, id ->
             val eliminateFriendDialog = EliminateFriendDialogFragment()
 
             activity?.let {
@@ -96,7 +96,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
             return@setOnItemLongClickListener true
         }
 
-        binding.fv.setOnItemClickListener { parent, v, position, id ->
+        binding.friendsListView.setOnItemClickListener { parent, v, position, id ->
             val friendDialog = FriendDialogFragment.newInstance(parent.getItemAtPosition(position) as String)
             activity?.let {
                 friendDialog.show(it.supportFragmentManager, "FriendDialogFragment")

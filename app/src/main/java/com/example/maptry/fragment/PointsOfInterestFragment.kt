@@ -72,11 +72,11 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPointsOfInterestBinding.bind(view)
 
-        binding.nosrc.visibility = if(poisList.isEmpty()) View.VISIBLE else View.INVISIBLE
+        binding.noPoisItems.visibility = if(poisList.isEmpty()) View.VISIBLE else View.INVISIBLE
 
-        binding.lv.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, poisList.map { it.name })
+        binding.poisListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, poisList.map { it.name })
 
-        binding.lv.setOnItemLongClickListener { parent, v, position, id ->
+        binding.poisListView.setOnItemLongClickListener { parent, v, position, id ->
             val eliminatePoiDialog = EliminatePointOfInterestDialogFragment()
 
             activity?.let {
@@ -86,7 +86,7 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
             return@setOnItemLongClickListener true
         }
 
-        binding.lv.setOnItemClickListener { parent, v, position, id ->
+        binding.poisListView.setOnItemClickListener { parent, v, position, id ->
             selectedPoiName = parent.getItemAtPosition(position) as String
             arguments?.let {
                 it.putString(ARG_SELECTEDPOINAME, selectedPoiName)

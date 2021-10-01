@@ -30,8 +30,8 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentMainMenuBinding.bind(view)
-        binding.navView.setNavigationItemSelectedListener(this)
-        val navBar = binding.navView.getHeaderView(0)
+        binding.menuNavView.setNavigationItemSelectedListener(this)
+        val navBar = binding.menuNavView.getHeaderView(0)
 
         val icon = navBar.findViewById<ImageView>(R.id.imageView)
         val user = navBar.findViewById<TextView>(R.id.user)

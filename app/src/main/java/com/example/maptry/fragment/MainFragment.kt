@@ -104,10 +104,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
         _binding = FragmentMainBinding.bind(view)
 
-        val supportMapFragment = childFragmentManager.findFragmentById(binding.map.id) as SupportMapFragment
+        val supportMapFragment = childFragmentManager.findFragmentById(binding.googleMaps.id) as SupportMapFragment
         updateMapUI(supportMapFragment)
         supportMapFragment.getMapAsync(this)
-        val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+        val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.places_search_bar) as AutocompleteSupportFragment
         autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME))
 
         // Set up a PlaceSelectionListener to handle the response.

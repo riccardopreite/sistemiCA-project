@@ -2,40 +2,33 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:tag="FriendsFragment"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:id="@+id/friend_layout"
-    android:tag="FriendsFragment"
     android:background="#FAF6F6"
     android:fitsSystemWindows="true"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="fragment.FriendsFragment">
 
     <ImageView
-        android:id="@+id/close_listfriend"
+        android:id="@+id/close_friends_fragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
         android:contentDescription="@string/back"
         android:focusable="true"
-        android:onClick="closeDrawer"
         app:srcCompat="@drawable/ic_signout" />
 
     <ImageView
-        android:id="@+id/add_listfriend"
+        android:id="@+id/add_friend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
         android:contentDescription="@string/addfriend"
         android:focusable="true"
-        android:onClick="addFriend"
         app:srcCompat="@drawable/ic_addfriend" />
 
     <TextView
-        android:id="@+id/nofriend"
+        android:id="@+id/no_friends_items"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -45,7 +38,7 @@
         android:textSize="30sp" />
 
     <ListView
-        android:id="@+id/fv"
+        android:id="@+id/friends_list_view"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"/>
