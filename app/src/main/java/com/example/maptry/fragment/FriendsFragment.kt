@@ -38,15 +38,6 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     private var selectedFriendName: String? = null
     private var willDeleteFriend: Boolean? = null
 
-    // API
-    private val friends by lazy {
-        Friends
-    }
-
-    private val pois by lazy {
-        PointsOfInterest
-    }
-
     companion object {
         private val TAG: String = FriendsFragment::class.qualifiedName!!
 
@@ -148,8 +139,8 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            friends.removeFriend(removedFriend!!.friendUsername)
-            friends.getFriends(forceSync = true)
+            Friends.removeFriend(removedFriend!!.friendUsername)
+            Friends.getFriends(forceSync = true)
             CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
         }
     }
@@ -157,8 +148,8 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
     override fun onAddButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
         Log.v(TAG, "FriendPoiDialogListener.onAddButtonPressed")
         CoroutineScope(Dispatchers.IO).launch {
-            pois.addPointOfInterest(AddPointOfInterest(AddPointOfInterestPoi(poi)))
-            pois.getPointsOfInterest(forceSync = true)
+            PointsOfInterest.addPointOfInterest(AddPointOfInterest(AddPointOfInterestPoi(poi)))
+            PointsOfInterest.getPointsOfInterest(forceSync = true)
             CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
         }
     }

@@ -30,11 +30,6 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
     private var selectedPoiName: String? = null
     private var willDeletePoi: Boolean? = null
 
-    // API
-    private val pois by lazy {
-        PointsOfInterest
-    }
-
     companion object {
         private val TAG: String = PointsOfInterestFragment::class.qualifiedName!!
 
@@ -143,7 +138,7 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            pois.removePointOfInterest(removedPoi!!)
+            PointsOfInterest.removePointOfInterest(removedPoi!!)
             CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
         }
     }

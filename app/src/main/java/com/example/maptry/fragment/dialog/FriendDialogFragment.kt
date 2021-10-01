@@ -18,11 +18,6 @@ class FriendDialogFragment: DialogFragment() {
     // App state
     private lateinit var friendName: String
 
-    // API
-    private val pois by lazy {
-        PointsOfInterest
-    }
-
     companion object {
         private val TAG: String = FriendDialogFragment::class.qualifiedName!!
 
@@ -56,7 +51,7 @@ class FriendDialogFragment: DialogFragment() {
             friendNameTv.text = friendName
 
             CoroutineScope(Dispatchers.IO).launch {
-                val friendPois = pois.getPointsOfInterest(friendName)
+                val friendPois = PointsOfInterest.getPointsOfInterest(friendName)
                 val poiNamesList = MutableList(1) { "" }
                 poiNamesList.addAll(friendPois.map { p -> p.name })
 

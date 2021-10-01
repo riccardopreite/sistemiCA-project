@@ -26,7 +26,7 @@ class CreatePoiDialogFragment: DialogFragment() {
     // Listener
     interface CreatePoiDialogListener {
         fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent)
-        fun onAddPointOfInterest(dialog: DialogFragment, addPointOfInterest: AddPointOfInterestPoi)
+        fun onAddPointOfInterest(dialog: DialogFragment, addPointOfInterestPoi: AddPointOfInterestPoi)
     }
 
     internal lateinit var listener: CreatePoiDialogListener
@@ -37,15 +37,6 @@ class CreatePoiDialogFragment: DialogFragment() {
     private var address: String ?= null
     private var url: String ?= null
     private var phoneNumber: String ?= null
-
-    // API
-    private val liveEvents by lazy {
-        LiveEvents
-    }
-
-    private val pointsOfInterest by lazy {
-        PointsOfInterest
-    }
 
     companion object {
         private val TAG = CreatePoiDialogFragment::class.qualifiedName
@@ -147,7 +138,7 @@ class CreatePoiDialogFragment: DialogFragment() {
 
                 if(typeSpinner.selectedItem.toString() == "Live event") {
                     CoroutineScope(Dispatchers.IO).launch {
-                        if (liveEvents.getLiveEvents().any { le ->
+                        if (LiveEvents.getLiveEvents().any { le ->
                             return@any if(name == le.name || addressTv.text == le.address) {
                                 nameEt.background.mutate().apply {
                                     colorFilter = BlendModeColorFilter(
@@ -174,7 +165,7 @@ class CreatePoiDialogFragment: DialogFragment() {
 
                 // Point of Interest
                 CoroutineScope(Dispatchers.IO).launch {
-                    if(pointsOfInterest.getPointsOfInterest().any { poi ->
+                    if(PointsOfInterest.getPointsOfInterest().any { poi ->
                         return@any if(name == poi.name || addressTv.text == poi.address) {
                             nameEt.background.mutate().apply {
                                 colorFilter = BlendModeColorFilter(

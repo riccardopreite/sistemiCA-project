@@ -34,7 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity: AppCompatActivity(),
+class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
     CreatePoiDialogFragment.CreatePoiDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener {
@@ -51,14 +51,6 @@ class MainActivity: AppCompatActivity(),
         override fun onServiceDisconnected(arg0: ComponentName) {
             locationServiceIsBound = false
         }
-    }
-
-    private val pointsOfInterest by lazy {
-        PointsOfInterest
-    }
-
-    private val liveEvents by lazy {
-        LiveEvents
     }
 
 
@@ -93,16 +85,14 @@ class MainActivity: AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
         checkLocationPermissions()
     }
 
     private fun loadPoisAndLiveEvents(force: Boolean = false) {
         Log.v(TAG, "loadPoisAndLiveEvents")
         CoroutineScope(Dispatchers.IO).launch {
-            val poisList = pointsOfInterest.getPointsOfInterest(forceSync = force)
-            val leList = liveEvents.getLiveEvents(forceSync = force)
+            val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
+            val leList = LiveEvents.getLiveEvents(forceSync = force)
             val mainFragment = MainFragment.newInstance(poisList, leList)
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
@@ -257,7 +247,7 @@ class MainActivity: AppCompatActivity(),
     override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
         Log.v(MainFragment.TAG, "CreatePoiDialogListener.onAddLiveEvent")
         CoroutineScope(Dispatchers.IO).launch {
-            liveEvents.addLiveEvent(addLiveEvent)
+            LiveEvents.addLiveEvent(addLiveEvent)
 
             CoroutineScope(Dispatchers.Main).launch {
                 dialog.dismiss()
@@ -271,7 +261,7 @@ class MainActivity: AppCompatActivity(),
     ) {
         Log.v(MainFragment.TAG, "CreatePoiDialogListener.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
-            pointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
+            PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
 
             CoroutineScope(Dispatchers.Main).launch {
                 dialog.dismiss()

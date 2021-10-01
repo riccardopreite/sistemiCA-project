@@ -54,7 +54,6 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
 
         close.setOnClickListener {
             activity?.let {
-//                it.supportFragmentManager.popBackStack("MapFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
                 it.supportFragmentManager.popBackStack()
             }
         }

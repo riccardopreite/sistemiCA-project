@@ -10,8 +10,6 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.model.liveevents.LiveEvent
-import com.example.maptry.model.pointofinterests.PointOfInterest
-import org.w3c.dom.Text
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
 import java.time.LocalDateTime
