@@ -95,6 +95,13 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
             val markerId = LatLng(poi.latitude, poi.longitude)
             // TODO Sarebbe da invocare MapsActivity.onMarkerClick(mymarker[markerId]!!)
         }
+
+        binding.closePoisFragment.setOnClickListener {
+            activity?.let {
+                it.supportFragmentManager.popBackStack()
+                it.finish()
+            }
+        }
     }
 
     override fun onDestroyView() {

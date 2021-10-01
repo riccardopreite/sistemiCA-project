@@ -102,6 +102,13 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
                 friendDialog.show(it.supportFragmentManager, "FriendDialogFragment")
             }
         }
+
+        binding.closeFriendsFragment.setOnClickListener {
+            activity?.let {
+                it.supportFragmentManager.popBackStack()
+                it.finish()
+            }
+        }
     }
 
     override fun onDeleteButtonPressed(dialog: DialogFragment) {

@@ -66,6 +66,13 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
             val markerId = LatLng(liveEvent.latitude, liveEvent.longitude)
             // TODO Sarebbe da invocare MapsActivity.onMarkerClick(mymarker[markerId]!!)
         }
+
+        binding.closeLiveeventsFragment.setOnClickListener {
+            activity?.let {
+                it.supportFragmentManager.popBackStack()
+                it.finish()
+            }
+        }
     }
 
     override fun onDestroyView() {
