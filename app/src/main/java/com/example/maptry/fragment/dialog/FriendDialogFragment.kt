@@ -45,7 +45,7 @@ class FriendDialogFragment: DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_friend_view, null)
+            val dialogView = inflater.inflate(R.layout.dialog_friend, null)
             val friendNameTv = dialogView.findViewById<TextView>(R.id.friendNameTxt)
             val poisSpinner = dialogView.findViewById<Spinner>(R.id.planets_spinner_POI)
             friendNameTv.text = friendName

@@ -77,7 +77,7 @@ class CreatePoiDialogFragment: DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_list_view, null)
+            val dialogView = inflater.inflate(R.layout.dialog_create_poi, null)
             val typeSpinner = dialogView.findViewById<Spinner>(R.id.planets_spinner)
             val nameEt = dialogView.findViewById<EditText>(R.id.txt_lname)
             val addressTv = dialogView.findViewById<TextView>(R.id.txt_address)
