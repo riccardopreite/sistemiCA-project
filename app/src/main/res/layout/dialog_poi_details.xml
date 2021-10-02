@@ -40,14 +40,15 @@
                 android:background="@drawable/bottom_border">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:id="@+id/poi_address"
                     android:textColor="#000000"
-                    tools:text="@string/address" />
+                    android:text="@string/address"
+                    android:layout_centerVertical="true" />
 
                 <TextView
-                    android:layout_width="150dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:id="@+id/show_poi_address"
@@ -64,7 +65,7 @@
                 android:background="@drawable/bottom_border">
 
                 <TextView
-                    android:layout_width="150dp"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:text="@string/phone"
@@ -72,7 +73,7 @@
                     android:layout_centerVertical="true" />
 
                 <TextView
-                    android:layout_width="150dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#000000"
                     android:text="@string/notsetphone"
@@ -90,7 +91,7 @@
                 android:background="@drawable/bottom_border">
 
                 <TextView
-                    android:layout_width="150dp"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:text="@string/website"
                     android:textColor="#000000"
@@ -98,7 +99,7 @@
                     android:layout_centerVertical="true" />
 
                 <TextView
-                    android:layout_width="150dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/noteseturi"
                     android:textColor="#000000"

@@ -24,8 +24,10 @@ import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.MainFragment
 import com.example.maptry.fragment.dialog.CreatePoiOrLiveDialogFragment
+import com.example.maptry.fragment.dialog.LiveEventDetailsDialogFragment
 import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.AddLiveEvent
+import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
 import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
 import com.example.maptry.model.pointofinterests.PointOfInterest
@@ -37,7 +39,8 @@ import kotlinx.coroutines.launch
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
     CreatePoiOrLiveDialogFragment.CreatePoiDialogListener,
-    PoiDetailsDialogFragment.PoiDetailsDialogListener {
+    PoiDetailsDialogFragment.PoiDetailsDialogListener,
+    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -245,7 +248,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
-        Log.v(TAG, "CreatePoiDialogListener.onAddLiveEvent")
+        Log.v(TAG, "CreatePoiOrLiveDialogFragment.onAddLiveEvent")
         CoroutineScope(Dispatchers.IO).launch {
             LiveEvents.addLiveEvent(addLiveEvent)
 
@@ -259,7 +262,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         dialog: DialogFragment,
         addPointOfInterestPoi: AddPointOfInterestPoi
     ) {
-        Log.v(TAG, "CreatePoiDialogListener.onAddPointOfInterest")
+        Log.v(TAG, "CreatePoiOrLiveDialogFragment.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
             PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
 
@@ -283,5 +286,14 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
         dialog.dismiss()
         startActivity(intent)
+    }
+
+    override fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent) {
+        Log.v(TAG, "LiveEventDetailsDialogFragment.onShareButtonPressed")
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.type = "text/plain"
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ liveEvent.latitude +","+ liveEvent.longitude)
+        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo " + liveEvent.name)
+        ContextCompat.startActivity(this, createdIntent, null)
     }
 }

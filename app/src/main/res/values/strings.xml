@@ -51,7 +51,7 @@
     <string name="back">Back</string>
     <string name="button">Button</string>
     <string name="other_functionality">Other functionality?</string>
-    <string name="add">ADd</string>
+    <string name="send_friend_request">Send friend request</string>
     <string name="nosrc">No points of interest are registered!</string>
     <string name="nofriend">You have no friends yet!</string>
     <string name="title_activity_login">Sign in</string>
@@ -101,4 +101,7 @@
     <string name="location_service_description">Maptry Location Service for accessing the device location in real time.</string>
     <string name="location_permission_denied">Permission to use location services denied.</string>
     <string name="app_logo_description">App logo</string>
+    <string name="empty_username">You must type the e-mail of the user you want to send the friendship request to.</string>
+    <string name="no_request_to_oneself">You cannot send a user request to the same user you\'re logged in.</string>
+    <string name="friend_request_sent">Friend request sent.</string>
 </resources>

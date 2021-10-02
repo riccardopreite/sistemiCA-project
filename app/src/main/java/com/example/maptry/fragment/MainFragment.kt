@@ -97,7 +97,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
         Places.initialize(requireContext(),getString(R.string.places_api))
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
@@ -174,7 +173,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
             marker?.let { mark ->
                 markers[it.markId] = mark
             }
-
         }
 
         liveEventsList.forEach {

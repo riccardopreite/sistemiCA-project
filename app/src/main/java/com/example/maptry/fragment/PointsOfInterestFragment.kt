@@ -98,7 +98,6 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
 
         binding.closePoisFragment.setOnClickListener {
             activity?.let {
-//                it.supportFragmentManager.popBackStack()
                 it.finish()
             }
         }

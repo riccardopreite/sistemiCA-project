@@ -103,9 +103,15 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
             }
         }
 
+        binding.addFriend.setOnClickListener {
+            val addFriendDialog = null
+            activity?.let {
+                addFriendDialog
+            }
+        }
+
         binding.closeFriendsFragment.setOnClickListener {
             activity?.let {
-//                it.supportFragmentManager.popBackStack()
                 it.finish()
             }
         }

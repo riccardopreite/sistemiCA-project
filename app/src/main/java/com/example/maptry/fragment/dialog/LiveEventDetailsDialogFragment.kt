@@ -90,7 +90,7 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
         try {
             listener = context as LiveEventDetailsDialogListener
         } catch(e: ClassCastException) {
-            throw ClassCastException("$context must implement FriendPoiDialogListener")
+            throw ClassCastException("$context must implement LiveEventDetailsDialogListener")
         }
     }
 }
