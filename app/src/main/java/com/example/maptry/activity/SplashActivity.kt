@@ -27,7 +27,7 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
 
         RetrofitInstances.loadStore(resources.openRawResource(R.raw.mystore))
 
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+        val progressBar = findViewById<ProgressBar>(R.id.progress_bar)
         progressBar.visibility = View.VISIBLE
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {

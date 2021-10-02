@@ -15,7 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ListActivity: AppCompatActivity() {
+class ListActivity: AppCompatActivity(R.layout.activity_list) {
     companion object {
         val TAG: String = ListActivity::class.qualifiedName!!
     }
@@ -23,7 +23,6 @@ class ListActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_list)
         intent.extras?.let { extra ->
             when (extra.get("screen")){
                 R.id.friends_list -> {
@@ -52,16 +51,23 @@ class ListActivity: AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if(supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+        } else {
+            finish()
+        }
+    }
+
     private fun pushFragment(fragment: Fragment) {
         CoroutineScope(Dispatchers.Main).launch {
             supportFragmentManager.beginTransaction().apply {
                 replace(R.id.list_fragment, fragment)
                 setReorderingAllowed(true)
-                addToBackStack(fragment.tag)
+                // Setting null in the back stack implicitly disables the backbutton in the fragment.
+//                addToBackStack(null)
                 commit()
             }
         }
     }
-
-
 }

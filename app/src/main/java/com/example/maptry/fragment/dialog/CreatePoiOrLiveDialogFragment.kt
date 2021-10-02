@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
-class CreatePoiDialogFragment: DialogFragment() {
+class CreatePoiOrLiveDialogFragment: DialogFragment() {
     // Listener
     interface CreatePoiDialogListener {
         fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent)
@@ -39,7 +39,7 @@ class CreatePoiDialogFragment: DialogFragment() {
     private var phoneNumber: String ?= null
 
     companion object {
-        private val TAG = CreatePoiDialogFragment::class.qualifiedName
+        private val TAG = CreatePoiOrLiveDialogFragment::class.qualifiedName
 
         private const val ARG_LATITUDE = "latitude"
         private const val ARG_LONGITUDE = "longitude"
@@ -49,7 +49,7 @@ class CreatePoiDialogFragment: DialogFragment() {
 
         @JvmStatic
         fun newInstance(latitude: Double, longitude: Double, address: String? = null, url: String? = null, phoneNumber: String? = null) =
-            CreatePoiDialogFragment().apply {
+            CreatePoiOrLiveDialogFragment().apply {
                 arguments = Bundle().apply {
                     putDouble(ARG_LATITUDE, latitude)
                     putDouble(ARG_LONGITUDE, longitude)
@@ -77,17 +77,15 @@ class CreatePoiDialogFragment: DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_create_poi, null)
-            val typeSpinner = dialogView.findViewById<Spinner>(R.id.planets_spinner)
-            val nameEt = dialogView.findViewById<EditText>(R.id.txt_lname)
-            val addressTv = dialogView.findViewById<TextView>(R.id.txt_address)
-            val visibilityRg = dialogView.findViewById<RelativeLayout>(R.id.rl_gender)
-            val publicBtn = dialogView.findViewById<RadioButton>(R.id.rb_public)
-            val privateBtn = dialogView.findViewById<RadioButton>(R.id.rb_private)
-            val timePickerLayout = dialogView.findViewById<RelativeLayout>(R.id.timePicker)
-            val durationTp = dialogView.findViewById<TimePicker>(R.id.timePicker1)
-            // val addBtn = dialogView.findViewById<Button>(R.id.addBtn)
-            // val cancelBtn = dialogView.findViewById<Button>(R.id.removeBtn)
+            val dialogView = inflater.inflate(R.layout.dialog_create_poi_or_live, null)
+            val typeSpinner = dialogView.findViewById<Spinner>(R.id.edit_place_type)
+            val nameEt = dialogView.findViewById<EditText>(R.id.edit_place_name)
+            val addressTv = dialogView.findViewById<TextView>(R.id.edit_address)
+            val visibilityRg = dialogView.findViewById<RelativeLayout>(R.id.visibility_relative_layout)
+            val publicBtn = dialogView.findViewById<RadioButton>(R.id.edit_visibility_public)
+            val privateBtn = dialogView.findViewById<RadioButton>(R.id.edit_visibility_private)
+            val timePickerLayout = dialogView.findViewById<RelativeLayout>(R.id.live_duration_relative_layout)
+            val durationTp = dialogView.findViewById<TimePicker>(R.id.live_duration)
 
             durationTp.setIs24HourView(true)
             durationTp.apply {
@@ -151,7 +149,7 @@ class CreatePoiDialogFragment: DialogFragment() {
                         }) { return@launch }
                         val time = durationTp.hour * 60 + durationTp.minute
                         // val marker = createMarker(p0)
-                        listener.onAddLiveEvent(this@CreatePoiDialogFragment, AddLiveEvent(
+                        listener.onAddLiveEvent(this@CreatePoiOrLiveDialogFragment, AddLiveEvent(
                             time,
                             "",
                             name,
@@ -177,7 +175,7 @@ class CreatePoiDialogFragment: DialogFragment() {
                         } else { false }
                     }) { return@launch }
                     // val marker = createMarker(p0)
-                    listener.onAddPointOfInterest(this@CreatePoiDialogFragment, AddPointOfInterestPoi(
+                    listener.onAddPointOfInterest(this@CreatePoiOrLiveDialogFragment, AddPointOfInterestPoi(
                         addressTv.text.toString(),
                         typeSpinner.selectedItem.toString(),
                         latitude!!,

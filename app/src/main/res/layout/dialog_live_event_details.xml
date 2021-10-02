@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/live_event_linear_layout"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/live_event_name_header"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:ellipsize="end"
+                android:textColor="#000000"
+                android:textSize="17sp"
+                android:maxLines="3"
+                tools:text="@string/dialog_live_event_details"
+                android:textAlignment="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:textAllCaps="false"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:background="@drawable/bottom_border">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/live_event_address"
+                    android:textColor="#000000"
+                    tools:text="@string/address" />
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:id="@+id/show_live_event_address"
+                    android:layout_toEndOf="@+id/live_event_address"
+                    android:layout_centerVertical="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:id="@+id/ending_relative_layout"
+                android:background="@drawable/bottom_border">
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:text="@string/ending_on"
+                    android:id="@+id/ending"
+                    android:layout_centerVertical="true" />
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:id="@+id/show_ending"
+                    android:layout_toEndOf="@+id/ending"
+                    android:layout_centerVertical="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/owner_relative_layout"
+                android:padding="16dp"
+                android:background="@drawable/bottom_border">
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/owner"
+                    android:textColor="#000000"
+                    android:id="@+id/owner"
+                    android:layout_centerVertical="true" />
+
+                <TextView
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:id="@+id/show_owner"
+                    android:layout_toEndOf="@+id/owner"
+                    android:layout_centerVertical="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/actions_relative_layout"
+                android:layout_marginTop="32dp">
+
+                <Button
+                    android:id="@+id/share_live_event"
+                    android:layout_width="138dp"
+                    android:layout_height="34dp"
+                    android:layout_gravity="start"
+                    android:layout_marginStart="0dp"
+                    android:background="@drawable/layout_padding"
+                    android:drawableStart="@drawable/ic_share_blu"
+                    android:text="@string/share" />
+
+                <Button
+                    android:id="@+id/navigate_to_poi"
+                    android:layout_width="138dp"
+                    android:layout_height="34dp"
+                    android:layout_alignEnd="@+id/share_live_event"
+                    android:layout_alignParentEnd="true"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="0dp"
+                    android:background="@drawable/layout_paddingroute"
+                    android:drawableStart="@drawable/ic_route_start_svgrepo_com"
+                    android:text="@string/route" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

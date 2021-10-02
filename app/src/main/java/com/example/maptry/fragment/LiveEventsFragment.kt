@@ -69,7 +69,7 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
 
         binding.closeLiveeventsFragment.setOnClickListener {
             activity?.let {
-                it.supportFragmentManager.popBackStack()
+//                it.supportFragmentManager.popBackStack()
                 it.finish()
             }
         }

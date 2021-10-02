@@ -15,7 +15,7 @@ import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainBinding
-import com.example.maptry.fragment.dialog.CreatePoiDialogFragment
+import com.example.maptry.fragment.dialog.CreatePoiOrLiveDialogFragment
 import com.example.maptry.fragment.dialog.LiveEventDetailsDialogFragment
 import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.LiveEvent
@@ -56,7 +56,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     companion object {
-        val TAG = MainFragment::class.qualifiedName
+        private val TAG = MainFragment::class.qualifiedName
 
         private const val ARG_POISLIST = "poisList"
         private const val ARG_LIVEEVENTSLIST = "liveEventsList"
@@ -202,7 +202,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         val createPoiDialog = address?.let {
-            CreatePoiDialogFragment.newInstance(
+            CreatePoiOrLiveDialogFragment.newInstance(
                 positionOnMap.latitude,
                 positionOnMap.longitude,
                 it.getAddressLine(0),
@@ -210,11 +210,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 it.url
             )
         } ?: run {
-            CreatePoiDialogFragment.newInstance(positionOnMap.latitude, positionOnMap.longitude)
+            CreatePoiOrLiveDialogFragment.newInstance(positionOnMap.latitude, positionOnMap.longitude)
         }
 
         activity?.let {
-            createPoiDialog.show(it.supportFragmentManager, "CreatePoiDialogFragment")
+            createPoiDialog.show(it.supportFragmentManager, "CreatePoiOrLiveDialogFragment")
         }
     }
 

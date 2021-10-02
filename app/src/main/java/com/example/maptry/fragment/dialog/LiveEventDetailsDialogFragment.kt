@@ -55,23 +55,19 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_custom_view, null)
-            val titleTv = dialogView.findViewById<TextView>(R.id.headerattr)
-            val addressTv = dialogView.findViewById<TextView>(R.id.txt_addressattr)
-            val urlLbl: TextView = dialogView.findViewById(R.id.uri_lbl)
-            val urlTv = dialogView.findViewById<TextView>(R.id.uri_lblattr)
-            val phoneLbl = dialogView.findViewById<TextView>(R.id.phone_content)
-            val phoneTv = dialogView.findViewById<TextView>(R.id.phone_contentattr)
-            val addPoiToMyPoisBtn = dialogView.findViewById<Button>(R.id.addToPoisBtnattr)
-            val routeBtn = dialogView.findViewById<Button>(R.id.routeBtn)
+            val dialogView = inflater.inflate(R.layout.dialog_live_event_details, null)
+            val titleTv = dialogView.findViewById<TextView>(R.id.live_event_name_header)
+            val addressTv = dialogView.findViewById<TextView>(R.id.show_live_event_address)
+            val urlTv = dialogView.findViewById<TextView>(R.id.show_owner)
+            val phoneTv = dialogView.findViewById<TextView>(R.id.show_ending)
+            val addPoiToMyPoisBtn = dialogView.findViewById<Button>(R.id.share_live_event)
+            val routeBtn = dialogView.findViewById<Button>(R.id.navigate_to_poi)
 
-            titleTv.text = "Live: " + liveEvent.name
+            titleTv.text = getString(R.string.dialog_live_event_details, liveEvent.name)
             addressTv.text = liveEvent.address
-            phoneLbl.text = "Ending on"
             phoneTv.text = LocalDateTime.ofEpochSecond(liveEvent.expirationDate, 0, OffsetDateTime.now().offset).format(
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME
             )
-            urlLbl.text = "Owner"
             urlTv.text = liveEvent.owner
 
             addPoiToMyPoisBtn.setOnClickListener {

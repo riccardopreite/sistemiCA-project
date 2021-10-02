@@ -52,15 +52,15 @@ class PoiDetailsDialogFragment : DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_custom_view, null)
-            val titleTv = dialogView.findViewById<TextView>(R.id.headerattr)
-            val addressTv = dialogView.findViewById<TextView>(R.id.txt_addressattr)
-            val urlTv = dialogView.findViewById<TextView>(R.id.uri_lblattr)
-            val phoneTv = dialogView.findViewById<TextView>(R.id.phone_contentattr)
-            val shareBtn = dialogView.findViewById<Button>(R.id.shareButton)
-            val routeBtn = dialogView.findViewById<Button>(R.id.routeBtn)
+            val dialogView = inflater.inflate(R.layout.dialog_poi_details, null)
+            val titleTv = dialogView.findViewById<TextView>(R.id.poi_name_header)
+            val addressTv = dialogView.findViewById<TextView>(R.id.show_poi_address)
+            val urlTv = dialogView.findViewById<TextView>(R.id.show_website)
+            val phoneTv = dialogView.findViewById<TextView>(R.id.show_phone_number)
+            val shareBtn = dialogView.findViewById<Button>(R.id.share_poi)
+            val routeBtn = dialogView.findViewById<Button>(R.id.navigate_to_poi)
 
-            titleTv.text = poi.type + ": " + poi.name
+            titleTv.text = getString(R.string.dialog_poi_details, poi.name, poi.type)
             addressTv.text = poi.address
             urlTv.text = poi.url
             phoneTv.text = poi.phoneNumber

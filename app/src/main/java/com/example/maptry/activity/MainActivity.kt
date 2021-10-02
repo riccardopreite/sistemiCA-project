@@ -23,7 +23,7 @@ import com.example.maptry.R
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.MainFragment
-import com.example.maptry.fragment.dialog.CreatePoiDialogFragment
+import com.example.maptry.fragment.dialog.CreatePoiOrLiveDialogFragment
 import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
-    CreatePoiDialogFragment.CreatePoiDialogListener,
+    CreatePoiOrLiveDialogFragment.CreatePoiDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener {
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
@@ -245,7 +245,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {
-        Log.v(MainFragment.TAG, "CreatePoiDialogListener.onAddLiveEvent")
+        Log.v(TAG, "CreatePoiDialogListener.onAddLiveEvent")
         CoroutineScope(Dispatchers.IO).launch {
             LiveEvents.addLiveEvent(addLiveEvent)
 
@@ -259,7 +259,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         dialog: DialogFragment,
         addPointOfInterestPoi: AddPointOfInterestPoi
     ) {
-        Log.v(MainFragment.TAG, "CreatePoiDialogListener.onAddPointOfInterest")
+        Log.v(TAG, "CreatePoiDialogListener.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
             PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
 
@@ -270,7 +270,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
-        Log.v(MainFragment.TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
+        Log.v(TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
         val shareIntent = Intent(Intent.ACTION_SEND)
         shareIntent.type = "text/plain"
         shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ poi.latitude +","+ poi.longitude)
@@ -279,7 +279,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
-        Log.v(MainFragment.TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
+        Log.v(TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
         dialog.dismiss()
         startActivity(intent)

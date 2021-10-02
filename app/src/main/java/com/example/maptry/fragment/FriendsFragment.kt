@@ -105,7 +105,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
 
         binding.closeFriendsFragment.setOnClickListener {
             activity?.let {
-                it.supportFragmentManager.popBackStack()
+//                it.supportFragmentManager.popBackStack()
                 it.finish()
             }
         }

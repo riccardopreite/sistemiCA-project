@@ -8,7 +8,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/eliminateBtn"
+        android:id="@+id/delete_item"
         android:text="@string/elimina"
         android:drawableStart="@drawable/ic_close"
         android:layout_centerInParent="true"/>

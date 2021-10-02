@@ -35,7 +35,7 @@ class EliminatePointOfInterestDialogFragment: DialogFragment() {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
             val dialogView = inflater.inflate(R.layout.dialog_eliminate_item, null)
-            val deleteBtn = dialogView.findViewById<Button>(R.id.eliminateBtn)
+            val deleteBtn = dialogView.findViewById<Button>(R.id.delete_item)
 
             deleteBtn.setOnClickListener { view ->
                 listener.onDeleteButtonPressed(this)

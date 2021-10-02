@@ -1,10 +1,8 @@
 package com.example.maptry.activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import com.example.maptry.R
 import com.example.maptry.config.Auth
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
@@ -29,23 +27,6 @@ class LoginActivity : AppCompatActivity() {
          * First the user tries to login via Google through the Android system interface.
          * Then the user is logged in (perhaps even registered if they are not) onto Firebase.
          */
-//        CoroutineScope(Dispatchers.IO).launch {
-//            if(Auth.isUserAuthenticated()) {
-//                Log.i(TAG, "The user has already logged in.")
-//                setResult(Auth.getLoginSuccessResultCode())
-//                val username = Auth.getUsername()
-//                username?.let {
-//                    Friends.setUserId(username)
-//                    LiveEvents.setUserId(username)
-//                    PointsOfInterest.setUserId(username)
-//                }
-//                finish()
-//            } else {
-//                CoroutineScope(Dispatchers.Main).launch {
-//                    startActivityForResult(Auth.signInIntent(this@LoginActivity), Auth.getLoginSystemRequestCode())
-//                }
-//            }
-//        }
         startActivityForResult(Auth.signInIntent(this@LoginActivity), Auth.getLoginSystemRequestCode())
     }
 

@@ -26,7 +26,7 @@ class FriendPoiDialogFragment: DialogFragment() {
     private lateinit var friendPoi: PointOfInterest
 
     companion object {
-        private val TAG = FriendDialogFragment::class.qualifiedName
+        private val TAG = FriendPoiDialogFragment::class.qualifiedName
 
         private const val ARG_FRIENDPOI = "friendPoi"
 
@@ -52,15 +52,15 @@ class FriendPoiDialogFragment: DialogFragment() {
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_custom_friend_poi, null)
-            val titleTv = dialogView.findViewById<TextView>(R.id.headerattr)
+            val dialogView = inflater.inflate(R.layout.dialog_friend_poi, null)
+            val titleTv = dialogView.findViewById<TextView>(R.id.poi_name_header)
             val addressTv = dialogView.findViewById<TextView>(R.id.txt_addressattr)
             val urlTv = dialogView.findViewById<TextView>(R.id.uri_lblattr)
             val phoneTv = dialogView.findViewById<TextView>(R.id.phone_contentattr)
             val addPoiToMyPoisBtn = dialogView.findViewById<Button>(R.id.addToPoisBtnattr)
             val routeBtn = dialogView.findViewById<Button>(R.id.routeBtn)
 
-            titleTv.text = friendPoi.type + ": " + friendPoi.name
+            titleTv.text = getString(R.string.dialog_friend_poi_header, friendPoi.name, friendPoi.type)
             addressTv.text = friendPoi.address
             urlTv.text = friendPoi.url
             phoneTv.text = friendPoi.phoneNumber
