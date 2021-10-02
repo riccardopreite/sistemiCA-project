@@ -11,19 +11,19 @@
             android:id="@+id/pois_list"
             android:icon="@drawable/ic_list"
             android:title="@string/list"
-            app:showAsAction="always"/>
+            app:showAsAction="ifRoom"/>
 
         <item
             android:id="@+id/friends_list"
             android:icon="@drawable/ic_friend_black"
             android:title="@string/friend"
-            app:showAsAction="always"/>
+            app:showAsAction="ifRoom"/>
 
         <item
             android:id="@+id/lives_list"
             android:icon="@drawable/ic_live"
             android:title="@string/live"
-            app:showAsAction="always"/>
+            app:showAsAction="ifRoom"/>
 
     </group>
 
