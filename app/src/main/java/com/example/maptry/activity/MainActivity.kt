@@ -100,7 +100,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
                     replace(R.id.main_fragment, mainFragment)
-                    addToBackStack("MainFragment")
+                    setReorderingAllowed(true)
                     commit()
                 }
             }
@@ -274,11 +274,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
         Log.v(TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
-        val shareIntent = Intent(Intent.ACTION_SEND)
-        shareIntent.type = "text/plain"
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ poi.latitude +","+ poi.longitude)
-        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo " + poi.name)
-        ContextCompat.startActivity(this, createdIntent, null)
+        sharePlace(poi.name, poi.address, poi.latitude, poi.longitude)
     }
 
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
@@ -290,10 +286,15 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     override fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent) {
         Log.v(TAG, "LiveEventDetailsDialogFragment.onShareButtonPressed")
-        val shareIntent = Intent(Intent.ACTION_SEND)
-        shareIntent.type = "text/plain"
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "https://maps.google.com/?q="+ liveEvent.latitude +","+ liveEvent.longitude)
-        val createdIntent = Intent.createChooser(shareIntent,"Stai condividendo " + liveEvent.name)
+        sharePlace(liveEvent.name, liveEvent.address, liveEvent.latitude, liveEvent.longitude)
+    }
+
+    private fun sharePlace(name: String, address: String, latitude: Double, longitude: Double) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_place, name, address, latitude, longitude))
+        }
+        val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
         ContextCompat.startActivity(this, createdIntent, null)
     }
 }

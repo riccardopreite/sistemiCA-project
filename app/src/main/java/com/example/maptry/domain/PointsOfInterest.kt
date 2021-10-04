@@ -49,10 +49,11 @@ object PointsOfInterest {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} points of interest of user $user.")
+            pointsOfInterest.clear()
             pointsOfInterest.addAll(response.body()!!)
             return pointsOfInterest
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
 
         return emptyList()
@@ -84,7 +85,7 @@ object PointsOfInterest {
             Log.i(TAG, "Point of interest successfully added.")
             return response.body()!!
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
 
         return ""
@@ -105,7 +106,7 @@ object PointsOfInterest {
         if(response.isSuccessful) {
             Log.i(TAG, "Point of interest successfully removed.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
     }
 }

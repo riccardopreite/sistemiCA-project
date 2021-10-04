@@ -85,13 +85,9 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
             val publicBtn = dialogView.findViewById<RadioButton>(R.id.edit_visibility_public)
             val privateBtn = dialogView.findViewById<RadioButton>(R.id.edit_visibility_private)
             val timePickerLayout = dialogView.findViewById<RelativeLayout>(R.id.live_duration_relative_layout)
-            val durationTp = dialogView.findViewById<TimePicker>(R.id.live_duration)
+            val liveDurationLbl = dialogView.findViewById<TextView>(R.id.live_duration)
+            val durationTp = dialogView.findViewById<TimePicker>(R.id.edit_live_duration)
 
-            durationTp.setIs24HourView(true)
-            durationTp.apply {
-                hour = 3
-                minute = 0
-            }
             if(address != null) {
                 addressTv.text = address
             }
@@ -106,7 +102,13 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                     val type = parent?.getItemAtPosition(position) as String
                     durationTp.setIs24HourView(true)
                     if(type == "Live event") {
+                        durationTp.setIs24HourView(true)
+                        durationTp.apply {
+                            hour = 3
+                            minute = 0
+                        }
                         visibilityRg.visibility = View.GONE
+                        liveDurationLbl.visibility = View.VISIBLE
                         timePickerLayout.visibility = View.VISIBLE
                     } else {
                         timePickerLayout.visibility = View.GONE
@@ -116,7 +118,7 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
 
-            builder.setPositiveButton(R.string.send_friend_request) { dialog, arg ->
+            builder.setPositiveButton(R.string.create_poi) { dialog, arg ->
                 val name = nameEt.text.toString()
                 if(name == "") {
                     nameEt.background.mutate().apply {

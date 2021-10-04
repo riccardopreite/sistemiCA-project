@@ -1,7 +1,10 @@
 package com.example.maptry.activity
 
+import android.content.Context
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
@@ -15,6 +18,7 @@ import com.example.maptry.fragment.LiveEventsFragment
 import com.example.maptry.fragment.PointsOfInterestFragment
 import com.example.maptry.fragment.dialog.AddFriendDialogFragment
 import com.example.maptry.model.friends.Friend
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,10 +35,14 @@ class ListActivity: AppCompatActivity(R.layout.activity_list),
         intent.extras?.let { extra ->
             when (extra.get("screen")){
                 R.id.friends_list -> {
+                    // Using findViewById(android.R.id.content) is a workaround for accessing a view instance
+                    val snackbar = Snackbar.make(findViewById(android.R.id.content), R.string.loading_friends, Snackbar.LENGTH_INDEFINITE)
+                    snackbar.show()
                     CoroutineScope(Dispatchers.IO).launch {
                         val friendList = Friends.getFriends(forceSync = true)
                         val listFragment = FriendsFragment.newInstance(friendList)
                         pushFragment(listFragment)
+                        CoroutineScope(Dispatchers.Main).launch { snackbar.dismiss() }
                     }
                 }
                 R.id.pois_list -> {

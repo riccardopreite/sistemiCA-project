@@ -48,6 +48,7 @@ object LiveEvents {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} live events.")
+            liveEvents.clear()
             liveEvents.addAll(response.body()!!)
             return liveEvents
         } else {

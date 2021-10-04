@@ -50,10 +50,11 @@ object Friends {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} friends.")
+            friends.clear()
             friends.addAll(response.body()!!)
             return friends
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
 
         return emptyList()
@@ -74,7 +75,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request to $friendUsername successfully sent.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
     }
 
@@ -93,7 +94,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
     }
 
@@ -112,7 +113,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend with username $friendUsername successfully removed.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
     }
 }
