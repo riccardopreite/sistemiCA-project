@@ -81,6 +81,11 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    /**
+     * Callback for updating the map.
+     */
+    lateinit var onLocationUpdated: (Location) -> Unit
+
     companion object {
         val TAG: String = MainActivity::class.qualifiedName!!
     }
@@ -97,6 +102,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = LiveEvents.getLiveEvents(forceSync = force)
             val mainFragment = MainFragment.newInstance(poisList, leList)
+            onLocationUpdated = mainFragment::onCurrentLocationUpdated
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
                     replace(R.id.main_fragment, mainFragment)
@@ -245,6 +251,9 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     override fun onLocationChanged(service: Service, location: Location) {
         Log.d(TAG, "Location reached MainActivity: $location")
+        if(this::onLocationUpdated.isInitialized) {
+            onLocationUpdated(location)
+        }
     }
 
     override fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent) {

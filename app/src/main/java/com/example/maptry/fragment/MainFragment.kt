@@ -21,6 +21,7 @@ import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.gms.common.api.Status
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
@@ -40,7 +41,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
     GoogleMap.OnMapClickListener,
     GoogleMap.OnMarkerClickListener,
     GoogleMap.OnMyLocationClickListener {
-
     // UI
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
@@ -54,6 +54,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private val geocoder by lazy {
         Geocoder(this.requireContext())
     }
+    private lateinit var map: GoogleMap
 
     companion object {
         private val TAG = MainFragment::class.qualifiedName
@@ -158,12 +159,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
     @SuppressLint("PotentialBehaviorOverride") // per setOnMarkerClickListener
     override fun onMapReady(googleMap: GoogleMap) {
         Log.v(TAG, "OnMapReadyCallback.onMapReady")
-        googleMap.setOnMarkerClickListener(this)
-        googleMap.setOnMapClickListener(this)
-        googleMap.setOnMyLocationClickListener(this)
+        this.map = googleMap
+        map.setOnMarkerClickListener(this)
+        map.setOnMapClickListener(this)
+        map.setOnMyLocationClickListener(this)
 
         poisList.forEach {
-            val marker = googleMap.addMarker(
+            val marker = map.addMarker(
                 MarkerOptions()
                     .position(LatLng(it.latitude, it.longitude))
                     .title(it.name + " - " + it.address)
@@ -249,6 +251,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
     override fun onMyLocationClick(location: Location) {
         Log.v(TAG, "GoogleMap.OnMyLocationClickListener.onMyLocationClick")
         TODO("Not yet implemented")
+    }
+
+    fun onCurrentLocationUpdated(location: Location) {
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 17F))
     }
 
     private fun updateMapUI(supportMapFragment: SupportMapFragment) {
