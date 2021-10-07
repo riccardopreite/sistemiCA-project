@@ -6,7 +6,11 @@ import android.util.Log
 import com.example.maptry.config.Auth
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.Notification
+import com.example.maptry.domain.Notification.addNotificationToken
 import com.example.maptry.domain.PointsOfInterest
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,6 +48,26 @@ class LoginActivity : AppCompatActivity() {
                         Friends.setUserId(username)
                         LiveEvents.setUserId(username)
                         PointsOfInterest.setUserId(username)
+                        Notification.setUserId(username)
+
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener(
+                            OnCompleteListener { task ->
+                            if (!task.isSuccessful) {
+                                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                                return@OnCompleteListener
+                            }
+
+                            // Get new FCM registration token
+                            val token = task.result
+                            println("TOKEN")
+                            println(token)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                addNotificationToken(token)
+                            }
+
+
+                        })
+
                     }
                 } else {
                     setResult(Auth.getLoginFailureResultCode())

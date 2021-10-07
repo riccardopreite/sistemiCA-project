@@ -101,6 +101,7 @@ object Auth {
         fun loadAuthenticationManager() {
             Log.v(TAG, "Firebase.loadAuthenticationManager")
             authManager = FirebaseAuth.getInstance()
+
         }
 
         fun signIn(googleCredential: AuthCredential): Task<AuthResult> = authManager.signInWithCredential(googleCredential)

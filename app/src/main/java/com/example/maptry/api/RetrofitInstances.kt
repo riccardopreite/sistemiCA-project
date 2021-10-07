@@ -45,7 +45,8 @@ object RetrofitInstances {
                     .newBuilder()
                     .addHeader("Authorization", "Bearer " + Auth.getToken())
                     .build()
-
+                println("TOKEEEEEEEEEEEEEEEN")
+                println("Bearer " + Auth.getToken())
                 chain.proceed(request)
             }).build()
     }
@@ -71,5 +72,10 @@ object RetrofitInstances {
     val pointOfInterestsApi: PointOfInterestsApi by lazy {
         retrofitBuilder
             .create(PointOfInterestsApi::class.java)
+    }
+
+    val notificationApi: NotificationApi by lazy {
+        retrofitBuilder
+            .create(NotificationApi::class.java)
     }
 }
