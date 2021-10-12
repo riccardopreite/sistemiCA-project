@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import com.example.maptry.config.Auth
+import com.example.maptry.config.PushNotification
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.Notification
@@ -50,24 +51,9 @@ class LoginActivity : AppCompatActivity() {
                         PointsOfInterest.setUserId(it)
                         Notification.setUserId(it)
 
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener(
-                            OnCompleteListener { task ->
-                            if (!task.isSuccessful) {
-                                Log.w(TAG, "Fetching FCM registration token failed", task.exception)
-                                return@OnCompleteListener
-                            }
-
-                            // Get new FCM registration token
-                            val token = task.result
-                            println("TOKEN")
-                            println(token)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                addNotificationToken(token)
-                            }
-
-
-                        })
-
+                        // Loading the notification manager (doing it now since we
+                        // are sure every field for the user in the database is set.
+                        PushNotification.loadNotificationManager()
                     }
                 } else {
                     setResult(Auth.getLoginFailureResultCode())
