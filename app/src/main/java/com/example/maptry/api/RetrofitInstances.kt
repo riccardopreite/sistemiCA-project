@@ -21,7 +21,7 @@ object RetrofitInstances {
     fun loadStore(rawStore: InputStream) {
         trustStore.load(rawStore, keyPair.toCharArray())
     }
-//
+
     private val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
         init(trustStore)
     }
@@ -45,8 +45,6 @@ object RetrofitInstances {
                     .newBuilder()
                     .addHeader("Authorization", "Bearer " + Auth.getToken())
                     .build()
-                println("TOKEEEEEEEEEEEEEEEN")
-                println("Bearer " + Auth.getToken())
                 chain.proceed(request)
             }).build()
     }

@@ -45,10 +45,10 @@ class LoginActivity : AppCompatActivity() {
                     setResult(Auth.getLoginSuccessResultCode())
                     val username = Auth.getUsername()
                     username?.let {
-                        Friends.setUserId(username)
-                        LiveEvents.setUserId(username)
-                        PointsOfInterest.setUserId(username)
-                        Notification.setUserId(username)
+                        Friends.setUserId(it)
+                        LiveEvents.setUserId(it)
+                        PointsOfInterest.setUserId(it)
+                        Notification.setUserId(it)
 
                         FirebaseMessaging.getInstance().token.addOnCompleteListener(
                             OnCompleteListener { task ->
