@@ -118,7 +118,7 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
 
-            builder.setPositiveButton(R.string.create_poi) { dialog, arg ->
+            builder.setPositiveButton(R.string.create_poi_or_live) { dialog, arg ->
                 val name = nameEt.text.toString()
                 if(name == "") {
                     nameEt.background.mutate().apply {

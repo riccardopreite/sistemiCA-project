@@ -18,7 +18,7 @@
     <string name="pubblico">Public</string>
     <string name="travelling">Travelling</string>
     <string name="privato">Private</string>
-    <string name="custom_btn">Add Point of Interest</string>
+<!--    <string name="custom_btn">Add point of interest</string>-->
     <string name="nome">Name</string>
     <string name="tipo">Visibility</string>
     <string name="gender">Gender</string>
@@ -52,7 +52,7 @@
     <string name="back">Back</string>
     <string name="button">Button</string>
     <string name="other_functionality">Other functionality?</string>
-    <string name="create_poi">Add point of interest</string>
+    <string name="create_poi_or_live">Create</string>
     <string name="send_friend_request">Send friend request</string>
     <string name="nosrc">No points of interest are registered!</string>
     <string name="nofriend">You have no friends yet!</string>
