@@ -23,7 +23,15 @@ object Notification {
     }
 
     suspend fun addNotificationToken(token: String) {
-        Log.v(TAG, "removePointOfInterest")
+        Log.v(TAG, "addNotificationToken")
+        if(!this::userId.isInitialized) {
+            // This occurs when the app has just been installed and
+            // this method is called from inside PushNotificationService.
+            // It will fail for sure for being then called once again
+            // inside LoginActivity, perhaps successfully.
+            Log.w(TAG, "Property userId was not yet initialized.")
+            return
+        }
         val response = try {
             api.addNotificationToken(NotificationToken(userId, token))
         } catch (e: IOException) {

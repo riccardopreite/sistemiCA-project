@@ -254,6 +254,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     fun onCurrentLocationUpdated(location: Location) {
+        if(!this::map.isInitialized) {
+            Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current position.")
+            return
+        }
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 17F))
     }
 

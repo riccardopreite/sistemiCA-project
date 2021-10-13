@@ -20,12 +20,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
+import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.MainFragment
-import com.example.maptry.fragment.dialog.CreatePoiOrLiveDialogFragment
-import com.example.maptry.fragment.dialog.LiveEventDetailsDialogFragment
-import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
+import com.example.maptry.fragment.dialog.*
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
@@ -40,7 +39,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
     CreatePoiOrLiveDialogFragment.CreatePoiDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
-    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
+    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener,
+    FriendDialogFragment.FriendDialogListener {
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -305,5 +305,23 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
         val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
         ContextCompat.startActivity(this, createdIntent, null)
+    }
+
+    override fun onPointOfInterestSelected(
+        dialog: DialogFragment,
+        friendPoi: PointOfInterest
+    ) {
+        val friendPoiDialog = FriendPoiDialogFragment.newInstance(friendPoi)
+        dialog.dismiss()
+        friendPoiDialog.show(
+            supportFragmentManager,
+            "FriendPoiDialogFragment"
+        )
+    }
+
+    override fun removeFriend(dialog: DialogFragment, friendUsername: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            Friends.removeFriend(friendUsername)
+        }
     }
 }

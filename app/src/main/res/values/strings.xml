@@ -55,6 +55,7 @@
     <string name="create_poi_or_live">Create</string>
     <string name="send_friend_request">Send friend request</string>
     <string name="nosrc">No points of interest are registered!</string>
+    <string name="no_poi_selected">No point of interest selected</string>
     <string name="nofriend">You have no friends yet!</string>
     <string name="title_activity_login">Sign in</string>
     <string name="prompt_email">E-mail</string>
@@ -87,7 +88,7 @@
     <string name="addFriend">Accept</string>
     <string name="delete">Refuse</string>
     <string name="friendheader">New friend request</string>
-    <string name="removeFriend">Remove</string>
+    <string name="remove_friend">Remove friend</string>
     <string name="selected_friend_poi">Point of interest:</string>
     <string name="car">Auto</string>
     <string name="live">Live</string>

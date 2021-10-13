@@ -15,6 +15,7 @@ import com.example.maptry.fragment.dialog.FriendDialogFragment
 import com.example.maptry.fragment.dialog.FriendPoiDialogFragment
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.PointsOfInterest
+import com.example.maptry.fragment.dialog.AddFriendDialogFragment
 import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
 import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
@@ -104,9 +105,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         }
 
         binding.addFriend.setOnClickListener {
-            val addFriendDialog = null
+            val addFriendDialog = AddFriendDialogFragment()
             activity?.let {
-                addFriendDialog
+                addFriendDialog.show(it.supportFragmentManager, "AddFriendDialogFragment")
             }
         }
 

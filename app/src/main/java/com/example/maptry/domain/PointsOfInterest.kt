@@ -109,4 +109,16 @@ object PointsOfInterest {
             Log.e(TAG, response.errorBody().toString())
         }
     }
+
+    fun removePointOfInterestLocally(pointOfInterest: PointOfInterest) {
+        Log.v(TAG, "removePointOfInterestLocally")
+
+        pointsOfInterest.remove(pointOfInterest)
+    }
+
+    fun addPointOfInterestLocally(pointOfInterest: PointOfInterest) {
+        Log.v(TAG, "addPointOfInterestLocally")
+
+        pointsOfInterest.add(pointOfInterest)
+    }
 }
