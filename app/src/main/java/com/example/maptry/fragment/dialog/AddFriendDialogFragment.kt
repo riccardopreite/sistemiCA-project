@@ -58,7 +58,7 @@ class AddFriendDialogFragment: DialogFragment() {
         super.onAttach(context)
 
         try {
-            listener = context as AddFriendDialogFragment.AddFriendDialogListener
+            listener = context as AddFriendDialogListener
         } catch(e: ClassCastException) {
             throw ClassCastException("$context must implement AddFriendDialogListener")
         }

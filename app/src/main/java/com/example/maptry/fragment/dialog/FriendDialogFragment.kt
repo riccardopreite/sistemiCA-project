@@ -2,6 +2,7 @@ package com.example.maptry.fragment.dialog
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,12 +10,22 @@ import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.domain.PointsOfInterest
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class FriendDialogFragment: DialogFragment() {
+    // Listener
+    interface FriendDialogListener {
+        fun onPointOfInterestSelected(dialog: DialogFragment, friendPoi: PointOfInterest)
+        fun removeFriend(dialog: DialogFragment, friendUsername: String)
+    }
+
+    internal lateinit var listener: FriendDialogListener
+
     // App state
     private lateinit var friendName: String
 
@@ -48,36 +59,67 @@ class FriendDialogFragment: DialogFragment() {
             val dialogView = inflater.inflate(R.layout.dialog_friend, null)
             val friendNameTv = dialogView.findViewById<TextView>(R.id.show_friend_name)
             val poisSpinner = dialogView.findViewById<Spinner>(R.id.select_friend_poi)
+            val removeFriendBtn = dialogView.findViewById<Button>(R.id.remove_friend)
             friendNameTv.text = friendName
+
+            removeFriendBtn.setOnClickListener {
+                listener.removeFriend(this, friendName)
+            }
 
             CoroutineScope(Dispatchers.IO).launch {
                 val friendPois = PointsOfInterest.getPointsOfInterest(friendName)
-                val poiNamesList = MutableList(1) { "" }
+                val poiNamesList = MutableList(1) { getString(R.string.no_poi_selected) }
                 poiNamesList.addAll(friendPois.map { p -> p.name })
 
-                poisSpinner.adapter = ArrayAdapter(it, R.layout.support_simple_spinner_dropdown_item, poiNamesList)
-                poisSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                        val selectedPoiName = parent?.getItemAtPosition(position) as String
-                        if(selectedPoiName == "") {
-                            return
+                CoroutineScope(Dispatchers.Main).launch {
+                    poisSpinner.adapter = ArrayAdapter(
+                        it,
+                        R.layout.support_simple_spinner_dropdown_item,
+                        poiNamesList
+                    )
+                    poisSpinner.onItemSelectedListener =
+                        object : AdapterView.OnItemSelectedListener {
+                            override fun onItemSelected(
+                                parent: AdapterView<*>?,
+                                view: View?,
+                                position: Int,
+                                id: Long
+                            ) {
+                                val selectedPoiName = parent?.getItemAtPosition(position) as String
+                                Log.d(TAG, "Selected: $selectedPoiName")
+                                if (selectedPoiName == getString(R.string.no_poi_selected)) {
+                                    Log.w(TAG, "Selected a placeholder point. Not displaying it!")
+                                    return
+                                }
+
+                                val friendPoi = friendPois.first { p -> p.name == selectedPoiName }
+                                Log.d(TAG, friendPoi.toString())
+
+                                Log.d(TAG, "$listener")
+                                listener.onPointOfInterestSelected(this@FriendDialogFragment, friendPoi)
+                            }
+
+                            override fun onNothingSelected(parent: AdapterView<*>?) {
+                                Log.v(TAG, "poisSpinner.onNothingSelected triggered.")
+                            }
                         }
-
-                        val friendPoi = friendPois.first { p -> p.name == selectedPoiName }
-
-                        val friendPoiDialog = FriendPoiDialogFragment.newInstance(friendPoi)
-
-                        friendPoiDialog.show(it.supportFragmentManager, "FriendPoiDialogFragment")
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-                        Log.v(TAG, "poisSpinner.onNothingSelected triggered.")
-                    }
                 }
             }
 
             builder.setView(dialogView)
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onAttach(context: Context) {
+        Log.v(TAG, "onAttach")
+        super.onAttach(context)
+
+        try {
+            Log.d(TAG,"Context: $context")
+            listener = context as FriendDialogListener
+        } catch(e: ClassCastException) {
+            throw ClassCastException("$context must implement FriendDialogListener")
+        }
     }
 }

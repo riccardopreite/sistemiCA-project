@@ -1,5 +1,6 @@
 package com.example.maptry.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,34 +11,34 @@ import com.example.maptry.R
 import com.example.maptry.databinding.FragmentPointsOfInterestBinding
 import com.example.maptry.fragment.dialog.EliminatePointOfInterestDialogFragment
 import com.example.maptry.domain.PointsOfInterest
+import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.ClassCastException
 
 
-class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest),
-EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
+class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) {
+    // Listener
+    interface PointsOfInterestDialogListener {
+        fun onPoiSelected(fragment: Fragment, poiName: String)
+    }
+
+    internal lateinit var listener: PointsOfInterestDialogListener
+
     // UI
     private var _binding: FragmentPointsOfInterestBinding? = null
     private val binding get() = _binding!!
 
     // App state
     private lateinit var poisList: MutableList<PointOfInterest>
-    private var removedPoi: PointOfInterest? = null
-    private var poiPosition: Int? = null
-    private var selectedPoiName: String? = null
-    private var willDeletePoi: Boolean? = null
 
     companion object {
         private val TAG: String = PointsOfInterestFragment::class.qualifiedName!!
 
         private const val ARG_POISLIST = "poisList"
-        private const val ARG_REMOVEDPOI = "removedPoi"
-        private const val ARG_POIPOSITION = "poiPosition"
-        private const val ARG_SELECTEDPOINAME = "selectedPoiName"
-        private const val ARG_WILLDELETEPOI = "willDeletePoi"
 
         @JvmStatic
         fun newInstance(pois: List<PointOfInterest>) =
@@ -60,10 +61,6 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
                 Log.e(TAG, "poisList inside savedInstanceState was null. Loading an emptyList.")
                 poisList = emptyList<PointOfInterest>().toMutableList()
             }
-            removedPoi = it.getParcelable(ARG_REMOVEDPOI)
-            poiPosition = it.getInt(ARG_POIPOSITION)
-            selectedPoiName = it.getString(ARG_SELECTEDPOINAME)
-            willDeletePoi = it.getBoolean(ARG_WILLDELETEPOI)
         }
     }
 
@@ -87,12 +84,9 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         }
 
         binding.poisListView.setOnItemClickListener { parent, v, position, id ->
-            selectedPoiName = parent.getItemAtPosition(position) as String
-            arguments?.let {
-                it.putString(ARG_SELECTEDPOINAME, selectedPoiName)
-            }
-            val poi = poisList.first { it.name == selectedPoiName }
-            val markerId = LatLng(poi.latitude, poi.longitude)
+            val selectedPoiName = parent.getItemAtPosition(position) as String
+            listener.onPoiSelected(this, selectedPoiName)
+//            val markerId = LatLng(poi.latitude, poi.longitude)
             // TODO Sarebbe da invocare MapsActivity.onMarkerClick(mymarker[markerId]!!)
         }
 
@@ -109,43 +103,14 @@ EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener {
         _binding = null
     }
 
-    override fun onDeleteButtonPressed(dialog: DialogFragment) {
-        Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeleteButtonPressed")
-        removedPoi = poisList.first { it.name == selectedPoiName }
-        poiPosition = poisList.indexOf(removedPoi)
-        willDeletePoi = true // TODO Non necessario se tutto va correttamente
-        poisList.removeAt(poiPosition!!)
+    override fun onAttach(context: Context) {
+        Log.v(TAG, "onAttach")
+        super.onAttach(context)
 
-        arguments?.let {
-            it.putParcelable(ARG_REMOVEDPOI, removedPoi)
-            it.putInt(ARG_POIPOSITION, poiPosition!!)
-            it.putBoolean(ARG_WILLDELETEPOI, willDeletePoi!!)
-            it.putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
-        }
-
-        CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
-    }
-
-    override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
-        Log.v(TAG, "EliminatePointOfInterestDialogListener.onCancelDeletionButtonPressed")
-        willDeletePoi = false
-        poisList.add(poiPosition!!, removedPoi!!)
-
-        arguments?.let {
-            it.putBoolean(ARG_WILLDELETEPOI, willDeletePoi!!)
-            it.putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
-        }
-    }
-
-    override fun onDeletionConfirmation(dialog: DialogFragment) {
-        Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeletionConfirmation")
-        if(!(willDeletePoi!!)) {
-            return
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            PointsOfInterest.removePointOfInterest(removedPoi!!)
-            CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
+        try {
+            listener = context as PointsOfInterestDialogListener
+        } catch(e: ClassCastException) {
+            throw ClassCastException("$context must implement PointsOfInterestDialogListener")
         }
     }
 }

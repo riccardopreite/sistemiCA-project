@@ -10,6 +10,8 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
+import com.example.maptry.fragment.PointsOfInterestFragment
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import java.lang.ClassCastException
@@ -18,15 +20,36 @@ import java.lang.IllegalStateException
 class EliminatePointOfInterestDialogFragment: DialogFragment() {
     // Listener
     interface EliminatePointOfInterestDialogListener {
-        fun onDeleteButtonPressed(dialog: DialogFragment)
+        fun onDeleteButtonPressed(dialog: DialogFragment, poiName: String)
         fun onCancelDeletionButtonPressed(dialog: DialogFragment)
         fun onDeletionConfirmation(dialog: DialogFragment)
     }
 
     internal lateinit var listener: EliminatePointOfInterestDialogListener
 
+    // App state
+    private var poiName: String? = null
+
     companion object {
         private val TAG: String = EliminatePointOfInterestDialogFragment::class.qualifiedName!!
+
+        private const val ARG_POINAME = "poiName"
+
+        @JvmStatic
+        fun newInstance(poiName: String) =
+            EliminatePointOfInterestDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_POINAME, poiName)
+                }
+            }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(TAG, "onCreate")
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            poiName = it.getString(ARG_POINAME)
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -38,7 +61,9 @@ class EliminatePointOfInterestDialogFragment: DialogFragment() {
             val deleteBtn = dialogView.findViewById<Button>(R.id.delete_item)
 
             deleteBtn.setOnClickListener { view ->
-                listener.onDeleteButtonPressed(this)
+                poiName?.let { name ->
+                    listener.onDeleteButtonPressed(this, name)
+                }
 
                 val snackbar = Snackbar.make(view, R.string.removed_poi, 5000).setAction(R.string.cancel) {
                     listener.onCancelDeletionButtonPressed(this@EliminatePointOfInterestDialogFragment)

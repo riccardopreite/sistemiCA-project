@@ -39,8 +39,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
     CreatePoiOrLiveDialogFragment.CreatePoiDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
-    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener,
-    FriendDialogFragment.FriendDialogListener {
+    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -305,23 +304,5 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
         val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
         ContextCompat.startActivity(this, createdIntent, null)
-    }
-
-    override fun onPointOfInterestSelected(
-        dialog: DialogFragment,
-        friendPoi: PointOfInterest
-    ) {
-        val friendPoiDialog = FriendPoiDialogFragment.newInstance(friendPoi)
-        dialog.dismiss()
-        friendPoiDialog.show(
-            supportFragmentManager,
-            "FriendPoiDialogFragment"
-        )
-    }
-
-    override fun removeFriend(dialog: DialogFragment, friendUsername: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            Friends.removeFriend(friendUsername)
-        }
     }
 }

@@ -25,8 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class FriendsFragment : Fragment(R.layout.fragment_friends),
-    EliminateFriendDialogFragment.EliminateFriendDialogListener,
-    FriendPoiDialogFragment.FriendPoiDialogListener {
+    EliminateFriendDialogFragment.EliminateFriendDialogListener {
 
     // UI
     private var _binding: FragmentFriendsBinding? = null
@@ -159,21 +158,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         }
     }
 
-    override fun onAddButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
-        Log.v(TAG, "FriendPoiDialogListener.onAddButtonPressed")
-        CoroutineScope(Dispatchers.IO).launch {
-            PointsOfInterest.addPointOfInterest(AddPointOfInterest(AddPointOfInterestPoi(poi)))
-            PointsOfInterest.getPointsOfInterest(forceSync = true)
-            CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
-        }
-    }
 
-    override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
-        Log.v(TAG, "FriendPoiDialogListener.onRouteButtonPressed")
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
-        dialog.dismiss()
-        startActivity(intent)
-    }
 
     override fun onDestroyView() {
         Log.v(TAG, "onDestroyView")

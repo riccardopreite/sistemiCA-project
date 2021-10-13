@@ -32,7 +32,7 @@ class FriendPoiDialogFragment: DialogFragment() {
 
         @JvmStatic
         fun newInstance(friendPoi: PointOfInterest) =
-            FriendDialogFragment().apply {
+            FriendPoiDialogFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_FRIENDPOI, friendPoi)
                 }
