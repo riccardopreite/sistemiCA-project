@@ -8,9 +8,8 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.fragment.app.FragmentManager
 import com.example.maptry.R
-import com.example.maptry.activity.ListActivity
+import com.example.maptry.activity.*
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainMenuBinding
 import com.google.android.material.navigation.NavigationView
@@ -61,25 +60,18 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         Log.v(TAG, "onNavigationItemSelected")
-        val menuIntent = Intent(this.context,ListActivity::class.java)
-        print("ITEM ID " + item.itemId)
-        menuIntent.putExtra("screen",item.itemId)
-        println("START LIST ACTIVITY")
-        startActivity(menuIntent)
-        return true
-        /*return when(item.itemId) {
-            R.id.list -> {
-
-                return true
-            }
-            R.id.friend -> {
-                return true
-            }
-            R.id.live -> {
-                return true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }*/
+        val menuIntent = when(item.itemId) {
+            R.id.friends_list -> Intent(context, FriendsListActivity::class.java)
+            R.id.pois_list -> Intent(context, PointsOfInterestListActivity::class.java)
+            R.id.lives_list -> Intent(context, LiveEventsListActivity::class.java)
+            else -> null
+        }
+        return menuIntent?.let {
+            startActivity(it)
+            true
+        } ?: run {
+            false
+        }
     }
 
     override fun onDestroyView() {

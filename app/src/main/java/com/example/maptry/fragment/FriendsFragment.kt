@@ -17,8 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class FriendsFragment : Fragment(R.layout.fragment_friends),
-    EliminateFriendDialogFragment.EliminateFriendDialogListener {
+class FriendsFragment : Fragment(R.layout.fragment_friends){
 
     // UI
     private var _binding: FragmentFriendsBinding? = null
@@ -80,7 +79,7 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         binding.friendsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, friendsList.map { it.friendUsername })
 
         binding.friendsListView.setOnItemLongClickListener { parent, v, position, id ->
-            val eliminateFriendDialog = EliminateFriendDialogFragment()
+            val eliminateFriendDialog = EliminateFriendDialogFragment.newInstance(parent.getItemAtPosition(position) as String)
 
             activity?.let {
                 eliminateFriendDialog.show(it.supportFragmentManager, "EliminateFriendDialogFragment")
@@ -110,48 +109,46 @@ class FriendsFragment : Fragment(R.layout.fragment_friends),
         }
     }
 
-    override fun onDeleteButtonPressed(dialog: DialogFragment) {
-        Log.v(TAG, "EliminateFriendDialogListener.onDeleteButtonPressed")
-        removedFriend = friendsList.first { it.friendUsername == selectedFriendName }
-        friendPosition = friendsList.indexOf(removedFriend)
-        willDeleteFriend = true // TODO Non necessario se tutto va correttamente
-        friendsList.removeAt(friendPosition!!)
-
-        arguments?.let {
-            it.putParcelable(ARG_REMOVEDFRIEND, removedFriend)
-            it.putInt(ARG_FRIENDPOSITION, friendPosition!!)
-            it.putBoolean(ARG_WILLDELETEFRIEND, willDeleteFriend!!)
-            it.putParcelableArray(ARG_FRIENDSLIST, friendsList.toTypedArray())
-        }
-
-        CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
-    }
-
-    override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
-        Log.v(TAG, "EliminateFriendDialogListener.onCancelDeletionButtonPressed")
-        willDeleteFriend = false
-        friendsList.add(friendPosition!!, removedFriend!!)
-
-        arguments?.let {
-            it.putBoolean(ARG_WILLDELETEFRIEND, willDeleteFriend!!)
-            it.putParcelableArray(ARG_FRIENDSLIST, friendsList.toTypedArray())
-        }
-    }
-
-    override fun onDeletionConfirmation(dialog: DialogFragment) {
-        Log.v(TAG, "EliminateFriendDialogListener.onDeletionConfirmation")
-        if(!(willDeleteFriend!!)) {
-            return
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            Friends.removeFriend(removedFriend!!.friendUsername)
-            Friends.getFriends(forceSync = true)
-            CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
-        }
-    }
-
-
+//    override fun onDeleteButtonPressed(dialog: DialogFragment) {
+//        Log.v(TAG, "EliminateFriendDialogListener.onDeleteButtonPressed")
+//        removedFriend = friendsList.first { it.friendUsername == selectedFriendName }
+//        friendPosition = friendsList.indexOf(removedFriend)
+//        willDeleteFriend = true // TODO Non necessario se tutto va correttamente
+//        friendsList.removeAt(friendPosition!!)
+//
+//        arguments?.let {
+//            it.putParcelable(ARG_REMOVEDFRIEND, removedFriend)
+//            it.putInt(ARG_FRIENDPOSITION, friendPosition!!)
+//            it.putBoolean(ARG_WILLDELETEFRIEND, willDeleteFriend!!)
+//            it.putParcelableArray(ARG_FRIENDSLIST, friendsList.toTypedArray())
+//        }
+//
+//        CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
+//    }
+//
+//    override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
+//        Log.v(TAG, "EliminateFriendDialogListener.onCancelDeletionButtonPressed")
+//        willDeleteFriend = false
+//        friendsList.add(friendPosition!!, removedFriend!!)
+//
+//        arguments?.let {
+//            it.putBoolean(ARG_WILLDELETEFRIEND, willDeleteFriend!!)
+//            it.putParcelableArray(ARG_FRIENDSLIST, friendsList.toTypedArray())
+//        }
+//    }
+//
+//    override fun onDeletionConfirmation(dialog: DialogFragment) {
+//        Log.v(TAG, "EliminateFriendDialogListener.onDeletionConfirmation")
+//        if(!(willDeleteFriend!!)) {
+//            return
+//        }
+//
+//        CoroutineScope(Dispatchers.IO).launch {
+//            Friends.removeFriend(removedFriend!!.friendUsername)
+//            Friends.getFriends(forceSync = true)
+//            CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
+//        }
+//    }
 
     override fun onDestroyView() {
         Log.v(TAG, "onDestroyView")

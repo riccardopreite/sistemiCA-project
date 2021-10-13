@@ -18,15 +18,36 @@ import java.lang.IllegalStateException
 class EliminateFriendDialogFragment: DialogFragment() {
     // Listener
     interface EliminateFriendDialogListener {
-        fun onDeleteButtonPressed(dialog: DialogFragment)
+        fun onDeleteButtonPressed(dialog: DialogFragment, friendUsername: String)
         fun onCancelDeletionButtonPressed(dialog: DialogFragment)
         fun onDeletionConfirmation(dialog: DialogFragment)
     }
 
     internal lateinit var listener: EliminateFriendDialogListener
 
+    // App state
+    private var friendUsername: String? = null
+
     companion object {
         private val TAG: String = EliminateFriendDialogFragment::class.qualifiedName!!
+
+        private const val ARG_FRIENDUSERNAME = "friendUsername"
+
+        @JvmStatic
+        fun newInstance(friendUsername: String) =
+            EliminateFriendDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_FRIENDUSERNAME, friendUsername)
+                }
+            }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        Log.v(TAG, "onCreate")
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            friendUsername = it.getString(ARG_FRIENDUSERNAME)
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -38,7 +59,9 @@ class EliminateFriendDialogFragment: DialogFragment() {
             val deleteBtn = dialogView.findViewById<Button>(R.id.delete_item)
 
             deleteBtn.setOnClickListener { view ->
-                listener.onDeleteButtonPressed(this)
+                friendUsername?.let { friend ->
+                    listener.onDeleteButtonPressed(this, friend)
+                }
 
                 val snackbar = Snackbar.make(view, R.string.removed_friend, 5000).setAction(R.string.cancel) {
                     listener.onCancelDeletionButtonPressed(this@EliminateFriendDialogFragment)

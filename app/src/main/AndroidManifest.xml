@@ -24,6 +24,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
 
+        <!-- Services -->
         <service
             android:name=".service.PushNotificationService"
             android:exported="false">
@@ -40,10 +41,10 @@
             android:exported="false"
             android:foregroundServiceType="location" />
 
+        <!-- Metadata -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
-
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -52,7 +53,7 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
 
-
+        <!-- Activities -->
         <activity
             android:name=".activity.SplashActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -75,6 +76,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activity.LoginActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -88,9 +90,9 @@
         </activity>
 
         <activity
-            android:name=".activity.ListActivity"
+            android:name=".activity.PointsOfInterestListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="List"
+            android:label="Points of interest list"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
@@ -99,6 +101,29 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".activity.FriendsListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="Friends list"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.LiveEventsListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="Live events list"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter tools:ignore="AppLinkUrlError">
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
 
     </application>
 

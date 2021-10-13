@@ -74,7 +74,7 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
         binding.poisListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, poisList.map { it.name })
 
         binding.poisListView.setOnItemLongClickListener { parent, v, position, id ->
-            val eliminatePoiDialog = EliminatePointOfInterestDialogFragment()
+            val eliminatePoiDialog = EliminatePointOfInterestDialogFragment.newInstance(parent.getItemAtPosition(position) as String)
 
             activity?.let {
                 eliminatePoiDialog.show(it.supportFragmentManager, "EliminatePointOfInterestDialogFragment")

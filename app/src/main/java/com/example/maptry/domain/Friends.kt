@@ -7,6 +7,7 @@ import com.example.maptry.model.friends.AddFriendshipConfirmation
 import com.example.maptry.model.friends.AddFriendshipRequest
 import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.friends.RemoveFriendshipRequest
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -115,5 +116,17 @@ object Friends {
         } else {
             Log.e(TAG, response.errorBody().toString())
         }
+    }
+
+    fun removeFriendLocally(friend: Friend) {
+        Log.v(TAG, "removeFriendLocally")
+
+        friends.remove(friend)
+    }
+
+    fun addFriendLocally(friend: Friend) {
+        Log.v(TAG, "addFriendLocally")
+
+        friends.add(friend)
     }
 }
