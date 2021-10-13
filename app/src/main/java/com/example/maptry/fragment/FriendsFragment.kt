@@ -1,7 +1,5 @@
 package com.example.maptry.fragment
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,16 +8,11 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentFriendsBinding
+import com.example.maptry.domain.Friends
 import com.example.maptry.fragment.dialog.EliminateFriendDialogFragment
 import com.example.maptry.fragment.dialog.FriendDialogFragment
-import com.example.maptry.fragment.dialog.FriendPoiDialogFragment
-import com.example.maptry.domain.Friends
-import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.dialog.AddFriendDialogFragment
 import com.example.maptry.model.friends.Friend
-import com.example.maptry.model.pointofinterests.AddPointOfInterest
-import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi
-import com.example.maptry.model.pointofinterests.PointOfInterest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
