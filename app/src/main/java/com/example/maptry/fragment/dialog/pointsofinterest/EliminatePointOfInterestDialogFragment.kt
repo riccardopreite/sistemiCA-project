@@ -58,26 +58,33 @@ class EliminatePointOfInterestDialogFragment: DialogFragment() {
             val dialogView = inflater.inflate(R.layout.dialog_eliminate_item, null)
             val deleteBtn = dialogView.findViewById<Button>(R.id.delete_item)
 
-            deleteBtn.setOnClickListener { view ->
+            deleteBtn.setOnClickListener { v ->
                 poiName?.let { name ->
                     listener.onDeleteButtonPressed(this, name)
-                }
 
-                val snackbar = Snackbar.make(view, R.string.removed_poi, 5000).setAction(R.string.cancel) {
-                    listener.onCancelDeletionButtonPressed(this@EliminatePointOfInterestDialogFragment)
-                    Toast.makeText(view.context, R.string.canceled_removal, Toast.LENGTH_LONG).show()
-                }
-                snackbar.setActionTextColor(Color.DKGRAY)
-                snackbar.view.setBackgroundColor(Color.BLACK)
+                    view?.let { fragView ->
+                        val snackbar =
+                            Snackbar.make(fragView, R.string.removed_poi, 5000).setAction(R.string.cancel) {
+                                listener.onCancelDeletionButtonPressed(this@EliminatePointOfInterestDialogFragment)
+                                Toast.makeText(
+                                    fragView.context,
+                                    R.string.canceled_removal,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        snackbar.setActionTextColor(Color.DKGRAY)
+                        snackbar.view.setBackgroundColor(Color.BLACK)
 
-                snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                        super.onDismissed(transientBottomBar, event)
-                        listener.onDeletionConfirmation(this@EliminatePointOfInterestDialogFragment)
+                        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                super.onDismissed(transientBottomBar, event)
+                                listener.onDeletionConfirmation(this@EliminatePointOfInterestDialogFragment)
+                            }
+                        })
+
+                        snackbar.show()
                     }
-                })
-
-                snackbar.show()
+                }
             }
 
             builder.setView(dialogView)

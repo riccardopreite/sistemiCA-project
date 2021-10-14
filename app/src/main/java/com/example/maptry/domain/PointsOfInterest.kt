@@ -49,9 +49,14 @@ object PointsOfInterest {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} points of interest of user $user.")
-            pointsOfInterest.clear()
-            pointsOfInterest.addAll(response.body()!!)
-            return pointsOfInterest
+            return if(user != "" && user != userId) {
+                // Other users' pois are not cached.
+                response.body()!!
+            } else {
+                pointsOfInterest.clear()
+                pointsOfInterest.addAll(response.body()!!)
+                pointsOfInterest
+            }
         } else {
             Log.e(TAG, response.errorBody().toString())
         }
