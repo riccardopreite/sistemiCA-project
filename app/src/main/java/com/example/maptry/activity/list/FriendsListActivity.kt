@@ -1,4 +1,4 @@
-package com.example.maptry.activity
+package com.example.maptry.activity.list
 
 import android.content.Intent
 import android.net.Uri
@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
+import com.example.maptry.activity.ListActivity
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.FriendsFragment

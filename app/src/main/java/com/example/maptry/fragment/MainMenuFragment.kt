@@ -9,7 +9,9 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.example.maptry.R
-import com.example.maptry.activity.*
+import com.example.maptry.activity.list.FriendsListActivity
+import com.example.maptry.activity.list.LiveEventsListActivity
+import com.example.maptry.activity.list.PointsOfInterestListActivity
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainMenuBinding
 import com.google.android.material.navigation.NavigationView

@@ -1,6 +1,7 @@
-package com.example.maptry.activity
+package com.example.maptry.activity.list
 
 import android.os.Bundle
+import com.example.maptry.activity.ListActivity
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.fragment.LiveEventsFragment
 import kotlinx.coroutines.CoroutineScope

@@ -90,7 +90,7 @@
         </activity>
 
         <activity
-            android:name=".activity.PointsOfInterestListActivity"
+            android:name=".activity.list.PointsOfInterestListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Points of interest list"
             android:theme="@style/AppTheme.NoActionBar">
@@ -102,7 +102,7 @@
         </activity>
 
         <activity
-            android:name=".activity.FriendsListActivity"
+            android:name=".activity.list.FriendsListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Friends list"
             android:theme="@style/AppTheme.NoActionBar">
@@ -114,7 +114,7 @@
         </activity>
 
         <activity
-            android:name=".activity.LiveEventsListActivity"
+            android:name=".activity.list.LiveEventsListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Live events list"
             android:theme="@style/AppTheme.NoActionBar">
