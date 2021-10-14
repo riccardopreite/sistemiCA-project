@@ -4,14 +4,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import com.example.maptry.config.Auth
+import com.example.maptry.exception.NotAuthenticatedException
 import com.example.maptry.config.PushNotification
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.Notification
-import com.example.maptry.domain.Notification.addNotificationToken
 import com.example.maptry.domain.PointsOfInterest
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,24 +38,31 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == Auth.getLoginSystemRequestCode()) {
-            Auth.loadSignedInAccountFromIntent(data!!)
-            CoroutineScope(Dispatchers.IO).launch {
-                if(Auth.isUserAuthenticated()) {
-                    setResult(Auth.getLoginSuccessResultCode())
-                    val username = Auth.getUsername()
-                    username?.let {
-                        Friends.setUserId(it)
-                        LiveEvents.setUserId(it)
-                        PointsOfInterest.setUserId(it)
-                        Notification.setUserId(it)
+            try {
+                Auth.loadSignedInAccountFromIntent(data!!)
+                CoroutineScope(Dispatchers.IO).launch {
+                    if(Auth.isUserAuthenticated()) {
+                        setResult(Auth.getLoginSuccessResultCode())
+                        val username = Auth.getUsername()
+                        username?.let {
+                            Friends.setUserId(it)
+                            LiveEvents.setUserId(it)
+                            PointsOfInterest.setUserId(it)
+                            Notification.setUserId(it)
 
-                        // Loading the notification manager (doing it now since we
-                        // are sure every field for the user in the database is set.
-                        PushNotification.loadNotificationManager()
+                            // Loading the notification manager (doing it now since we
+                            // are sure every field for the user in the database is set.
+                            PushNotification.loadNotificationManager()
+                        }
+                    } else {
+                        setResult(Auth.getLoginFailureResultCode())
                     }
-                } else {
-                    setResult(Auth.getLoginFailureResultCode())
+                    CoroutineScope(Dispatchers.Main).launch {
+                        finish()
+                    }
                 }
+            } catch(exc: NotAuthenticatedException) {
+                setResult(Auth.getLoginFailureResultCode())
                 CoroutineScope(Dispatchers.Main).launch {
                     finish()
                 }

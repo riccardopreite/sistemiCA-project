@@ -7,6 +7,7 @@ import android.net.Uri
 import android.util.Log
 import com.example.maptry.R
 import com.example.maptry.config.Auth.Google.signInIntent
+import com.example.maptry.exception.NotAuthenticatedException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -161,7 +162,9 @@ object Auth {
     fun signInIntent(activity: Activity): Intent = Google.signInIntent(activity)
 
     /**
-     * The account signed in via the activity pushed through [signInIntent].
+     * Loads the account signed in via the activity pushed through [signInIntent].
+     *
+     * @throws NotAuthenticatedException if no account
      */
     fun loadSignedInAccountFromIntent(intent: Intent) {
         val task = Google.getSignedInAccountFromIntent(intent)
@@ -169,6 +172,7 @@ object Auth {
             Google.signInAccount = task.getResult(ApiException::class.java)
         } catch(exc: ApiException) {
             Log.e(TAG, "The sign in process via Google failed: " + exc.message)
+            throw NotAuthenticatedException()
         }
     }
 
