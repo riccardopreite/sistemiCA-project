@@ -20,11 +20,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
-import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.MainFragment
 import com.example.maptry.fragment.dialog.*
+import com.example.maptry.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.CreatePoiOrLiveDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.AddPointOfInterest

@@ -7,8 +7,8 @@ import androidx.fragment.app.Fragment
 import com.example.maptry.activity.ListActivity
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.PointsOfInterestFragment
-import com.example.maptry.fragment.dialog.EliminatePointOfInterestDialogFragment
-import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.PoiDetailsDialogFragment
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

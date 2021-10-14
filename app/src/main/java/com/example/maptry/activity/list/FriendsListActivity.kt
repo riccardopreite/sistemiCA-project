@@ -11,10 +11,10 @@ import com.example.maptry.activity.ListActivity
 import com.example.maptry.domain.Friends
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.FriendsFragment
-import com.example.maptry.fragment.dialog.AddFriendDialogFragment
-import com.example.maptry.fragment.dialog.EliminateFriendDialogFragment
-import com.example.maptry.fragment.dialog.FriendDialogFragment
-import com.example.maptry.fragment.dialog.FriendPoiDialogFragment
+import com.example.maptry.fragment.dialog.friends.AddFriendDialogFragment
+import com.example.maptry.fragment.dialog.friends.EliminateFriendDialogFragment
+import com.example.maptry.fragment.dialog.friends.FriendDialogFragment
+import com.example.maptry.fragment.dialog.friends.FriendPoiDialogFragment
 import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
 import com.example.maptry.model.pointofinterests.AddPointOfInterestPoi

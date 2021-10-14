@@ -6,17 +6,10 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.ArrayAdapter
-import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentPointsOfInterestBinding
-import com.example.maptry.fragment.dialog.EliminatePointOfInterestDialogFragment
-import com.example.maptry.domain.PointsOfInterest
-import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment
 import com.example.maptry.model.pointofinterests.PointOfInterest
-import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 
 

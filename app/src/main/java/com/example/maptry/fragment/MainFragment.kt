@@ -15,9 +15,9 @@ import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainBinding
-import com.example.maptry.fragment.dialog.CreatePoiOrLiveDialogFragment
-import com.example.maptry.fragment.dialog.LiveEventDetailsDialogFragment
-import com.example.maptry.fragment.dialog.PoiDetailsDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.CreatePoiOrLiveDialogFragment
+import com.example.maptry.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
+import com.example.maptry.fragment.dialog.pointsofinterest.PoiDetailsDialogFragment
 import com.example.maptry.model.liveevents.LiveEvent
 import com.example.maptry.model.pointofinterests.PointOfInterest
 import com.google.android.gms.common.api.Status

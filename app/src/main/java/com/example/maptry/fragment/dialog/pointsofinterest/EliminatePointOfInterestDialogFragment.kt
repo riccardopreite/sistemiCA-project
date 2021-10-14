@@ -1,4 +1,4 @@
-package com.example.maptry.fragment.dialog
+package com.example.maptry.fragment.dialog.pointsofinterest
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -15,29 +15,29 @@ import com.google.android.material.snackbar.Snackbar
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
-class EliminateFriendDialogFragment: DialogFragment() {
+class EliminatePointOfInterestDialogFragment: DialogFragment() {
     // Listener
-    interface EliminateFriendDialogListener {
-        fun onDeleteButtonPressed(dialog: DialogFragment, friendUsername: String)
+    interface EliminatePointOfInterestDialogListener {
+        fun onDeleteButtonPressed(dialog: DialogFragment, poiName: String)
         fun onCancelDeletionButtonPressed(dialog: DialogFragment)
         fun onDeletionConfirmation(dialog: DialogFragment)
     }
 
-    internal lateinit var listener: EliminateFriendDialogListener
+    internal lateinit var listener: EliminatePointOfInterestDialogListener
 
     // App state
-    private var friendUsername: String? = null
+    private var poiName: String? = null
 
     companion object {
-        private val TAG: String = EliminateFriendDialogFragment::class.qualifiedName!!
+        private val TAG: String = EliminatePointOfInterestDialogFragment::class.qualifiedName!!
 
-        private const val ARG_FRIENDUSERNAME = "friendUsername"
+        private const val ARG_POINAME = "poiName"
 
         @JvmStatic
-        fun newInstance(friendUsername: String) =
-            EliminateFriendDialogFragment().apply {
+        fun newInstance(poiName: String) =
+            EliminatePointOfInterestDialogFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_FRIENDUSERNAME, friendUsername)
+                    putString(ARG_POINAME, poiName)
                 }
             }
     }
@@ -46,7 +46,7 @@ class EliminateFriendDialogFragment: DialogFragment() {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         arguments?.let {
-            friendUsername = it.getString(ARG_FRIENDUSERNAME)
+            poiName = it.getString(ARG_POINAME)
         }
     }
 
@@ -59,12 +59,12 @@ class EliminateFriendDialogFragment: DialogFragment() {
             val deleteBtn = dialogView.findViewById<Button>(R.id.delete_item)
 
             deleteBtn.setOnClickListener { view ->
-                friendUsername?.let { friend ->
-                    listener.onDeleteButtonPressed(this, friend)
+                poiName?.let { name ->
+                    listener.onDeleteButtonPressed(this, name)
                 }
 
-                val snackbar = Snackbar.make(view, R.string.removed_friend, 5000).setAction(R.string.cancel) {
-                    listener.onCancelDeletionButtonPressed(this@EliminateFriendDialogFragment)
+                val snackbar = Snackbar.make(view, R.string.removed_poi, 5000).setAction(R.string.cancel) {
+                    listener.onCancelDeletionButtonPressed(this@EliminatePointOfInterestDialogFragment)
                     Toast.makeText(view.context, R.string.canceled_removal, Toast.LENGTH_LONG).show()
                 }
                 snackbar.setActionTextColor(Color.DKGRAY)
@@ -73,7 +73,7 @@ class EliminateFriendDialogFragment: DialogFragment() {
                 snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
                     override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                         super.onDismissed(transientBottomBar, event)
-                        listener.onDeletionConfirmation(this@EliminateFriendDialogFragment)
+                        listener.onDeletionConfirmation(this@EliminatePointOfInterestDialogFragment)
                     }
                 })
 
@@ -90,9 +90,9 @@ class EliminateFriendDialogFragment: DialogFragment() {
         super.onAttach(context)
 
         try {
-            listener = context as EliminateFriendDialogListener
+            listener = context as EliminatePointOfInterestDialogListener
         } catch(e: ClassCastException) {
-            throw ClassCastException("$context must implement EliminateFriendDialogListener")
+            throw ClassCastException("$context must implement EliminatePointOfInterestDialogListener")
         }
     }
 }

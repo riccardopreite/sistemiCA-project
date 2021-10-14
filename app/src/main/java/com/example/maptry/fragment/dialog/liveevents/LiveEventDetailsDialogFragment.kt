@@ -1,4 +1,4 @@
-package com.example.maptry.fragment.dialog
+package com.example.maptry.fragment.dialog.liveevents
 
 import android.app.AlertDialog
 import android.app.Dialog

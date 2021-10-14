@@ -7,7 +7,7 @@ import retrofit2.Response
 import retrofit2.http.*
 
 interface PointOfInterestsApi {
-    @GET("/points-of-interest") // TODO Manca un Response<String> per i status code 400
+    @GET("/points-of-interest")
     suspend fun getPointsOfInterest(@Query("user") user: String, @Query("friend") friend: String = ""): Response<List<PointOfInterest>>
 
     @POST("/points-of-interest/add")

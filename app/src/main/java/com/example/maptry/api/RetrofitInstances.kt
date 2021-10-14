@@ -36,7 +36,7 @@ object RetrofitInstances {
         return@HostnameVerifier true
     }
 
-    private val client: OkHttpClient by lazy { // TODO Sicuri che basti creare un'istanza unica?
+    private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .sslSocketFactory(sslContext.socketFactory, trustManager)
             .hostnameVerifier(hostnameVerifier)
@@ -49,7 +49,7 @@ object RetrofitInstances {
             }).build()
     }
 
-    private val retrofitBuilder: Retrofit by lazy { // TODO Sicuri che basti creare un'istanza unica?
+    private val retrofitBuilder: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
             .client(client)
