@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
+import com.example.maptry.activity.list.LiveEventsListActivity
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.MainFragment
@@ -41,7 +42,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
     CreatePoiOrLiveDialogFragment.CreatePoiDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
-    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
+    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener{
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -288,12 +289,11 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
-        Log.v(TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
+        Log.v(TAG, "Poi&LiveDetailsDialogFragment.onRouteButtonPressed")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
         dialog.dismiss()
         startActivity(intent)
     }
-
     override fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent) {
         Log.v(TAG, "LiveEventDetailsDialogFragment.onShareButtonPressed")
         sharePlace(liveEvent.name, liveEvent.address, liveEvent.latitude, liveEvent.longitude)

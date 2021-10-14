@@ -1,10 +1,15 @@
 package com.example.maptry.activity.list
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import com.example.maptry.R
 import com.example.maptry.activity.ListActivity
+import com.example.maptry.activity.MainActivity
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.PointsOfInterestFragment
 import com.example.maptry.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment
@@ -16,7 +21,8 @@ import kotlinx.coroutines.launch
 
 class PointsOfInterestListActivity: ListActivity(),
     EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener,
-    PointsOfInterestFragment.PointsOfInterestDialogListener {
+    PointsOfInterestFragment.PointsOfInterestDialogListener,
+    PoiDetailsDialogFragment.PoiDetailsDialogListener {
     companion object {
         private val TAG: String = PointsOfInterestListActivity::class.qualifiedName!!
 
@@ -90,5 +96,25 @@ class PointsOfInterestListActivity: ListActivity(),
             val poiDetailsDialogFragment = PoiDetailsDialogFragment.newInstance(selectedPoi)
             poiDetailsDialogFragment.show(supportFragmentManager, "PoiDetailsDialogFragment")
         }
+    }
+    override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
+        Log.v(MainActivity.TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
+        sharePlace(poi.name, poi.address, poi.latitude, poi.longitude)
+    }
+
+    override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
+        Log.v(MainActivity.TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
+        dialog.dismiss()
+        startActivity(intent)
+    }
+
+    private fun sharePlace(name: String, address: String, latitude: Double, longitude: Double) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_place, name, address, latitude, longitude))
+        }
+        val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
+        ContextCompat.startActivity(this, createdIntent, null)
     }
 }

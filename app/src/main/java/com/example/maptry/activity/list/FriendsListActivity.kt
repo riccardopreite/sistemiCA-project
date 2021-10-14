@@ -93,6 +93,8 @@ class FriendsListActivity: ListActivity(),
         Log.v(TAG, "FriendDialogListener.removeFriend")
         CoroutineScope(Dispatchers.IO).launch {
             Friends.removeFriend(friendUsername)
+            CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
+
         }
     }
 

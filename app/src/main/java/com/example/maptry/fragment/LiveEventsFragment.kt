@@ -7,6 +7,8 @@ import android.view.View
 import android.widget.ArrayAdapter
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentLiveEventsBinding
+import com.example.maptry.fragment.dialog.friends.FriendDialogFragment
+import com.example.maptry.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
 import com.example.maptry.model.liveevents.LiveEvent
 import com.google.android.gms.maps.model.LatLng
 import java.time.LocalDateTime
@@ -63,8 +65,11 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         binding.liveeventsListView.setOnItemClickListener { parent, v, position, id ->
             val selectedLiveEventName = parent.getItemAtPosition(position) as String
             val liveEvent = liveEventsList.first { it.name == selectedLiveEventName }
-            val markerId = LatLng(liveEvent.latitude, liveEvent.longitude)
-            // TODO Sarebbe da invocare MapsActivity.onMarkerClick(mymarker[markerId]!!)
+            //val markerId = LatLng(liveEvent.latitude, liveEvent.longitude)
+            val markDialog = LiveEventDetailsDialogFragment.newInstance(liveEvent)
+            activity?.let {
+                markDialog.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
+            }
         }
 
         binding.closeLiveeventsFragment.setOnClickListener {
