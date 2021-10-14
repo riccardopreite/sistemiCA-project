@@ -74,7 +74,6 @@ class LocationService: Service() {
 
     private fun createLocationSettingsRequest(): LocationSettingsRequest {
         Log.v(TAG, "createLocationSettingsRequest")
-        // TODO Check
         return LocationSettingsRequest
             .Builder()
             .addLocationRequest(locationRequest)

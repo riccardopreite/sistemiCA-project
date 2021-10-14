@@ -41,12 +41,6 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
 
         val userIconUri = Auth.getUserProfileIcon()
 
-        // TODO sono necessari questi View.VISIBLE?
-        user.visibility = View.VISIBLE
-        email.visibility = View.VISIBLE
-        icon.visibility = View.VISIBLE
-        close.visibility = View.VISIBLE
-
         // Loading the user icon inside ImageView icon.
         val picasso = Picasso.get()
         picasso.load(userIconUri).into(icon)
