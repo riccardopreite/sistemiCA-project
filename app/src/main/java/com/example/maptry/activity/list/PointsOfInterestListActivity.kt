@@ -78,6 +78,8 @@ class PointsOfInterestListActivity: ListActivity(),
     override fun onDeletionConfirmation(dialog: DialogFragment) {
         Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeletionConfirmation")
         if(poiToDelete == null) {
+            Log.w(TAG, "POIS Deletion canceled")
+
             return
         }
         CoroutineScope(Dispatchers.IO).launch {

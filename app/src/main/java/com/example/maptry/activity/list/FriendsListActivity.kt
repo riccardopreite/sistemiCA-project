@@ -120,7 +120,7 @@ class FriendsListActivity: ListActivity(),
             val friends = Friends.getFriends()
             friendToDelete = friends.first { it.friendUsername == friendUsername } // It exists for sure.
             friendToDelete?.let {
-                Friends.removeFriend(it.friendUsername)
+                Friends.removeFriendLocally(it)
                 CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
             }
         }
@@ -138,6 +138,8 @@ class FriendsListActivity: ListActivity(),
     override fun onDeletionConfirmation(dialog: DialogFragment) {
         Log.v(TAG, "EliminateFriendDialogListener.onDeletionConfirmation")
         if(friendToDelete == null) {
+            Log.w(TAG, "Friends Deletion canceled")
+
             return
         }
         CoroutineScope(Dispatchers.IO).launch {

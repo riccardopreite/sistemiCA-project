@@ -52,7 +52,7 @@ class EliminatePointOfInterestDialogFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         Log.v(TAG, "onCreateDialog")
-        return activity?.let {
+        return activity?.let { it ->
             val builder = AlertDialog.Builder(it)
             val inflater = requireActivity().layoutInflater
             val dialogView = inflater.inflate(R.layout.dialog_eliminate_item, null)
@@ -62,12 +62,14 @@ class EliminatePointOfInterestDialogFragment: DialogFragment() {
                 poiName?.let { name ->
                     listener.onDeleteButtonPressed(this, name)
 
-                    view?.let { fragView ->
-                        val snackbar =
-                            Snackbar.make(fragView, R.string.removed_poi, 5000).setAction(R.string.cancel) {
+                    val snackbar = Snackbar.make(
+                        it.findViewById(android.R.id.content),
+                        R.string.removed_poi,
+                        5000
+                    ).setAction(R.string.cancel) {
                                 listener.onCancelDeletionButtonPressed(this@EliminatePointOfInterestDialogFragment)
                                 Toast.makeText(
-                                    fragView.context,
+                                    it.context,
                                     R.string.canceled_removal,
                                     Toast.LENGTH_LONG
                                 ).show()
@@ -81,9 +83,7 @@ class EliminatePointOfInterestDialogFragment: DialogFragment() {
                                 listener.onDeletionConfirmation(this@EliminatePointOfInterestDialogFragment)
                             }
                         })
-
                         snackbar.show()
-                    }
                 }
             }
 
