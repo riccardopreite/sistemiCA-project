@@ -9,7 +9,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import com.example.maptry.R
 import com.example.maptry.activity.ListActivity
-import com.example.maptry.activity.MainActivity
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.PointsOfInterestFragment
 import com.example.maptry.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment
@@ -37,11 +36,7 @@ class PointsOfInterestListActivity: ListActivity(),
         savedInstanceState?.let {
             poiToDelete = it.getParcelable(ARG_POITODELETE) as PointOfInterest?
         }
-        CoroutineScope(Dispatchers.IO).launch {
-            val poisList = PointsOfInterest.getPointsOfInterest()
-            val poisFragment = PointsOfInterestFragment.newInstance(poisList)
-            pushFragment(poisFragment)
-        }
+        updateMarkerList()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -85,7 +80,10 @@ class PointsOfInterestListActivity: ListActivity(),
         CoroutineScope(Dispatchers.IO).launch {
             poiToDelete?.let {
                 PointsOfInterest.removePointOfInterest(it)
-                CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
+                CoroutineScope(Dispatchers.Main).launch {
+                    dialog.dismiss()
+                    updateMarkerList()
+                }
             }
         }
     }
@@ -100,12 +98,12 @@ class PointsOfInterestListActivity: ListActivity(),
         }
     }
     override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
-        Log.v(MainActivity.TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
+        Log.v(TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
         sharePlace(poi.name, poi.address, poi.latitude, poi.longitude)
     }
 
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
-        Log.v(MainActivity.TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
+        Log.v(TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
         dialog.dismiss()
         startActivity(intent)
@@ -119,4 +117,15 @@ class PointsOfInterestListActivity: ListActivity(),
         val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
         ContextCompat.startActivity(this, createdIntent, null)
     }
+
+    private fun updateMarkerList(){
+        Log.v(TAG,"PointsOfInterestListActivity.updatePOISList")
+        CoroutineScope(Dispatchers.IO).launch {
+            val poisList = PointsOfInterest.getPointsOfInterest()
+            val poisFragment = PointsOfInterestFragment.newInstance(poisList)
+            pushFragment(poisFragment)
+        }
+    }
+
+
 }

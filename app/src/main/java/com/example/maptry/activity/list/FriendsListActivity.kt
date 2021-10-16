@@ -46,12 +46,7 @@ class FriendsListActivity: ListActivity(),
         // Using findViewById(android.R.id.content) is a workaround for accessing a view instance
         val snackbar = Snackbar.make(findViewById(android.R.id.content), R.string.loading_friends, Snackbar.LENGTH_INDEFINITE)
         snackbar.show()
-        CoroutineScope(Dispatchers.IO).launch {
-            val friendList = Friends.getFriends(forceSync = true)
-            val listFragment = FriendsFragment.newInstance(friendList)
-            pushFragment(listFragment)
-            CoroutineScope(Dispatchers.Main).launch { snackbar.dismiss() }
-        }
+        updateFriendList(snackbar)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -145,8 +140,22 @@ class FriendsListActivity: ListActivity(),
         CoroutineScope(Dispatchers.IO).launch {
             friendToDelete?.let {
                 Friends.removeFriend(it.friendUsername)
-                CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
+                CoroutineScope(Dispatchers.Main).launch {
+                    dialog.dismiss()
+                    updateFriendList()
+                }
             }
+        }
+
+    }
+    private fun updateFriendList(snackbar: Snackbar?=null){
+        Log.v(TAG,"FriendListActivity.updateFriendList")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val friendList = Friends.getFriends(forceSync = true)
+            val listFragment = FriendsFragment.newInstance(friendList)
+            pushFragment(listFragment)
+            CoroutineScope(Dispatchers.Main).launch { snackbar?.dismiss() }
         }
     }
 }
