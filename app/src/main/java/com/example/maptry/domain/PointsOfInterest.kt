@@ -20,9 +20,15 @@ object PointsOfInterest {
 
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
+    private lateinit var createMarker:(Double,Double,String,String,String,Boolean) -> Unit
+
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
         userId = user
+    }
+
+    fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
+        this.createMarker = createMarker
     }
 
     suspend fun getPointsOfInterest(user: String = "", forceSync: Boolean = false): List<PointOfInterest> {
@@ -72,6 +78,7 @@ object PointsOfInterest {
             } else {
                 api.addPointOfInterest(addPointOfInterest)
             }
+
         } catch (e: IOException) {
             e.message?.let {
                 Log.e(TAG, it)
@@ -88,7 +95,11 @@ object PointsOfInterest {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Point of interest successfully added.")
-            return response.body()!!
+            val markId = response.body()!!
+            Log.i(TAG, markId)
+            if(this::createMarker.isInitialized)
+                createMarker(addPointOfInterest.poi.latitude,addPointOfInterest.poi.longitude,addPointOfInterest.poi.name,addPointOfInterest.poi.address,markId,false)
+            return markId
         } else {
             Log.e(TAG, response.errorBody().toString())
         }

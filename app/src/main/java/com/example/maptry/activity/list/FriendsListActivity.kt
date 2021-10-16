@@ -76,6 +76,7 @@ class FriendsListActivity: ListActivity(),
         friendPoi: PointOfInterest
     ) {
         Log.v(TAG, "FriendDialogListener.onPointOfInterestSelected")
+        // finish()
         val friendPoiDialog = FriendPoiDialogFragment.newInstance(friendPoi)
         dialog.dismiss()
         friendPoiDialog.show(

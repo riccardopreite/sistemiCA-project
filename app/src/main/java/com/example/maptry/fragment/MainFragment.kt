@@ -15,6 +15,8 @@ import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainBinding
+import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.dialog.pointsofinterest.CreatePoiOrLiveDialogFragment
 import com.example.maptry.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
 import com.example.maptry.fragment.dialog.pointsofinterest.PoiDetailsDialogFragment
@@ -34,6 +36,9 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.IOException
 
 class MainFragment : Fragment(R.layout.fragment_main),
@@ -165,31 +170,14 @@ class MainFragment : Fragment(R.layout.fragment_main),
         map.setOnMyLocationClickListener(this)
 
         poisList.forEach {
-            val marker = map.addMarker(
-                MarkerOptions()
-                    .position(LatLng(it.latitude, it.longitude))
-                    .title(it.name + " - " + it.address)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                    .alpha(0.7f)
-            )
-            marker?.let { mark ->
-                markers[it.markId] = mark
-            }
+            createMarker(it.latitude,it.longitude,it.name,it.address,it.markId)
         }
 
         liveEventsList.forEach {
-            val marker = googleMap.addMarker(
-                MarkerOptions()
-                    .position(LatLng(it.latitude, it.longitude))
-                    .title(it.name + " - " + it.address)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                    .alpha(0.7f)
-            )
-            marker?.let { mark ->
-                markers[it.id] = mark
-            }
-
+            createMarker(it.latitude,it.longitude,it.name,it.address,it.id,true)
         }
+        PointsOfInterest.setCreateMarkerCallback(this::createMarker)
+        LiveEvents.setCreateMarkerCallback(this::createMarker)
     }
 
     override fun onMapClick(positionOnMap: LatLng) {
@@ -200,7 +188,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
             Log.e(TAG, "Exception thrown while using the geocoder: ${exc.message}")
             null
         }
-
         val createPoiDialog = address?.let {
             CreatePoiOrLiveDialogFragment.newInstance(
                 positionOnMap.latitude,
@@ -273,5 +260,25 @@ class MainFragment : Fragment(R.layout.fragment_main),
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
             layoutParams.setMargins(0, 0, 30, 30)
         }
+    }
+
+    private fun createMarker(latitude: Double,longitude: Double,name: String,address: String,id: String,isLive: Boolean=false){
+        val color =     if(isLive)
+            BitmapDescriptorFactory.HUE_GREEN
+        else
+            BitmapDescriptorFactory.HUE_RED
+        CoroutineScope(Dispatchers.Main).launch {
+            val marker = map.addMarker(
+                MarkerOptions()
+                    .position(LatLng(latitude, longitude))
+                    .title("$name - $address")
+                    .icon(BitmapDescriptorFactory.defaultMarker(color))
+                    .alpha(0.7f)
+            )
+            marker?.let { mark ->
+                markers[id] = mark
+            }
+        }
+
     }
 }

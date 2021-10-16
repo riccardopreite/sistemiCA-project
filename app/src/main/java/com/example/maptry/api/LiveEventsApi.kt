@@ -13,5 +13,5 @@ interface LiveEventsApi {
     suspend fun getLiveEvents(@Query("user") user: String): Response<List<LiveEvent>>
 
     @POST("/live-events/add")
-    suspend fun addLiveEvent(@Body addLiveEvent: AddLiveEvent): Response<Unit>
+    suspend fun addLiveEvent(@Body addLiveEvent: AddLiveEvent): Response<String>
 }

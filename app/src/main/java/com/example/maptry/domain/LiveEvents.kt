@@ -19,9 +19,16 @@ object LiveEvents {
 
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
+    private lateinit var createMarker:(Double,Double,String,String,String,Boolean) -> Unit
+
+
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
         userId = user
+    }
+
+    fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
+        this.createMarker = createMarker
     }
 
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
@@ -58,7 +65,7 @@ object LiveEvents {
         return emptyList()
     }
 
-    suspend fun addLiveEvent(addLiveEvent: AddLiveEvent) {
+    suspend fun addLiveEvent(addLiveEvent: AddLiveEvent): String {
         Log.v(TAG, "addLiveEvent")
         val response = try {
             if(addLiveEvent.owner == "") {
@@ -68,16 +75,28 @@ object LiveEvents {
             }
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
-            return
+            return ""
         } catch (e: HttpException) {
             e.message?.let { Log.e(TAG, it) }
-            return
+            return ""
         }
 
         if(response.isSuccessful && response.body() != null) {
-            Log.i(TAG, "Point of interest successfully added.")
+            Log.i(TAG, "Live events successfully added.")
+            val markId = response.body()!!
+            if(this::createMarker.isInitialized)
+                createMarker(
+                    addLiveEvent.latitude,
+                    addLiveEvent.longitude,
+                    addLiveEvent.name,
+                    addLiveEvent.address,
+                    markId,
+                    true
+                )
+            return markId
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)
         }
+        return ""
     }
 }
