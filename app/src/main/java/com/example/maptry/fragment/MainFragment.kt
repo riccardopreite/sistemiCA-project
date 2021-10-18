@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
@@ -27,10 +28,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
@@ -44,8 +42,7 @@ import java.io.IOException
 class MainFragment : Fragment(R.layout.fragment_main),
     OnMapReadyCallback,
     GoogleMap.OnMapClickListener,
-    GoogleMap.OnMarkerClickListener,
-    GoogleMap.OnMyLocationClickListener {
+    GoogleMap.OnMarkerClickListener {
     // UI
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
@@ -54,6 +51,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private lateinit var poisList: MutableList<PointOfInterest>
     private lateinit var liveEventsList: MutableList<LiveEvent>
     private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
+    private lateinit var currentPositionMarker: Marker
 
     // API
     private val geocoder by lazy {
@@ -167,7 +165,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
         map = googleMap
         map.setOnMarkerClickListener(this)
         map.setOnMapClickListener(this)
-        map.setOnMyLocationClickListener(this)
 
         poisList.forEach {
             createMarker(it.latitude,it.longitude,it.name,it.address,it.markId)
@@ -233,17 +230,32 @@ class MainFragment : Fragment(R.layout.fragment_main),
         return false
     }
 
-    override fun onMyLocationClick(location: Location) {
-        Log.v(TAG, "GoogleMap.OnMyLocationClickListener.onMyLocationClick")
-        TODO("Not yet implemented")
-    }
-
     fun onCurrentLocationUpdated(location: Location) {
         if(!this::map.isInitialized) {
             Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current position.")
             return
         }
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location.latitude, location.longitude), 17F))
+        val currentPosition = LatLng(location.latitude, location.longitude)
+        if(this::currentPositionMarker.isInitialized) {
+            if(currentPositionMarker.position == currentPosition) {
+                return
+            }
+            currentPositionMarker.remove()
+        }
+        val markerIcon = ContextCompat.getDrawable(this.requireContext(), R.mipmap.ic_launcher_foreground)
+        val icon = markerIcon?.toBitmap(150, 150)
+        icon?.let { ic ->
+            map.addMarker(
+                MarkerOptions()
+                    .position(currentPosition)
+                    .icon(BitmapDescriptorFactory.fromBitmap(ic))
+                    .alpha(1f)
+            )?.let {
+                currentPositionMarker = it
+            }
+        }
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17F))
     }
 
     private fun updateMapUI(supportMapFragment: SupportMapFragment) {
