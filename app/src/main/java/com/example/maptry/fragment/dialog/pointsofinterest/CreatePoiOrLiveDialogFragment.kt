@@ -21,6 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
+import android.widget.Toast
+
+
+
 
 class CreatePoiOrLiveDialogFragment: DialogFragment() {
     // Listener
@@ -118,83 +122,104 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
 
-            builder.setPositiveButton(R.string.create_poi_or_live) { dialog, arg ->
-                val name = nameEt.text.toString()
-                if(name == "") {
-                    nameEt.background.mutate().apply {
-                        colorFilter = BlendModeColorFilter(
-                            ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                            BlendMode.SRC_IN
-                        )
-                    }
-                    return@setPositiveButton
-                }
-
-                val visibility = if(privateBtn.isChecked) {
-                    privateBtn.text.toString()
-                } else {
-                    publicBtn.text.toString()
-                }
-
-                if(typeSpinner.selectedItem.toString() == "Live event") {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        if (LiveEvents.getLiveEvents().any { le ->
-                            return@any if(name == le.name || addressTv.text == le.address) {
-                                nameEt.background.mutate().apply {
-                                    colorFilter = BlendModeColorFilter(
-                                        ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                        BlendMode.SRC_IN
-                                    )
-                                }
-                                true
-                            } else { false }
-                        }) { return@launch }
-                        val time = durationTp.hour * 60 + durationTp.minute
-                        // val marker = createMarker(p0)
-                        listener.onAddLiveEvent(this@CreatePoiOrLiveDialogFragment, AddLiveEvent(
-                            time,
-                            "",
-                            name,
-                            addressTv.text.toString(),
-                            latitude!!,
-                            longitude!!
-                        ))
-                    }
-                    return@setPositiveButton
-                }
-
-                // Point of Interest
-                CoroutineScope(Dispatchers.IO).launch {
-                    if(PointsOfInterest.getPointsOfInterest().any { poi ->
-                        return@any if(name == poi.name || addressTv.text == poi.address) {
-                            nameEt.background.mutate().apply {
-                                colorFilter = BlendModeColorFilter(
-                                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                    BlendMode.SRC_IN
-                                )
-                            }
-                            true
-                        } else { false }
-                    }) { return@launch }
-                    // val marker = createMarker(p0)
-                    listener.onAddPointOfInterest(this@CreatePoiOrLiveDialogFragment, AddPointOfInterestPoi(
-                        addressTv.text.toString(),
-                        typeSpinner.selectedItem.toString(),
-                        latitude!!,
-                        longitude!!,
-                        name,
-                        if(phoneNumber != null) phoneNumber!! else "---",
-                        visibility,
-                        if(url != null) url!! else "---"
-                    ))
-                }
-            }
-
+            //builder.setPositiveButton(R.string.create_poi_or_live) { dialog, arg ->            }
+            builder.setPositiveButton(R.string.create_poi_or_live,null)
             builder.setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
 
 
             builder.setView(dialogView)
-            builder.create()
+            val dialog = builder.create()
+            dialog.setOnShowListener {
+                val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                positiveButton.setOnClickListener {
+                    val name = nameEt.text.toString()
+                    if(name == "") {
+                        nameEt.background.mutate().apply {
+                            colorFilter = BlendModeColorFilter(
+                                ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                                BlendMode.SRC_IN
+                            )
+                        }
+                        Toast.makeText(context, "Please insert a name.", Toast.LENGTH_SHORT).show()
+                    }
+                    else{
+                        val visibility = if(privateBtn.isChecked) {
+                            privateBtn.text.toString()
+                        } else {
+                            publicBtn.text.toString()
+                        }
+
+                        if(typeSpinner.selectedItem.toString() == "Live event") {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if(!LiveEvents.getLiveEvents().any { le ->
+                                        Log.v(TAG,"LIVE NAME "+le.name)
+                                        return@any if(name == le.name || addressTv.text == le.address){
+                                            nameEt.background.mutate().apply {
+                                                colorFilter = BlendModeColorFilter(
+                                                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                                                    BlendMode.SRC_IN
+                                                )
+                                            }
+                                            requireActivity().runOnUiThread {
+                                                Toast.makeText(context, "A Live event with same name or address already exist.", Toast.LENGTH_SHORT).show()
+                                            }
+                                            true
+                                        }
+                                        else{ false }
+                                    }){
+                                    val time = durationTp.hour * 60 + durationTp.minute
+                                    listener.onAddLiveEvent(this@CreatePoiOrLiveDialogFragment, AddLiveEvent(
+                                        time,
+                                        "",
+                                        name,
+                                        addressTv.text.toString(),
+                                        latitude!!,
+                                        longitude!!
+                                    ))
+                                }
+                            }
+                        }
+                        else{
+                            // Point of Interest
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if(!PointsOfInterest.getPointsOfInterest().any { poi ->
+                                        return@any if(name == poi.name || addressTv.text == poi.address) {
+                                            nameEt.background.mutate().apply {
+                                                colorFilter = BlendModeColorFilter(
+                                                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                                                    BlendMode.SRC_IN
+                                                )
+                                            }
+                                            requireActivity().runOnUiThread {
+                                                Toast.makeText(context, "A poi with same name or address already exist.", Toast.LENGTH_SHORT).show()
+                                            }
+                                            true
+                                        } else { false }
+                                    }) {
+                                    listener.onAddPointOfInterest(this@CreatePoiOrLiveDialogFragment, AddPointOfInterestPoi(
+                                        addressTv.text.toString(),
+                                        typeSpinner.selectedItem.toString(),
+                                        latitude!!,
+                                        longitude!!,
+                                        name,
+                                        if(phoneNumber != null) phoneNumber!! else "---",
+                                        visibility,
+                                        if(url != null) url!! else "---"
+                                    ))
+                                       // return@launch
+                                }
+                                // val marker = createMarker(p0)
+
+                            }
+                        }
+
+
+                    }
+                }
+            }
+
+            return dialog
+
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 

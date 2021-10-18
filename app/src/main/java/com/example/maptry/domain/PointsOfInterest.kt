@@ -21,7 +21,9 @@ object PointsOfInterest {
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
     private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
+    private lateinit var updatePoi: () -> Unit
     private var validCallback: Boolean = false
+    private var validPoiCallback: Boolean = false
 
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
@@ -35,7 +37,14 @@ object PointsOfInterest {
 
     fun disableCallback() {
         validCallback = false
+        validPoiCallback = false
     }
+
+    fun setUpdatePoiCallback(updatePoi:() -> Unit){
+        this.updatePoi = updatePoi
+        validPoiCallback = true
+    }
+
 
     suspend fun getPointsOfInterest(user: String = "", forceSync: Boolean = false): List<PointOfInterest> {
         Log.v(TAG, "getPointsOfInterest")
@@ -103,6 +112,17 @@ object PointsOfInterest {
             Log.i(TAG, "Point of interest successfully added.")
             val markId = response.body()!!
             Log.i(TAG, markId)
+            val currentPOI = PointOfInterest(
+                markId,
+                addPointOfInterest.poi.address,
+                addPointOfInterest.poi.type,
+                addPointOfInterest.poi.latitude,
+                addPointOfInterest.poi.longitude,
+                addPointOfInterest.poi.name,
+                addPointOfInterest.poi.phoneNumber,
+                addPointOfInterest.poi.visibility,
+                addPointOfInterest.poi.url
+            )
             if(validCallback) {
                 createMarker(
                     addPointOfInterest.poi.latitude,
@@ -113,6 +133,12 @@ object PointsOfInterest {
                     false
                 )
             }
+            if(validPoiCallback){
+                updatePoi()
+            }
+
+
+            addPointOfInterestLocally(currentPOI)
             return markId
         } else {
             Log.e(TAG, response.errorBody().toString())

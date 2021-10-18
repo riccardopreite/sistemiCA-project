@@ -13,6 +13,7 @@ import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.maptry.R
+import com.example.maptry.activity.MainActivity
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainBinding
@@ -249,7 +250,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17F))
     }
 
-    fun drawCurrentPositionMarker(currentPosition: LatLng) {
+    private fun drawCurrentPositionMarker(currentPosition: LatLng) {
         val markerIcon = ContextCompat.getDrawable(this.requireContext(), R.mipmap.ic_launcher_foreground)
         val icon = markerIcon?.toBitmap(150, 150)
         icon?.let { ic ->
@@ -289,6 +290,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     .alpha(0.7f)
             )
             marker?.let { markers[id] = it }
+
         }
     }
 
@@ -297,37 +299,57 @@ class MainFragment : Fragment(R.layout.fragment_main),
         super.onResume()
 
         PointsOfInterest.setCreateMarkerCallback(this::createMarker)
+        PointsOfInterest.setUpdatePoiCallback(this::updatePoi)
         LiveEvents.setCreateMarkerCallback(this::createMarker)
+        LiveEvents.setUpdateLiveCallback(this::updateLive)
 
         if(this::map.isInitialized) {
             Log.i(TAG, "Clearing the map from previously added markers, re-adding them.")
             map.clear()
-            CoroutineScope(Dispatchers.IO).launch {
-                poisList.clear()
-                liveEventsList.clear()
-                poisList.addAll(PointsOfInterest.getPointsOfInterest())
-                liveEventsList.addAll(LiveEvents.getLiveEvents())
+            /*CoroutineScope(Dispatchers.IO).launch {
 
-                arguments?.apply {
-                    putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
-                    putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
-                }
+            }*/
+            updatePoi()
+            updateLive()
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    drawCurrentPositionMarker(currentPositionMarker.position)
-                }
+            CoroutineScope(Dispatchers.Main).launch {
+                drawCurrentPositionMarker(currentPositionMarker.position)
+            }
 
-                poisList.forEach {
-                    createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
-                }
+            poisList.forEach {
+                createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
+            }
 
-                liveEventsList.forEach {
-                    createMarker(it.latitude, it.longitude, it.name, it.address, it.id, true)
-                }
+            liveEventsList.forEach {
+                createMarker(it.latitude, it.longitude, it.name, it.address, it.id, true)
+            }
+        }
+    }
+    private fun updateLive(){
+        CoroutineScope(Dispatchers.IO).launch {
+            liveEventsList.clear()
+            liveEventsList.addAll(LiveEvents.getLiveEvents())
+            Log.v(TAG, "updated live from server")
+            println(liveEventsList)
+
+            arguments?.apply {
+                putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
             }
         }
     }
 
+    private fun updatePoi(){
+        CoroutineScope(Dispatchers.IO).launch {
+            poisList.clear()
+            poisList.addAll(PointsOfInterest.getPointsOfInterest())
+            Log.v(TAG, "updated pois from server")
+            println(poisList)
+
+            arguments?.apply {
+                putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+            }
+        }
+    }
     override fun onDestroy() {
         Log.i(TAG, "LIFECYCLE: onDestroy")
         super.onDestroy()

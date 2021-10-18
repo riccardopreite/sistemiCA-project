@@ -263,7 +263,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "CreatePoiOrLiveDialogFragment.onAddLiveEvent")
         CoroutineScope(Dispatchers.IO).launch {
             LiveEvents.addLiveEvent(addLiveEvent)
-
             CoroutineScope(Dispatchers.Main).launch {
                 dialog.dismiss()
             }
@@ -277,7 +276,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "CreatePoiOrLiveDialogFragment.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
             PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
-
             CoroutineScope(Dispatchers.Main).launch {
                 dialog.dismiss()
             }

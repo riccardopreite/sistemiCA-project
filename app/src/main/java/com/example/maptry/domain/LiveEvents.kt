@@ -5,6 +5,7 @@ import com.example.maptry.api.ApiError
 import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -20,8 +21,9 @@ object LiveEvents {
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
     private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
+    private lateinit var updateLive: () -> Unit
     private var validCallback: Boolean = false
-
+    private var validPoiCallback: Boolean = false
 
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
@@ -35,6 +37,12 @@ object LiveEvents {
 
     fun disableCallback() {
         validCallback = false
+        validPoiCallback = false
+    }
+
+    fun setUpdateLiveCallback(updateLive:() -> Unit){
+        this.updateLive = updateLive
+        validPoiCallback = true
     }
 
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
@@ -90,6 +98,15 @@ object LiveEvents {
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Live events successfully added.")
             val markId = response.body()!!
+            val currentLive = LiveEvent(
+                markId,
+                addLiveEvent.address,
+                addLiveEvent.latitude,
+                addLiveEvent.longitude,
+                addLiveEvent.name,
+                addLiveEvent.owner,
+                addLiveEvent.expiresAfter.toLong()
+            )
             if(validCallback) {
                 createMarker(
                     addLiveEvent.latitude,
@@ -97,9 +114,14 @@ object LiveEvents {
                     addLiveEvent.name,
                     addLiveEvent.address,
                     markId,
-                    true
+                    false
                 )
             }
+            if(validPoiCallback){
+               updateLive()
+            }
+            liveEvents.add(currentLive)
+
             return markId
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)
