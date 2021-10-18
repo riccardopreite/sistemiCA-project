@@ -1,42 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:id="@+id/list_layout"
+    android:layout_height="match_parent"
     android:background="#FAF6F6"
     android:fitsSystemWindows="true"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:tag="PointsOfInterestFragment"
     tools:context="fragment.PointsOfInterestFragment">
 
     <ImageView
-        android:id="@+id/close_list"
+        android:id="@+id/close_pois_fragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:contentDescription="@string/back"
         android:focusable="true"
-        android:onClick="closeDrawer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_signout" />
 
     <TextView
-        android:id="@+id/nosrc"
+        android:id="@+id/no_pois_items"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="@string/nosrc"
         android:textAlignment="center"
-        android:textColor="@color/colorBackground"
-        android:textSize="30sp" />
+        android:textColor="#A1887F"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/close_pois_fragment" />
 
     <ListView
-        android:id="@+id/lv"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"/>
+        android:id="@+id/pois_list_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/close_pois_fragment"
+        app:layout_constraintVertical_bias="0.0" />
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

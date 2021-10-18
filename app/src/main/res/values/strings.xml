@@ -9,7 +9,7 @@
     </string-array>
 
     <string name="name">Name:</string>
-    <string name="address">Address:</string>
+    <string name="address">Address</string>
     <string name="login">Login</string>
     <string name="share">Share</string>
     <string name="enter_password">Enter password</string>
@@ -18,14 +18,18 @@
     <string name="pubblico">Public</string>
     <string name="travelling">Travelling</string>
     <string name="privato">Private</string>
-    <string name="custom_btn">Add Point of Interest</string>
-    <string name="nome">Name:</string>
-    <string name="tipo">Visibility:</string>
+<!--    <string name="custom_btn">Add point of interest</string>-->
+    <string name="nome">Name</string>
+    <string name="tipo">Visibility</string>
     <string name="gender">Gender</string>
     <string name="reading">Reading</string>
     <string name="sports">Sports</string>
+    <string name="dialog_friend_poi_header">%1$s (%2$s)</string>
+    <string name="dialog_live_event_details">%1$s (live)</string>
+    <string name="dialog_poi_details">%1$s (%2$s)</string>
     <string name="header">Create Point of Interest</string>
-    <string name="spinner_name">Type:</string>
+    <string name="spinner_name">Type</string>
+    <string name="live_duration">Ending in (at most 24 hours)</string>
     <string name="info">Info</string>
     <string name="help">Help</string>
     <string name="title_activity_main">MainActivity</string>
@@ -48,8 +52,10 @@
     <string name="back">Back</string>
     <string name="button">Button</string>
     <string name="other_functionality">Other functionality?</string>
-    <string name="add">ADd</string>
+    <string name="create_poi_or_live">Create</string>
+    <string name="send_friend_request">Send friend request</string>
     <string name="nosrc">No points of interest are registered!</string>
+    <string name="no_poi_selected">No point of interest selected</string>
     <string name="nofriend">You have no friends yet!</string>
     <string name="title_activity_login">Sign in</string>
     <string name="prompt_email">E-mail</string>
@@ -67,20 +73,23 @@
     <string name="title">Find My Car</string>
     <string name="find_my_car_2020">Find My Car 2020</string>
     <string name="phone">Phone number</string>
+    <string name="ending_on">Ending on:</string>
     <string name="notsetphone">No phone number</string>
     <string name="website">Website</string>
+    <string name="owner">Owner:</string>
     <string name="noteseturi">No website</string>
     <string name="cancel">Cancel</string>
     <string name="removed_poi">Point of interest removed</string>
     <string name="removed_friend">Friend removed</string>
     <string name="canceled_removal">Canceled removal</string>
-    <string name="friend">Friends</string>
+    <string name="friend_pois">Friend\'s points of interest</string>
+    <string name="friends">Friends</string>
     <string name="addfriend">Add friend</string>
     <string name="addFriend">Accept</string>
     <string name="delete">Refuse</string>
     <string name="friendheader">New friend request</string>
-    <string name="removeFriend">Remove</string>
-    <string name="POIname">PoI:</string>
+    <string name="remove_friend">Remove friend</string>
+    <string name="selected_friend_poi">Point of interest:</string>
     <string name="car">Auto</string>
     <string name="live">Live</string>
     <string name="remind">Postpone</string>
@@ -95,4 +104,10 @@
     <string name="location_service_description">Maptry Location Service for accessing the device location in real time.</string>
     <string name="location_permission_denied">Permission to use location services denied.</string>
     <string name="app_logo_description">App logo</string>
+    <string name="empty_username">You must type the e-mail of the user you want to send the friendship request to.</string>
+    <string name="no_request_to_oneself">You cannot send a user request to the same user you\'re logged in.</string>
+    <string name="friend_request_sent">Friend request sent.</string>
+    <string name="share_place">Hey! I think you would be interested in visiting %1$s in %2$s\nhttps://maps.google.com/?q=%3$f,%4$f</string>
+    <string name="share_place_intent">You\'re sharing %1$s.</string>
+    <string name="loading_friends">Loading your friends list.</string>
 </resources>

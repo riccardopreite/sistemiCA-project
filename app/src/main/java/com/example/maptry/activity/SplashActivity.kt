@@ -7,12 +7,16 @@ import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import com.example.maptry.R
+import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.config.Auth
+import com.example.maptry.domain.Friends
+import com.example.maptry.domain.LiveEvents
+import com.example.maptry.domain.PointsOfInterest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
     companion object {
         private val TAG = SplashActivity::class.qualifiedName
     }
@@ -20,21 +24,44 @@ class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
 
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+        RetrofitInstances.loadStore(resources.openRawResource(R.raw.mystore))
+
+        val progressBar = findViewById<ProgressBar>(R.id.progress_bar)
         progressBar.visibility = View.VISIBLE
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {
-            val intent = if(Auth.isUserAuthenticated()) {
-                Intent(this@SplashActivity, LoginActivity::class.java)
+            if(Auth.isUserAuthenticated()) {
+                val username = Auth.getUsername()
+                username?.let {
+                    Friends.setUserId(username)
+                    LiveEvents.setUserId(username)
+                    PointsOfInterest.setUserId(username)
+                }
+                CoroutineScope(Dispatchers.Main).launch {
+                    progressBar.visibility = View.GONE
+                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                    finish()
+                }
             } else {
-                Intent(this@SplashActivity, MainActivity::class.java)
+                CoroutineScope(Dispatchers.Main).launch {
+                    startActivityForResult(
+                        Intent(this@SplashActivity, LoginActivity::class.java),
+                        Auth.getLoginActivityRequestCode()
+                    )
+                }
             }
-            CoroutineScope(Dispatchers.Main).launch {
-                progressBar.visibility = View.GONE
-                startActivity(intent)
-            }
+
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.v(TAG, "onActivityResult")
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if(requestCode == Auth.getLoginActivityRequestCode()) {
+            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            finish()
         }
     }
 }

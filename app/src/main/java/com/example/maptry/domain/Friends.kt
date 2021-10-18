@@ -7,6 +7,7 @@ import com.example.maptry.model.friends.AddFriendshipConfirmation
 import com.example.maptry.model.friends.AddFriendshipRequest
 import com.example.maptry.model.friends.Friend
 import com.example.maptry.model.friends.RemoveFriendshipRequest
+import com.example.maptry.model.pointofinterests.PointOfInterest
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -22,10 +23,12 @@ object Friends {
     private val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
 
     fun setUserId(user: String) {
+        Log.v(TAG, "setUserId")
         userId = user
     }
 
     suspend fun getFriends(forceSync: Boolean = false): List<Friend> {
+        Log.v(TAG, "getFriends")
         if(!forceSync) {
             return friends
         }
@@ -48,16 +51,18 @@ object Friends {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} friends.")
+            friends.clear()
             friends.addAll(response.body()!!)
             return friends
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
 
         return emptyList()
     }
 
     suspend fun addFriend(friendUsername: String) {
+        Log.v(TAG, "addFriend")
         val response = try {
             api.addFriend(AddFriendshipRequest(friendUsername, userId))
         } catch (e: IOException) {
@@ -71,11 +76,12 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request to $friendUsername successfully sent.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
     }
 
     suspend fun confirmFriend(otherUserUsername: String) {
+        Log.v(TAG, "confirmFriend")
         val response = try {
            api.confirmFriend(AddFriendshipConfirmation(userId, otherUserUsername))
         } catch (e: IOException) {
@@ -89,11 +95,12 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
     }
 
     suspend fun removeFriend(friendUsername: String) {
+        Log.v(TAG, "removeFriend")
         val response = try {
             api.removeFriend(RemoveFriendshipRequest(friendUsername, userId))
         } catch (e: IOException) {
@@ -107,7 +114,19 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend with username $friendUsername successfully removed.")
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
+    }
+
+    fun removeFriendLocally(friend: Friend) {
+        Log.v(TAG, "removeFriendLocally")
+
+        friends.remove(friend)
+    }
+
+    fun addFriendLocally(friend: Friend) {
+        Log.v(TAG, "addFriendLocally")
+
+        friends.add(friend)
     }
 }

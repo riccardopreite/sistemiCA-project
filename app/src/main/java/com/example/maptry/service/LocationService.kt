@@ -44,13 +44,13 @@ class LocationService: Service() {
     private val locationRequest: LocationRequest = LocationRequest.create().apply {
         interval = 5000
         fastestInterval = 2000
-//            priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Forse un po' troppo.
-        priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Forse un po' troppo.
+//        priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
     }
 
     private val locationUpdateCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
-            Log.v(TAG, "LocationCallback.onLocationResult")
+            Log.v(TAG, "LocationCallback.onLocationResult $locationResult")
             lastLocation = locationResult.lastLocation
             Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
             listener?.onLocationChanged(this@LocationService, lastLocation)
@@ -74,7 +74,6 @@ class LocationService: Service() {
 
     private fun createLocationSettingsRequest(): LocationSettingsRequest {
         Log.v(TAG, "createLocationSettingsRequest")
-        // TODO Check
         return LocationSettingsRequest
             .Builder()
             .addLocationRequest(locationRequest)

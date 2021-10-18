@@ -1,13 +1,13 @@
 package com.example.maptry.api
 
 import com.example.maptry.R
-import com.example.maptry.activity.MapsActivity
 import com.example.maptry.config.Api
 import com.example.maptry.config.Auth
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.InputStream
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.*
@@ -18,8 +18,8 @@ object RetrofitInstances {
     private val trustStore: KeyStore = KeyStore.getInstance("BKS")
     private const val keyPair = "SistemiContextAware2021@*"
 
-    val res = MapsActivity.mapsActivityContext.resources.openRawResource(R.raw.mystore).use {
-        trustStore.load(it,keyPair.toCharArray())
+    fun loadStore(rawStore: InputStream) {
+        trustStore.load(rawStore, keyPair.toCharArray())
     }
 
     private val tmf: TrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
@@ -36,7 +36,7 @@ object RetrofitInstances {
         return@HostnameVerifier true
     }
 
-    private val client: OkHttpClient by lazy { // TODO Sicuri che basti creare un'istanza unica?
+    private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .sslSocketFactory(sslContext.socketFactory, trustManager)
             .hostnameVerifier(hostnameVerifier)
@@ -45,12 +45,11 @@ object RetrofitInstances {
                     .newBuilder()
                     .addHeader("Authorization", "Bearer " + Auth.getToken())
                     .build()
-
                 chain.proceed(request)
             }).build()
     }
 
-    private val retrofitBuilder: Retrofit by lazy { // TODO Sicuri che basti creare un'istanza unica?
+    private val retrofitBuilder: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
             .client(client)
@@ -71,5 +70,10 @@ object RetrofitInstances {
     val pointOfInterestsApi: PointOfInterestsApi by lazy {
         retrofitBuilder
             .create(PointOfInterestsApi::class.java)
+    }
+
+    val notificationApi: NotificationApi by lazy {
+        retrofitBuilder
+            .create(NotificationApi::class.java)
     }
 }

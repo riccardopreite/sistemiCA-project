@@ -17,6 +17,6 @@ interface FriendsApi {
     @POST("/friends/confirm")
     suspend fun confirmFriend(@Body addFriendshipConfirmation: AddFriendshipConfirmation): Response<Unit>
 
-    @DELETE("/friends/remove")
+    @HTTP(method = "DELETE", path = "/friends/remove", hasBody = true   )
     suspend fun removeFriend(@Body removeFriendshipRequest: RemoveFriendshipRequest): Response<Unit>
 }

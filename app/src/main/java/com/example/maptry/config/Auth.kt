@@ -7,6 +7,7 @@ import android.net.Uri
 import android.util.Log
 import com.example.maptry.R
 import com.example.maptry.config.Auth.Google.signInIntent
+import com.example.maptry.exception.NotAuthenticatedException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -34,6 +35,7 @@ object Auth {
          * Updates [signInAccount].
          */
         fun loadLastSignedInAccount(context: Context) {
+            Log.v(TAG, "Google.loadLastSignedInAccount")
             signInAccount = GoogleSignIn.getLastSignedInAccount(context)
         }
 
@@ -59,6 +61,7 @@ object Auth {
          * @see FirebaseAuth
          */
         fun loadGoogleCredential() {
+            Log.v(TAG, "Google.loadGoogleCredential")
             signInAccount?.let {
                 it.idToken?.let { token ->
                     authCredential = GoogleAuthProvider.getCredential(token, null)
@@ -97,12 +100,11 @@ object Auth {
         lateinit var authManager: FirebaseAuth
 
         fun loadAuthenticationManager() {
+            Log.v(TAG, "Firebase.loadAuthenticationManager")
             authManager = FirebaseAuth.getInstance()
         }
 
-        fun signIn(googleCredential: AuthCredential): Task<AuthResult> {
-            return authManager.signInWithCredential(googleCredential)
-        }
+        fun signIn(googleCredential: AuthCredential): Task<AuthResult> = authManager.signInWithCredential(googleCredential)
     }
 
     private lateinit var userToken: String
@@ -123,6 +125,7 @@ object Auth {
      * for them to complete. Use inside a thread or Kotlin Coroutine.
      */
     fun isUserAuthenticated(): Boolean {
+        Log.v(TAG, "isUserAuthenticated")
         Google.signInAccount?.let {
             // The user is authenticated via Google, let's perform Firebase authentication.
             Google.loadGoogleCredential()
@@ -131,6 +134,7 @@ object Auth {
                 authResult.user?.let { firebaseUser ->
                     val tokenResult = Tasks.await(firebaseUser.getIdToken(true))
                     tokenResult.token?.let {
+                        Log.d(TAG, "The user is authenticated via both Google and Firebase Auth.")
                         userToken = it
                         return true
                     } ?: run {
@@ -158,7 +162,9 @@ object Auth {
     fun signInIntent(activity: Activity): Intent = Google.signInIntent(activity)
 
     /**
-     * The account signed in via the activity pushed through [signInIntent].
+     * Loads the account signed in via the activity pushed through [signInIntent].
+     *
+     * @throws NotAuthenticatedException if no account
      */
     fun loadSignedInAccountFromIntent(intent: Intent) {
         val task = Google.getSignedInAccountFromIntent(intent)
@@ -166,8 +172,29 @@ object Auth {
             Google.signInAccount = task.getResult(ApiException::class.java)
         } catch(exc: ApiException) {
             Log.e(TAG, "The sign in process via Google failed: " + exc.message)
+            throw NotAuthenticatedException()
         }
     }
+
+    /**
+     * Returns the suggested request code for using in Intent in case of activities.
+     */
+    fun getLoginActivityRequestCode(): Int = 1000
+
+    /**
+     * Returns the suggested request code for using in Intent in case of system calls.
+     */
+    fun getLoginSystemRequestCode(): Int = 1100
+
+    /**
+     * Returns the suggested result code for using in Intent in case of successfull login.
+     */
+    fun getLoginSuccessResultCode(): Int = 1001
+
+    /**
+     * Returns the suggested result code for using in Intent in case of failed login.
+     */
+    fun getLoginFailureResultCode(): Int = 1002
 
     /**
      * Returns the user token, if available.

@@ -19,11 +19,26 @@ object LiveEvents {
 
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
+    private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
+    private var validCallback: Boolean = false
+
+
     fun setUserId(user: String) {
+        Log.v(TAG, "setUserId")
         userId = user
     }
 
+    fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
+        this.createMarker = createMarker
+        validCallback = true
+    }
+
+    fun disableCallback() {
+        validCallback = false
+    }
+
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
+        Log.v(TAG, "getLiveEvents")
         if(!forceSync) {
             return liveEvents
         }
@@ -46,6 +61,7 @@ object LiveEvents {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Found ${response.body()!!.size} live events.")
+            liveEvents.clear()
             liveEvents.addAll(response.body()!!)
             return liveEvents
         } else {
@@ -55,7 +71,8 @@ object LiveEvents {
         return emptyList()
     }
 
-    suspend fun addLiveEvent(addLiveEvent: AddLiveEvent) {
+    suspend fun addLiveEvent(addLiveEvent: AddLiveEvent): String {
+        Log.v(TAG, "addLiveEvent")
         val response = try {
             if(addLiveEvent.owner == "") {
                 api.addLiveEvent(addLiveEvent.copy(owner = userId))
@@ -64,16 +81,29 @@ object LiveEvents {
             }
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
-            return
+            return ""
         } catch (e: HttpException) {
             e.message?.let { Log.e(TAG, it) }
-            return
+            return ""
         }
 
         if(response.isSuccessful && response.body() != null) {
-            Log.i(TAG, "Point of interest successfully added.")
+            Log.i(TAG, "Live events successfully added.")
+            val markId = response.body()!!
+            if(validCallback) {
+                createMarker(
+                    addLiveEvent.latitude,
+                    addLiveEvent.longitude,
+                    addLiveEvent.name,
+                    addLiveEvent.address,
+                    markId,
+                    true
+                )
+            }
+            return markId
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)
         }
+        return ""
     }
 }
