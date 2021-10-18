@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:tag="MainMenuFragment"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:background="#FAF6F6"
+    android:fitsSystemWindows="true"
+    tools:context=".fragment.MainMenuFragment">
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/menu_nav_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#FAF6F6"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@menu/menu_header"
+        app:menu="@menu/menu_items"/>
+
+</FrameLayout>

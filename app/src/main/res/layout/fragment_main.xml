@@ -1,0 +1,37 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:tag="MainFragment"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:background="#FAF6F6"
+    android:fitsSystemWindows="true"
+    tools:context=".fragment.MainFragment">
+
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/google_maps"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activity.MainActivity"/>
+
+
+    <fragment
+        android:id="@+id/places_search_bar"
+        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="4dp"
+        android:backgroundTint="#FFFFFF"
+        android:background="@drawable/layout_bg"
+        tools:layout="@layout/place_autocomplete_fragment"
+        tools:ignore="FragmentTagUsage" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/main_menu_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</RelativeLayout>

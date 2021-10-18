@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "96359585812-ojfh79p2ldijgfmvb9lv82aue2esfb11.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.maptry",
+            "certificate_hash": "99c5c4d62a3ef1b9400a9f673e34803ddf3416dd"
+          }
+        },
+        {
           "client_id": "96359585812-ncas1kvl8tv6nf0e25oq310n657akc0a.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single"
+        android:id="@+id/firstgroup">
+
+        <item
+            android:id="@+id/pois_list"
+            android:icon="@drawable/ic_list"
+            android:title="@string/list"
+            app:showAsAction="ifRoom"/>
+
+        <item
+            android:id="@+id/friends_list"
+            android:icon="@drawable/ic_friend_black"
+            android:title="@string/friends"
+            app:showAsAction="ifRoom"/>
+
+        <item
+            android:id="@+id/lives_list"
+            android:icon="@drawable/ic_live"
+            android:title="@string/live"
+            app:showAsAction="ifRoom"/>
+
+    </group>
+
+</menu>

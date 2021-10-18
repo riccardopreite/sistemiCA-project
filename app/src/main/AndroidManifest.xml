@@ -2,22 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.maptry">
-    <!--
-         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-         Google Maps Android API v2, but you must specify either coarse or fine
-         location permissions for the 'MyLocation' functionality.
-    -->
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:allowBackup="true"
+        android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -25,75 +23,65 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
-<!--        android:networkSecurityConfig="@xml/network_security_config"-->
-        <!--<receiver android:name=".Start"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter android:priority="500">
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-            <intent-filter android:priority="500">
-                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
-            </intent-filter>
 
-        </receiver>-->
-        <service android:name=".NotifyService"
+        <!-- Services -->
+        <service
+            android:name=".service.PushNotificationService"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".service.LocationService"
+            android:description="@string/location_service_description"
             android:enabled="true"
-            android:exported="false"/>
-        <!--
-             The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_maps_api.xml").
-             Note that the API key is linked to the encryption key used to sign the APK.
-             You need a different API key for each encryption key, including the release key that is used to
-             sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/.
-        -->
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <!-- Metadata -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_launcher_foreground" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+
+        <!-- Activities -->
         <activity
-            android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:name=".activity.SplashActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.LoginActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Login"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            >
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ShowFriendRequest"
-            android:label="friendRequest"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            >
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ShowFriendList"
-            android:label="friendList"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
 
@@ -102,11 +90,10 @@
         </activity>
 
         <activity
-            android:name=".ShowCar"
-            android:label="showcar"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:name=".activity.list.PointsOfInterestListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            >
+            android:label="Points of interest list"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
 
@@ -115,11 +102,10 @@
         </activity>
 
         <activity
-            android:name=".RemindTimer"
-            android:label="remindtimer"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:name=".activity.list.FriendsListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            >
+            android:label="Friends list"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
 
@@ -128,44 +114,16 @@
         </activity>
 
         <activity
-            android:name=".DeleteTimer"
-            android:label="deletetimer"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:name=".activity.list.LiveEventsListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            >
+            android:label="Live events list"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.BROWSABLE" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ShowLiveEvent"
-            android:label="showLiveEvent"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            >
-            <intent-filter tools:ignore="AppLinkUrlError">
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
-        </activity>
-        <activity
-        android:name=".ServerActivity"
-        android:label="Server"
-        android:theme="@style/AppTheme.NoActionBar"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-        >
-        <intent-filter tools:ignore="AppLinkUrlError">
-            <action android:name="android.intent.action.MAIN" />
-
-            <category android:name="android.intent.category.BROWSABLE" />
-        </intent-filter>
-    </activity>
-
-        <receiver android:name=".AcceptFriend"/>
-        <receiver android:name=".DeclineFriend"/>
 
     </application>
 
