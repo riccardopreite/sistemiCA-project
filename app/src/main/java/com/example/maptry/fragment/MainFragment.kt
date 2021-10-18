@@ -244,6 +244,12 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
             currentPositionMarker.remove()
         }
+        drawCurrentPositionMarker(currentPosition)
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17F))
+    }
+
+    fun drawCurrentPositionMarker(currentPosition: LatLng) {
         val markerIcon = ContextCompat.getDrawable(this.requireContext(), R.mipmap.ic_launcher_foreground)
         val icon = markerIcon?.toBitmap(150, 150)
         icon?.let { ic ->
@@ -256,8 +262,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 currentPositionMarker = it
             }
         }
-
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17F))
     }
 
     private fun updateMapUI(supportMapFragment: SupportMapFragment) {
@@ -307,6 +311,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 arguments?.apply {
                     putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
+                }
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    drawCurrentPositionMarker(currentPositionMarker.position)
                 }
 
                 poisList.forEach {

@@ -239,11 +239,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     override fun onStop() {
         Log.v(TAG, "onStop")
         super.onStop()
-        if(locationServiceIsBound) {
-            unbindService(connection)
-            locationServiceIsBound = false
-            stopLocationService()
-        }
+        // TODO Add possibility to disable it.
+//        if(locationServiceIsBound) {
+//            unbindService(connection)
+//            locationServiceIsBound = false
+//            stopLocationService()
+//        }
     }
 
     override fun onDestroy() {
