@@ -19,7 +19,8 @@ object LiveEvents {
 
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
-    private lateinit var createMarker:(Double,Double,String,String,String,Boolean) -> Unit
+    private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
+    private var validCallback: Boolean = false
 
 
     fun setUserId(user: String) {
@@ -29,6 +30,11 @@ object LiveEvents {
 
     fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
         this.createMarker = createMarker
+        validCallback = true
+    }
+
+    fun disableCallback() {
+        validCallback = false
     }
 
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
@@ -84,7 +90,7 @@ object LiveEvents {
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Live events successfully added.")
             val markId = response.body()!!
-            if(this::createMarker.isInitialized)
+            if(validCallback) {
                 createMarker(
                     addLiveEvent.latitude,
                     addLiveEvent.longitude,
@@ -93,6 +99,7 @@ object LiveEvents {
                     markId,
                     true
                 )
+            }
             return markId
         } else {
             Log.e(TAG, (response.errorBody() as ApiError).message)

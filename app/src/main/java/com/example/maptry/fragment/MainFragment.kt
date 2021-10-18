@@ -51,8 +51,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private val binding get() = _binding!!
 
     // App state
-    private lateinit var poisList: List<PointOfInterest>
-    private lateinit var liveEventsList: List<LiveEvent>
+    private lateinit var poisList: MutableList<PointOfInterest>
+    private lateinit var liveEventsList: MutableList<LiveEvent>
     private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
 
     // API
@@ -164,7 +164,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     @SuppressLint("PotentialBehaviorOverride") // per setOnMarkerClickListener
     override fun onMapReady(googleMap: GoogleMap) {
         Log.v(TAG, "OnMapReadyCallback.onMapReady")
-        this.map = googleMap
+        map = googleMap
         map.setOnMarkerClickListener(this)
         map.setOnMapClickListener(this)
         map.setOnMyLocationClickListener(this)
@@ -176,8 +176,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
         liveEventsList.forEach {
             createMarker(it.latitude,it.longitude,it.name,it.address,it.id,true)
         }
-        PointsOfInterest.setCreateMarkerCallback(this::createMarker)
-        LiveEvents.setCreateMarkerCallback(this::createMarker)
     }
 
     override fun onMapClick(positionOnMap: LatLng) {
@@ -262,11 +260,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
-    private fun createMarker(latitude: Double,longitude: Double,name: String,address: String,id: String,isLive: Boolean=false){
-        val color =     if(isLive)
-            BitmapDescriptorFactory.HUE_GREEN
-        else
-            BitmapDescriptorFactory.HUE_RED
+    private fun createMarker(latitude: Double,longitude: Double,name: String,address: String,id: String,isLive: Boolean=false) {
+        val color = if(isLive) BitmapDescriptorFactory.HUE_GREEN else BitmapDescriptorFactory.HUE_RED
         CoroutineScope(Dispatchers.Main).launch {
             val marker = map.addMarker(
                 MarkerOptions()
@@ -275,10 +270,47 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     .icon(BitmapDescriptorFactory.defaultMarker(color))
                     .alpha(0.7f)
             )
-            marker?.let { mark ->
-                markers[id] = mark
+            marker?.let { markers[id] = it }
+        }
+    }
+
+    override fun onResume() {
+        Log.i(TAG, "LIFECYCLE: onResume")
+        super.onResume()
+
+        PointsOfInterest.setCreateMarkerCallback(this::createMarker)
+        LiveEvents.setCreateMarkerCallback(this::createMarker)
+
+        if(this::map.isInitialized) {
+            Log.i(TAG, "Clearing the map from previously added markers, re-adding them.")
+            map.clear()
+            CoroutineScope(Dispatchers.IO).launch {
+                poisList.clear()
+                liveEventsList.clear()
+                poisList.addAll(PointsOfInterest.getPointsOfInterest())
+                liveEventsList.addAll(LiveEvents.getLiveEvents())
+
+                arguments?.apply {
+                    putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+                    putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
+                }
+
+                poisList.forEach {
+                    createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
+                }
+
+                liveEventsList.forEach {
+                    createMarker(it.latitude, it.longitude, it.name, it.address, it.id, true)
+                }
             }
         }
+    }
 
+    override fun onDestroy() {
+        Log.i(TAG, "LIFECYCLE: onDestroy")
+        super.onDestroy()
+
+        PointsOfInterest.disableCallback()
+        LiveEvents.disableCallback()
     }
 }

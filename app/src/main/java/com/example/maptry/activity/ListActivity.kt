@@ -22,10 +22,12 @@ open class ListActivity: AppCompatActivity(R.layout.activity_list)
 
     protected fun pushFragment(fragment: Fragment) {
         CoroutineScope(Dispatchers.Main).launch {
-            supportFragmentManager.beginTransaction().apply {
-                replace(R.id.list_fragment, fragment)
-                setReorderingAllowed(true)
-                commit()
+            if(!supportFragmentManager.isDestroyed) {
+                supportFragmentManager.beginTransaction().apply {
+                    replace(R.id.list_fragment, fragment)
+                    setReorderingAllowed(true)
+                    commit()
+                }
             }
         }
     }
