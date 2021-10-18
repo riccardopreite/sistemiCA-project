@@ -231,6 +231,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     fun onCurrentLocationUpdated(location: Location) {
+        Log.v(TAG, "Current loc $location")
+
         if(!this::map.isInitialized) {
             Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current position.")
             return
