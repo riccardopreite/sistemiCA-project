@@ -73,7 +73,7 @@ object LiveEvents {
             liveEvents.addAll(response.body()!!)
             return liveEvents
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
 
         return emptyList()
@@ -107,6 +107,7 @@ object LiveEvents {
                 addLiveEvent.owner,
                 addLiveEvent.expiresAfter.toLong()
             )
+            addLiveEventLocally(currentLive)
             if(validCallback) {
                 createMarker(
                     addLiveEvent.latitude,
@@ -114,18 +115,24 @@ object LiveEvents {
                     addLiveEvent.name,
                     addLiveEvent.address,
                     markId,
-                    false
+                    true
                 )
             }
             if(validPoiCallback){
                updateLive()
             }
-            liveEvents.add(currentLive)
 
             return markId
         } else {
-            Log.e(TAG, (response.errorBody() as ApiError).message)
+            Log.e(TAG, response.errorBody().toString())
         }
         return ""
+    }
+
+    fun addLiveEventLocally(liveEvent: LiveEvent) {
+        Log.v(TAG, "addLiveEventLocally")
+
+        liveEvents.add(liveEvent)
+        liveEvents.sortBy { it.name }
     }
 }

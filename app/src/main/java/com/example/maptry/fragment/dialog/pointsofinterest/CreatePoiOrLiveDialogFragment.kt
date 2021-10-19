@@ -23,9 +23,6 @@ import java.lang.ClassCastException
 import java.lang.IllegalStateException
 import android.widget.Toast
 
-
-
-
 class CreatePoiOrLiveDialogFragment: DialogFragment() {
     // Listener
     interface CreatePoiDialogListener {
@@ -106,7 +103,6 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                     val type = parent?.getItemAtPosition(position) as String
                     durationTp.setIs24HourView(true)
                     if(type == "Live event") {
-                        durationTp.setIs24HourView(true)
                         durationTp.apply {
                             hour = 3
                             minute = 0
@@ -122,51 +118,31 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
 
+            builder.setView(dialogView)
             //builder.setPositiveButton(R.string.create_poi_or_live) { dialog, arg ->            }
             builder.setPositiveButton(R.string.create_poi_or_live,null)
             builder.setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
 
-
-            builder.setView(dialogView)
             val dialog = builder.create()
             dialog.setOnShowListener {
                 val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                 positiveButton.setOnClickListener {
                     val name = nameEt.text.toString()
                     if(name == "") {
-                        nameEt.background.mutate().apply {
-                            colorFilter = BlendModeColorFilter(
-                                ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                BlendMode.SRC_IN
-                            )
-                        }
-                        Toast.makeText(context, "Please insert a name.", Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        val visibility = if(privateBtn.isChecked) {
-                            privateBtn.text.toString()
-                        } else {
-                            publicBtn.text.toString()
-                        }
+                        displayInsertedDataError(nameEt, "Please insert a name.")
+                    } else {
+                        val visibility = if(privateBtn.isChecked) privateBtn.text.toString() else publicBtn.text.toString()
 
                         if(typeSpinner.selectedItem.toString() == "Live event") {
                             CoroutineScope(Dispatchers.IO).launch {
                                 if(!LiveEvents.getLiveEvents().any { le ->
-                                        Log.v(TAG,"LIVE NAME "+le.name)
-                                        return@any if(name == le.name || addressTv.text == le.address){
-                                            nameEt.background.mutate().apply {
-                                                colorFilter = BlendModeColorFilter(
-                                                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                                    BlendMode.SRC_IN
-                                                )
-                                            }
-                                            requireActivity().runOnUiThread {
-                                                Toast.makeText(context, "A Live event with same name or address already exist.", Toast.LENGTH_SHORT).show()
-                                            }
-                                            true
-                                        }
-                                        else{ false }
-                                    }){
+                                    Log.v(TAG,"LIVE NAME "+le.name)
+                                    return@any if(name == le.name || addressTv.text == le.address) {
+                                        displayInsertedDataError(nameEt, "A Live event with the same name or address already exists.")
+                                        true
+                                    }
+                                    else { false }
+                                }) {
                                     val time = durationTp.hour * 60 + durationTp.minute
                                     listener.onAddLiveEvent(this@CreatePoiOrLiveDialogFragment, AddLiveEvent(
                                         time,
@@ -178,24 +154,14 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                                     ))
                                 }
                             }
-                        }
-                        else{
-                            // Point of Interest
+                        } else { // Point of Interest
                             CoroutineScope(Dispatchers.IO).launch {
                                 if(!PointsOfInterest.getPointsOfInterest().any { poi ->
-                                        return@any if(name == poi.name || addressTv.text == poi.address) {
-                                            nameEt.background.mutate().apply {
-                                                colorFilter = BlendModeColorFilter(
-                                                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                                    BlendMode.SRC_IN
-                                                )
-                                            }
-                                            requireActivity().runOnUiThread {
-                                                Toast.makeText(context, "A poi with same name or address already exist.", Toast.LENGTH_SHORT).show()
-                                            }
-                                            true
-                                        } else { false }
-                                    }) {
+                                    return@any if(name == poi.name || addressTv.text == poi.address) {
+                                        displayInsertedDataError(nameEt, "A Point of interest with the same name or address already exists.")
+                                        true
+                                    } else { false }
+                                }) {
                                     listener.onAddPointOfInterest(this@CreatePoiOrLiveDialogFragment, AddPointOfInterestPoi(
                                         addressTv.text.toString(),
                                         typeSpinner.selectedItem.toString(),
@@ -206,21 +172,26 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                                         visibility,
                                         if(url != null) url!! else "---"
                                     ))
-                                       // return@launch
                                 }
-                                // val marker = createMarker(p0)
-
                             }
                         }
-
-
                     }
                 }
             }
-
             return dialog
-
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    private fun displayInsertedDataError(editText: EditText, displayedMessage: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            editText.background.mutate().apply {
+                colorFilter = BlendModeColorFilter(
+                    ContextCompat.getColor(requireContext(), R.color.quantum_googred),
+                    BlendMode.SRC_IN
+                )
+            }
+            Toast.makeText(context, displayedMessage, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onAttach(context: Context) {

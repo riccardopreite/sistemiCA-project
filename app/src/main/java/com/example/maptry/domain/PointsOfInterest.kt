@@ -123,6 +123,7 @@ object PointsOfInterest {
                 addPointOfInterest.poi.visibility,
                 addPointOfInterest.poi.url
             )
+            addPointOfInterestLocally(currentPOI)
             if(validCallback) {
                 createMarker(
                     addPointOfInterest.poi.latitude,
@@ -137,8 +138,6 @@ object PointsOfInterest {
                 updatePoi()
             }
 
-
-            addPointOfInterestLocally(currentPOI)
             return markId
         } else {
             Log.e(TAG, response.errorBody().toString())
@@ -176,5 +175,6 @@ object PointsOfInterest {
         Log.v(TAG, "addPointOfInterestLocally")
 
         pointsOfInterest.add(pointOfInterest)
+        pointsOfInterest.sortBy { it.name }
     }
 }

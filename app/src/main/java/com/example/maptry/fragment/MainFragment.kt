@@ -13,7 +13,6 @@ import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.example.maptry.R
-import com.example.maptry.activity.MainActivity
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainBinding
@@ -99,7 +98,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
         }
 
-        Places.initialize(requireContext(),getString(R.string.places_api))
+        Places.initialize(requireContext(), getString(R.string.places_api))
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -205,26 +204,24 @@ class MainFragment : Fragment(R.layout.fragment_main),
         Log.v(TAG, "GoogleMap.OnMarkerClickListener.onMarkerClick")
         // Searching for the marker in the map of saved markers.
         val foundMarker = markers.entries.filter { it.value == marker }
-        if(foundMarker.isEmpty()) {
-            Log.e(TAG, "Marker not found in the map of saved markers.")
-        }
+        if(foundMarker.isNotEmpty()) {
+            // The marker has been found, hence we need to discover if it is a live event or point of interest.
+            val markerId = foundMarker[0].key
+            val foundPoi = poisList.filter { it.markId == markerId }
+            if(foundPoi.isNotEmpty()) {
+                val poiDetailsDialog = PoiDetailsDialogFragment.newInstance(foundPoi[0])
 
-        // The marker has been found, hence we need to discover if it is a live event or point of interest.
-        val markerId = foundMarker[0].key
-        val foundPoi = poisList.filter { it.markId == markerId }
-        if(foundPoi.isNotEmpty()) {
-            val poiDetailsDialog = PoiDetailsDialogFragment.newInstance(foundPoi[0])
-
-            activity?.let {
-                poiDetailsDialog.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
+                activity?.let {
+                    poiDetailsDialog.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
+                }
             }
-        }
-        val foundLiveEvent = liveEventsList.filter { it.id == markerId }
-        if(foundLiveEvent.isNotEmpty()) {
-            val liveEventDialog = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
+            val foundLiveEvent = liveEventsList.filter { it.id == markerId }
+            if(foundLiveEvent.isNotEmpty()) {
+                val liveEventDialog = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
 
-            activity?.let {
-                liveEventDialog.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
+                activity?.let {
+                    liveEventDialog.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
+                }
             }
         }
 
@@ -251,9 +248,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     private fun drawCurrentPositionMarker(currentPosition: LatLng) {
-        val markerIcon = ContextCompat.getDrawable(this.requireContext(), R.mipmap.ic_launcher_foreground)
-        val icon = markerIcon?.toBitmap(150, 150)
-        icon?.let { ic ->
+        val markerIcon = ContextCompat.getDrawable(requireContext(), R.mipmap.ic_launcher_foreground)
+        markerIcon?.toBitmap(150, 150)?.let { ic ->
             map.addMarker(
                 MarkerOptions()
                     .position(currentPosition)
@@ -279,7 +275,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
-    private fun createMarker(latitude: Double,longitude: Double,name: String,address: String,id: String,isLive: Boolean=false) {
+    private fun createMarker(latitude: Double, longitude: Double, name: String, address: String, id: String, isLive: Boolean=false) {
         val color = if(isLive) BitmapDescriptorFactory.HUE_GREEN else BitmapDescriptorFactory.HUE_RED
         CoroutineScope(Dispatchers.Main).launch {
             val marker = map.addMarker(
@@ -290,7 +286,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     .alpha(0.7f)
             )
             marker?.let { markers[id] = it }
-
         }
     }
 
@@ -299,18 +294,15 @@ class MainFragment : Fragment(R.layout.fragment_main),
         super.onResume()
 
         PointsOfInterest.setCreateMarkerCallback(this::createMarker)
-        PointsOfInterest.setUpdatePoiCallback(this::updatePoi)
+        PointsOfInterest.setUpdatePoiCallback(this::updatePoisList)
         LiveEvents.setCreateMarkerCallback(this::createMarker)
-        LiveEvents.setUpdateLiveCallback(this::updateLive)
+        LiveEvents.setUpdateLiveCallback(this::updateLiveEventsList)
 
         if(this::map.isInitialized) {
             Log.i(TAG, "Clearing the map from previously added markers, re-adding them.")
             map.clear()
-            /*CoroutineScope(Dispatchers.IO).launch {
-
-            }*/
-            updatePoi()
-            updateLive()
+            updatePoisList()
+            updateLiveEventsList()
 
             CoroutineScope(Dispatchers.Main).launch {
                 drawCurrentPositionMarker(currentPositionMarker.position)
@@ -325,12 +317,12 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
         }
     }
-    private fun updateLive(){
+
+    private fun updateLiveEventsList() {
+        Log.v(TAG, "updateLiveEventsList")
         CoroutineScope(Dispatchers.IO).launch {
             liveEventsList.clear()
             liveEventsList.addAll(LiveEvents.getLiveEvents())
-            Log.v(TAG, "updated live from server")
-            println(liveEventsList)
 
             arguments?.apply {
                 putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
@@ -338,12 +330,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
-    private fun updatePoi(){
+    private fun updatePoisList() {
+        Log.v(TAG, "updatePoisList")
         CoroutineScope(Dispatchers.IO).launch {
             poisList.clear()
             poisList.addAll(PointsOfInterest.getPointsOfInterest())
-            Log.v(TAG, "updated pois from server")
-            println(poisList)
 
             arguments?.apply {
                 putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
@@ -351,7 +342,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
     override fun onDestroy() {
-        Log.i(TAG, "LIFECYCLE: onDestroy")
+        Log.i(TAG, "onDestroy")
         super.onDestroy()
 
         PointsOfInterest.disableCallback()
