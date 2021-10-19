@@ -8,8 +8,12 @@ import android.view.View
 import android.widget.ArrayAdapter
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentPointsOfInterestBinding
+import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment
 import com.example.maptry.model.pointofinterests.PointOfInterest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 
 
@@ -86,6 +90,19 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
         binding.closePoisFragment.setOnClickListener {
             activity?.let {
                 it.finish()
+            }
+        }
+        binding.refreshPoisListFragment.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+
+                poisList.clear()
+                poisList.addAll(PointsOfInterest.getPointsOfInterest("",true))
+                CoroutineScope(Dispatchers.Main).launch {
+                    binding.poisListView.adapter = ArrayAdapter(
+                        view.context,
+                        android.R.layout.simple_list_item_1,
+                        poisList.map { it.name })
+                }
             }
         }
     }

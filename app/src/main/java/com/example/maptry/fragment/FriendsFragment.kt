@@ -7,10 +7,14 @@ import android.view.View
 import android.widget.ArrayAdapter
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentFriendsBinding
+import com.example.maptry.domain.Friends
 import com.example.maptry.fragment.dialog.friends.EliminateFriendDialogFragment
 import com.example.maptry.fragment.dialog.friends.FriendDialogFragment
 import com.example.maptry.fragment.dialog.friends.AddFriendDialogFragment
 import com.example.maptry.model.friends.Friend
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class FriendsFragment : Fragment(R.layout.fragment_friends){
 
@@ -95,6 +99,20 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
             activity?.let {
                 addFriendDialog.show(it.supportFragmentManager, "AddFriendDialogFragment")
             }
+        }
+        binding.refreshFriends.setOnClickListener{
+            CoroutineScope(Dispatchers.IO).launch {
+                friendsList.clear()
+                friendsList.addAll(Friends.getFriends(true))
+                CoroutineScope(Dispatchers.Main).launch {
+
+                    binding.friendsListView.adapter = ArrayAdapter(
+                        view.context,
+                        android.R.layout.simple_list_item_1,
+                        friendsList.map { it.friendUsername })
+                }
+            }
+
         }
 
         binding.closeFriendsFragment.setOnClickListener {

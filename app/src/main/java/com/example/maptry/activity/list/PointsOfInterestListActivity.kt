@@ -52,7 +52,7 @@ class PointsOfInterestListActivity: ListActivity(),
     override fun onDeleteButtonPressed(dialog: DialogFragment, poiName: String) {
         Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeleteButtonPressed")
         CoroutineScope(Dispatchers.IO).launch {
-            val pois = PointsOfInterest.getPointsOfInterest()
+            val pois = PointsOfInterest.getPointsOfInterest("",true)
             poiToDelete = pois.first { it.name == poiName } // It exists for sure.
             poiToDelete?.let {
                 PointsOfInterest.removePointOfInterestLocally(it)
@@ -121,7 +121,7 @@ class PointsOfInterestListActivity: ListActivity(),
     private fun updateMarkerList(){
         Log.v(TAG,"PointsOfInterestListActivity.updatePOISList")
         CoroutineScope(Dispatchers.IO).launch {
-            val poisList = PointsOfInterest.getPointsOfInterest()
+            val poisList = PointsOfInterest.getPointsOfInterest("",true)
             val poisFragment = PointsOfInterestFragment.newInstance(poisList)
             pushFragment(poisFragment)
         }

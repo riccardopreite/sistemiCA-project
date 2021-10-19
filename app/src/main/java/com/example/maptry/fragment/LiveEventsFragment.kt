@@ -7,10 +7,15 @@ import android.view.View
 import android.widget.ArrayAdapter
 import com.example.maptry.R
 import com.example.maptry.databinding.FragmentLiveEventsBinding
+import com.example.maptry.domain.Friends
+import com.example.maptry.domain.LiveEvents
 import com.example.maptry.fragment.dialog.friends.FriendDialogFragment
 import com.example.maptry.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
 import com.example.maptry.model.liveevents.LiveEvent
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -76,6 +81,16 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
             activity?.let {
                 it.finish()
             }
+        }
+        binding.refreshLiveeventsListFragment.setOnClickListener{
+            CoroutineScope(Dispatchers.IO).launch {
+                liveEventsList.clear()
+                liveEventsList.addAll(LiveEvents.getLiveEvents(true))
+                CoroutineScope(Dispatchers.Main).launch {
+                    binding.liveeventsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
+                }
+            }
+
         }
     }
 

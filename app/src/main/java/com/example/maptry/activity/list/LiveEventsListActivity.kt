@@ -26,7 +26,7 @@ class LiveEventsListActivity: ListActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         CoroutineScope(Dispatchers.IO).launch {
-            val liveEventsList = LiveEvents.getLiveEvents()
+            val liveEventsList = LiveEvents.getLiveEvents(true)
             val liveEventsFragment = LiveEventsFragment.newInstance(liveEventsList)
             pushFragment(liveEventsFragment)
         }

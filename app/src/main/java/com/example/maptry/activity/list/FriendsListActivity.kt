@@ -113,7 +113,7 @@ class FriendsListActivity: ListActivity(),
     override fun onDeleteButtonPressed(dialog: DialogFragment, friendUsername: String) {
         Log.v(TAG, "EliminateFriendDialogListener.onDeleteButtonPressed")
         CoroutineScope(Dispatchers.IO).launch {
-            val friends = Friends.getFriends()
+            val friends = Friends.getFriends(true)
             friendToDelete = friends.first { it.friendUsername == friendUsername } // It exists for sure.
             friendToDelete?.let {
                 Friends.removeFriendLocally(it)
