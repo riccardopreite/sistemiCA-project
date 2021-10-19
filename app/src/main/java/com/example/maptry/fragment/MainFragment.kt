@@ -279,52 +279,53 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
     private fun createMarker(latitude: Double, longitude: Double, name: String, address: String, id: String, isLive: Boolean=false) {
         val color = if(isLive) BitmapDescriptorFactory.HUE_GREEN else BitmapDescriptorFactory.HUE_RED
-        CoroutineScope(Dispatchers.Main).launch {
-            val marker = map.addMarker(
-                MarkerOptions()
-                    .position(LatLng(latitude, longitude))
-                    .title("$name - $address")
-                    .icon(BitmapDescriptorFactory.defaultMarker(color))
-                    .alpha(0.7f)
-            )
-            marker?.let { markers[id] = it }
-        }
+
+        val marker = map.addMarker(
+            MarkerOptions()
+                .position(LatLng(latitude, longitude))
+                .title("$name - $address")
+                .icon(BitmapDescriptorFactory.defaultMarker(color))
+                .alpha(0.7f)
+        )
+        marker?.let { markers[id] = it }
     }
 
     override fun onResume() {
-        Log.i(TAG, "LIFECYCLE: onResume")
+        Log.v(TAG, "onResume")
         super.onResume()
 
-        PointsOfInterest.setCreateMarkerCallback(this::createMarker)
+        PointsOfInterest.setCreateMarkerCallback { lat, lon, name, addr, id, isLive ->
+            CoroutineScope(Dispatchers.Main).launch {
+                createMarker(lat, lon, name, addr, id, isLive)
+            }
+        }
+        LiveEvents.setCreateMarkerCallback { lat, lon, name, addr, id, isLive ->
+            CoroutineScope(Dispatchers.Main).launch {
+                createMarker(lat, lon, name, addr, id, isLive)
+            }
+        }
         PointsOfInterest.setUpdatePoiCallback(this::updatePoiAndLive)
-        LiveEvents.setCreateMarkerCallback(this::createMarker)
         LiveEvents.setUpdateLiveCallback(this::updatePoiAndLive)
 
         if(this::map.isInitialized) {
             Log.i(TAG, "Clearing the map from previously added markers, re-adding them.")
             map.clear()
-            updatePoisList()
-            updateLiveEventsList()
 
-            }*/
             updatePoiAndLive()
 
             CoroutineScope(Dispatchers.Main).launch {
                 drawCurrentPositionMarker(currentPositionMarker.position)
-            }
-
-            poisList.forEach {
-                createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
-            }
-
-            liveEventsList.forEach {
-                createMarker(it.latitude, it.longitude, it.name, it.address, it.id, true)
+                poisList.forEach {
+                    createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
+                }
+                liveEventsList.forEach {
+                    createMarker(it.latitude, it.longitude, it.name, it.address, it.id, true)
+                }
             }
         }
     }
 
-
-    private fun updatePoiAndLive(){
+    private fun updatePoiAndLive() {
         CoroutineScope(Dispatchers.IO).launch {
             poisList.clear()
             liveEventsList.clear()
@@ -332,18 +333,15 @@ class MainFragment : Fragment(R.layout.fragment_main),
             liveEventsList.addAll(LiveEvents.getLiveEvents())
             poisList.addAll(PointsOfInterest.getPointsOfInterest())
 
-            Log.v(TAG, "updated pois from server")
-            println(poisList)
-            println(liveEventsList)
-
             arguments?.apply {
                 putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
                 putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
             }
         }
     }
+
     override fun onDestroy() {
-        Log.i(TAG, "onDestroy")
+        Log.v(TAG, "onDestroy")
         super.onDestroy()
 
         PointsOfInterest.disableCallback()

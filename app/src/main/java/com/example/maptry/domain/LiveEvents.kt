@@ -1,11 +1,9 @@
 package com.example.maptry.domain
 
 import android.util.Log
-import com.example.maptry.api.ApiError
 import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.model.liveevents.AddLiveEvent
 import com.example.maptry.model.liveevents.LiveEvent
-import com.example.maptry.model.pointofinterests.PointOfInterest
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -21,9 +19,9 @@ object LiveEvents {
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
     private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
-    private lateinit var updatePoi: () -> Unit
-    private var validCallback: Boolean = false
-    private var validPoiCallback: Boolean = false
+    private lateinit var updateList: () -> Unit
+    private var validCreateMarkerCallback: Boolean = false
+    private var validUpdateListCallback: Boolean = false
 
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
@@ -32,17 +30,17 @@ object LiveEvents {
 
     fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
         this.createMarker = createMarker
-        validCallback = true
+        validCreateMarkerCallback = true
     }
 
     fun disableCallback() {
-        validCallback = false
-        validPoiCallback = false
+        validCreateMarkerCallback = false
+        validUpdateListCallback = false
     }
 
     fun setUpdateLiveCallback(updatePoi:() -> Unit){
-        this.updatePoi = updatePoi
-        validPoiCallback = true
+        this.updateList = updatePoi
+        validUpdateListCallback = true
     }
 
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
@@ -108,7 +106,7 @@ object LiveEvents {
                 addLiveEvent.expiresAfter.toLong()
             )
             addLiveEventLocally(currentLive)
-            if(validCallback) {
+            if(validCreateMarkerCallback) {
                 createMarker(
                     addLiveEvent.latitude,
                     addLiveEvent.longitude,
@@ -118,8 +116,8 @@ object LiveEvents {
                     true
                 )
             }
-            if(validPoiCallback){
-               updatePoi()
+            if(validUpdateListCallback) {
+               updateList()
             }
 
             return markId
@@ -129,7 +127,7 @@ object LiveEvents {
         return ""
     }
 
-    fun addLiveEventLocally(liveEvent: LiveEvent) {
+    private fun addLiveEventLocally(liveEvent: LiveEvent) {
         Log.v(TAG, "addLiveEventLocally")
 
         liveEvents.add(liveEvent)

@@ -1,7 +1,6 @@
 package com.example.maptry.domain
 
 import android.util.Log
-import com.example.maptry.api.ApiError
 import com.example.maptry.api.RetrofitInstances
 import com.example.maptry.model.pointofinterests.AddPointOfInterest
 import com.example.maptry.model.pointofinterests.PointOfInterest
@@ -21,9 +20,9 @@ object PointsOfInterest {
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
     private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
-    private lateinit var updatePoi: () -> Unit
-    private var validCallback: Boolean = false
-    private var validPoiCallback: Boolean = false
+    private lateinit var updateList: () -> Unit
+    private var validCreateMarkerCallback: Boolean = false
+    private var validUpdateListCallback: Boolean = false
 
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
@@ -32,17 +31,17 @@ object PointsOfInterest {
 
     fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
         this.createMarker = createMarker
-        validCallback = true
+        validCreateMarkerCallback = true
     }
 
     fun disableCallback() {
-        validCallback = false
-        validPoiCallback = false
+        validCreateMarkerCallback = false
+        validUpdateListCallback = false
     }
 
     fun setUpdatePoiCallback(updatePoi:() -> Unit){
-        this.updatePoi = updatePoi
-        validPoiCallback = true
+        this.updateList = updatePoi
+        validUpdateListCallback = true
     }
 
 
@@ -124,7 +123,7 @@ object PointsOfInterest {
                 addPointOfInterest.poi.url
             )
             addPointOfInterestLocally(currentPOI)
-            if(validCallback) {
+            if(validCreateMarkerCallback) {
                 createMarker(
                     addPointOfInterest.poi.latitude,
                     addPointOfInterest.poi.longitude,
@@ -134,8 +133,8 @@ object PointsOfInterest {
                     false
                 )
             }
-            if(validPoiCallback){
-                updatePoi()
+            if(validUpdateListCallback) {
+                updateList()
             }
 
             return markId
@@ -169,6 +168,7 @@ object PointsOfInterest {
         Log.v(TAG, "removePointOfInterestLocally")
 
         pointsOfInterest.remove(pointOfInterest)
+        pointsOfInterest.sortBy { it.name }
     }
 
     fun addPointOfInterestLocally(pointOfInterest: PointOfInterest) {

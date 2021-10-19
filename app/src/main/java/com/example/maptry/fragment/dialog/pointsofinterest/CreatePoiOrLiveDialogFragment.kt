@@ -119,7 +119,6 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
             }
 
             builder.setView(dialogView)
-            //builder.setPositiveButton(R.string.create_poi_or_live) { dialog, arg ->            }
             builder.setPositiveButton(R.string.create_poi_or_live,null)
             builder.setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
 
@@ -137,36 +136,18 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                         if(typeSpinner.selectedItem.toString() == "Live event") {
                             CoroutineScope(Dispatchers.IO).launch {
                                 if(!LiveEvents.getLiveEvents().any { le ->
-                                        Log.v(TAG,"LIVE NAME "+le.name)
-                                        return@any when {
-                                            name == le.name -> {
-                                                requireActivity().runOnUiThread {
-                                                    Toast.makeText(context, "A Live event with same name already exist.", Toast.LENGTH_SHORT).show()
-                                                }
-                                                nameEt.background.mutate().apply {
-                                                    colorFilter = BlendModeColorFilter(
-                                                        ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                                        BlendMode.SRC_IN
-                                                    )
-                                                }
-                                                true
-                                            }
-                                            addressTv.text == le.address -> {
-                                                requireActivity().runOnUiThread {
-                                                    Toast.makeText(context, "A Live event with same address already exist.", Toast.LENGTH_SHORT).show()
-                                                }
-                                                nameEt.background.mutate().apply {
-                                                    colorFilter = BlendModeColorFilter(
-                                                        ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                                        BlendMode.SRC_IN
-                                                    )
-                                                }
-                                                true
-                                            }
-                                            else -> { false }
+                                    return@any when {
+                                        name == le.name -> {
+                                            displayInsertedDataError(nameEt, "A Live event with the same name already exists.")
+                                            true
                                         }
-
-                                    }){
+                                        addressTv.text == le.address -> {
+                                            displayInsertedDataError(nameEt, "A Live event with the same address already exists.")
+                                            true
+                                        }
+                                        else -> false
+                                    }
+                                }) {
                                     val time = durationTp.hour * 60 + durationTp.minute
                                     listener.onAddLiveEvent(this@CreatePoiOrLiveDialogFragment, AddLiveEvent(
                                         time,
@@ -181,35 +162,18 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                         } else { // Point of Interest
                             CoroutineScope(Dispatchers.IO).launch {
                                 if(!PointsOfInterest.getPointsOfInterest().any { poi ->
-
                                         return@any when {
                                             name == poi.name -> {
-                                                requireActivity().runOnUiThread {
-                                                    Toast.makeText(context, "A Poi with same name already exist.", Toast.LENGTH_SHORT).show()
-                                                }
-                                                nameEt.background.mutate().apply {
-                                                    colorFilter = BlendModeColorFilter(
-                                                        ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                                        BlendMode.SRC_IN
-                                                    )
-                                                }
+                                                displayInsertedDataError(nameEt, "A Poi with the same name already exists.")
                                                 true
                                             }
                                             addressTv.text == poi.address -> {
-                                                requireActivity().runOnUiThread {
-                                                    Toast.makeText(context, "A Poi with same address already exist.", Toast.LENGTH_SHORT).show()
-                                                }
-                                                nameEt.background.mutate().apply {
-                                                    colorFilter = BlendModeColorFilter(
-                                                        ContextCompat.getColor(requireContext(), R.color.quantum_googred),
-                                                        BlendMode.SRC_IN
-                                                    )
-                                                }
+                                                displayInsertedDataError(nameEt, "A Poi with the same address already exists.")
                                                 true
                                             }
-                                            else -> { false }
+                                            else -> false
                                         }
-                                    }) {
+                                }) {
                                     listener.onAddPointOfInterest(this@CreatePoiOrLiveDialogFragment, AddPointOfInterestPoi(
                                         addressTv.text.toString(),
                                         typeSpinner.selectedItem.toString(),
