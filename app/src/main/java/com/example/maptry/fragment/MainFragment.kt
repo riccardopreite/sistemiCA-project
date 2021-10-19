@@ -16,7 +16,6 @@ import com.example.maptry.R
 import com.example.maptry.ui.CircleTransform
 import com.example.maptry.config.Auth
 import com.example.maptry.databinding.FragmentMainBinding
-import com.example.maptry.domain.Friends
 import com.example.maptry.domain.LiveEvents
 import com.example.maptry.domain.PointsOfInterest
 import com.example.maptry.fragment.dialog.pointsofinterest.CreatePoiOrLiveDialogFragment
@@ -232,8 +231,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     fun onCurrentLocationUpdated(location: Location) {
-        Log.v(TAG, "Current loc $location")
-
         if(!this::map.isInitialized) {
             Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current position.")
             return

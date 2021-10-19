@@ -148,9 +148,9 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                                         else -> false
                                     }
                                 }) {
-                                    val time = durationTp.hour * 60 + durationTp.minute
+                                    val timeInSeconds = durationTp.hour * 3600 + durationTp.minute * 60
                                     listener.onAddLiveEvent(this@CreatePoiOrLiveDialogFragment, AddLiveEvent(
-                                        time,
+                                        timeInSeconds,
                                         "",
                                         name,
                                         addressTv.text.toString(),

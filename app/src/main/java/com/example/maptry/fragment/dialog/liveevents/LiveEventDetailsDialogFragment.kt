@@ -10,11 +10,10 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.maptry.R
 import com.example.maptry.model.liveevents.LiveEvent
+import kotlinx.datetime.*
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 
 class LiveEventDetailsDialogFragment : DialogFragment() {
     // Listener
@@ -58,19 +57,19 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
             val dialogView = inflater.inflate(R.layout.dialog_live_event_details, null)
             val titleTv = dialogView.findViewById<TextView>(R.id.live_event_name_header)
             val addressTv = dialogView.findViewById<TextView>(R.id.show_live_event_address)
-            val urlTv = dialogView.findViewById<TextView>(R.id.show_owner)
-            val phoneTv = dialogView.findViewById<TextView>(R.id.show_ending)
-            val addPoiToMyPoisBtn = dialogView.findViewById<Button>(R.id.share_live_event)
+            val ownerTv = dialogView.findViewById<TextView>(R.id.show_owner)
+            val endingTv = dialogView.findViewById<TextView>(R.id.show_ending)
+            val shareLiveEvent = dialogView.findViewById<Button>(R.id.share_live_event)
             val routeBtn = dialogView.findViewById<Button>(R.id.navigate_to_poi)
 
             titleTv.text = getString(R.string.dialog_live_event_details, liveEvent.name)
             addressTv.text = liveEvent.address
-            phoneTv.text = LocalDateTime.ofEpochSecond(liveEvent.expirationDate, 0, OffsetDateTime.now().offset).format(
-                DateTimeFormatter.ISO_LOCAL_DATE_TIME
-            )
-            urlTv.text = liveEvent.owner
+            val dt = Instant.fromEpochSeconds(liveEvent.expirationDate).toLocalDateTime(TimeZone.currentSystemDefault())
+            endingTv.text = getString(R.string.date_format, dt.dayOfMonth, dt.month.getDisplayName(TextStyle.FULL, resources.configuration.locales[0]), dt.year, dt.hour, dt.minute)
 
-            addPoiToMyPoisBtn.setOnClickListener {
+            ownerTv.text = liveEvent.owner
+
+            shareLiveEvent.setOnClickListener {
                 listener.onShareButtonPressed(this, liveEvent)
             }
 

@@ -110,4 +110,5 @@
     <string name="share_place">Hey! I think you would be interested in visiting %1$s in %2$s\nhttps://maps.google.com/?q=%3$f,%4$f</string>
     <string name="share_place_intent">You\'re sharing %1$s.</string>
     <string name="loading_friends">Loading your friends list.</string>
+    <string name="date_format">%1$d %2$s %3$d %4$d:%5$d</string>
 </resources>
