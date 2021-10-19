@@ -21,6 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_signout" />
+
     <ImageView
         android:id="@+id/refreshFriends"
         android:layout_width="wrap_content"
@@ -29,8 +30,10 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/refresh_list_btn"
         app:srcCompat="@drawable/ic_refresh"
         tools:ignore="RtlHardcoded" />
+
     <ImageView
         android:id="@+id/add_friend"
         android:layout_width="wrap_content"

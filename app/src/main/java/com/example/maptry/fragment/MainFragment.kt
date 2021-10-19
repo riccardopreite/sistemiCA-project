@@ -281,8 +281,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
         val marker = map.addMarker(
             MarkerOptions()
                 .position(LatLng(latitude, longitude))
-                .title("$name - $address")
+                .title(name)
                 .icon(BitmapDescriptorFactory.defaultMarker(color))
+                .snippet(address)
                 .alpha(0.7f)
         )
         marker?.let { markers[id] = it }

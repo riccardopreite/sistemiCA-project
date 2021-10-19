@@ -83,25 +83,21 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
         binding.poisListView.setOnItemClickListener { parent, v, position, id ->
             val selectedPoiName = parent.getItemAtPosition(position) as String
             listener.onPoiSelected(this, selectedPoiName)
-//            val markerId = LatLng(poi.latitude, poi.longitude)
-            // TODO Sarebbe da invocare MapsActivity.onMarkerClick(mymarker[markerId]!!)
         }
 
         binding.closePoisFragment.setOnClickListener {
-            activity?.let {
-                it.finish()
-            }
+            activity?.finish()
         }
         binding.refreshPoisListFragment.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-
                 poisList.clear()
                 poisList.addAll(PointsOfInterest.getPointsOfInterest("",true))
                 CoroutineScope(Dispatchers.Main).launch {
                     binding.poisListView.adapter = ArrayAdapter(
                         view.context,
                         android.R.layout.simple_list_item_1,
-                        poisList.map { it.name })
+                        poisList.map { it.name }
+                    )
                 }
             }
         }

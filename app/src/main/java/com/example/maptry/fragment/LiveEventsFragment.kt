@@ -75,6 +75,7 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         binding.closeLiveeventsFragment.setOnClickListener {
             activity?.finish()
         }
+
         binding.refreshLiveeventsListFragment.setOnClickListener{
             CoroutineScope(Dispatchers.IO).launch {
                 liveEventsList.clear()

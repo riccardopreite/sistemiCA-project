@@ -21,6 +21,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_signout" />
+
     <ImageView
         android:id="@+id/refresh_poisList_fragment"
         android:layout_width="wrap_content"
@@ -29,6 +30,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/refresh_list_btn"
         app:srcCompat="@drawable/ic_refresh"
         tools:ignore="RtlHardcoded" />
 

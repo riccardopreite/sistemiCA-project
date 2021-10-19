@@ -39,12 +39,10 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
         private const val ARG_WILLDELETEFRIEND = "willDeleteFriend"
 
         @JvmStatic
-        fun newInstance(friends: List<Friend>/*, selectedFriendName: String*/) =
+        fun newInstance(friends: List<Friend>) =
             FriendsFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_FRIENDSLIST, friends.toTypedArray())
-                    //putString(ARG_SELECTEDFRIENDNAME, selectedFriendName)
-                    // TODO check in listener
                 }
             }
     }
@@ -100,25 +98,24 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
                 addFriendDialog.show(it.supportFragmentManager, "AddFriendDialogFragment")
             }
         }
-        binding.refreshFriends.setOnClickListener{
+
+        binding.refreshFriends.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
                 friendsList.clear()
                 friendsList.addAll(Friends.getFriends(true))
                 CoroutineScope(Dispatchers.Main).launch {
-
                     binding.friendsListView.adapter = ArrayAdapter(
                         view.context,
                         android.R.layout.simple_list_item_1,
-                        friendsList.map { it.friendUsername })
+                        friendsList.map { it.friendUsername }
+                    )
                 }
             }
 
         }
 
         binding.closeFriendsFragment.setOnClickListener {
-            activity?.let {
-                it.finish()
-            }
+            activity?.finish()
         }
     }
 
