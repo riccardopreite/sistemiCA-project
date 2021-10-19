@@ -21,7 +21,7 @@ object LiveEvents {
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
     private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
-    private lateinit var updateLive: () -> Unit
+    private lateinit var updatePoi: () -> Unit
     private var validCallback: Boolean = false
     private var validPoiCallback: Boolean = false
 
@@ -40,8 +40,8 @@ object LiveEvents {
         validPoiCallback = false
     }
 
-    fun setUpdateLiveCallback(updateLive:() -> Unit){
-        this.updateLive = updateLive
+    fun setUpdateLiveCallback(updatePoi:() -> Unit){
+        this.updatePoi = updatePoi
         validPoiCallback = true
     }
 
@@ -114,11 +114,11 @@ object LiveEvents {
                     addLiveEvent.name,
                     addLiveEvent.address,
                     markId,
-                    false
+                    true
                 )
             }
             if(validPoiCallback){
-               updateLive()
+               updatePoi()
             }
             liveEvents.add(currentLive)
 

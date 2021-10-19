@@ -185,6 +185,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
             null
         }
         val createPoiDialog = address?.let {
+            Log.v(TAG,"Address found:")
+            println(it)
             CreatePoiOrLiveDialogFragment.newInstance(
                 positionOnMap.latitude,
                 positionOnMap.longitude,
@@ -299,9 +301,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
         super.onResume()
 
         PointsOfInterest.setCreateMarkerCallback(this::createMarker)
-        PointsOfInterest.setUpdatePoiCallback(this::updatePoi)
+        PointsOfInterest.setUpdatePoiCallback(this::updatePoiAndLive)
         LiveEvents.setCreateMarkerCallback(this::createMarker)
-        LiveEvents.setUpdateLiveCallback(this::updateLive)
+        LiveEvents.setUpdateLiveCallback(this::updatePoiAndLive)
 
         if(this::map.isInitialized) {
             Log.i(TAG, "Clearing the map from previously added markers, re-adding them.")
@@ -309,8 +311,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             /*CoroutineScope(Dispatchers.IO).launch {
 
             }*/
-            updatePoi()
-            updateLive()
+            updatePoiAndLive()
 
             CoroutineScope(Dispatchers.Main).launch {
                 drawCurrentPositionMarker(currentPositionMarker.position)
@@ -325,28 +326,23 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
         }
     }
-    private fun updateLive(){
+
+
+    private fun updatePoiAndLive(){
         CoroutineScope(Dispatchers.IO).launch {
+            poisList.clear()
             liveEventsList.clear()
+
             liveEventsList.addAll(LiveEvents.getLiveEvents())
-            Log.v(TAG, "updated live from server")
+            poisList.addAll(PointsOfInterest.getPointsOfInterest())
+
+            Log.v(TAG, "updated pois from server")
+            println(poisList)
             println(liveEventsList)
 
             arguments?.apply {
-                putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
-            }
-        }
-    }
-
-    private fun updatePoi(){
-        CoroutineScope(Dispatchers.IO).launch {
-            poisList.clear()
-            poisList.addAll(PointsOfInterest.getPointsOfInterest())
-            Log.v(TAG, "updated pois from server")
-            println(poisList)
-
-            arguments?.apply {
                 putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+                putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
             }
         }
     }
