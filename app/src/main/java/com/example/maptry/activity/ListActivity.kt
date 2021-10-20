@@ -9,8 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-open class ListActivity: AppCompatActivity(R.layout.activity_list)
-{
+open class ListActivity: AppCompatActivity(R.layout.activity_list) {
     companion object {
         private val TAG: String = ListActivity::class.qualifiedName!!
     }

@@ -49,9 +49,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_launcher_foreground" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorAccent" />
 
         <!-- Activities -->
         <activity
@@ -122,6 +119,29 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+
+        <!-- Activities for handling push notifications -->
+        <activity
+            android:name=".activity.handler.NewFriendRequestActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="New friend request"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="new-friend-request" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".activity.handler.FriendRequestAcceptedActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="Friend request accepted"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="friend-request-accepted" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
