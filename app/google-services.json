@@ -8,62 +8,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:96359585812:android:04926e3f58922894f66f01",
+        "mobilesdk_app_id": "1:96359585812:android:1ae12016a821505af66f01",
         "android_client_info": {
-          "package_name": "com.example.maptry"
+          "package_name": "it.unibo.socialplaces"
         }
       },
       "oauth_client": [
         {
-          "client_id": "96359585812-3tdphq5kobk28t384mon7lp0bah2q0g9.apps.googleusercontent.com",
+          "client_id": "96359585812-jjl0rel4k78a9ifdrd2b8a4s1etthavq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.maptry",
-            "certificate_hash": "ca7284db3b80e6c1448843cccb77f930d7406d99"
-          }
-        },
-        {
-          "client_id": "96359585812-ojfh79p2ldijgfmvb9lv82aue2esfb11.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.maptry",
-            "certificate_hash": "99c5c4d62a3ef1b9400a9f673e34803ddf3416dd"
-          }
-        },
-        {
-          "client_id": "96359585812-ncas1kvl8tv6nf0e25oq310n657akc0a.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyA9vU80LdRSRfLl2hSNUyWiUTu9yn3-8Gs"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "96359585812-ncas1kvl8tv6nf0e25oq310n657akc0a.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:96359585812:android:886188b5b01697f3f66f01",
-        "android_client_info": {
-          "package_name": "it.unibo.shareplaces"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "96359585812-au7frabdroka3f9j10tc53sn96csg5he.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "it.unibo.shareplaces",
+            "package_name": "it.unibo.socialplaces",
             "certificate_hash": "99c5c4d62a3ef1b9400a9f673e34803ddf3416dd"
           }
         },
