@@ -50,6 +50,43 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:96359585812:android:886188b5b01697f3f66f01",
+        "android_client_info": {
+          "package_name": "it.unibo.shareplaces"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "96359585812-au7frabdroka3f9j10tc53sn96csg5he.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "it.unibo.shareplaces",
+            "certificate_hash": "99c5c4d62a3ef1b9400a9f673e34803ddf3416dd"
+          }
+        },
+        {
+          "client_id": "96359585812-ncas1kvl8tv6nf0e25oq310n657akc0a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9vU80LdRSRfLl2hSNUyWiUTu9yn3-8Gs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "96359585812-ncas1kvl8tv6nf0e25oq310n657akc0a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

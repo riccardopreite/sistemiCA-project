@@ -37,8 +37,7 @@ android {
         jvmTarget = "11"
     }
 }
-apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -134,3 +133,5 @@ dependencies {
     /* Datetime */
     implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.3.0'
 }
+
+apply plugin: 'com.google.gms.google-services'
