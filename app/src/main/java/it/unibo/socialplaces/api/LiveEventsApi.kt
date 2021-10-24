@@ -2,6 +2,7 @@ package it.unibo.socialplaces.api
 
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
+import org.json.JSONObject
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -13,5 +14,5 @@ interface LiveEventsApi {
     suspend fun getLiveEvents(@Query("user") user: String): Response<List<LiveEvent>>
 
     @POST("/live-events/add")
-    suspend fun addLiveEvent(@Body addLiveEvent: AddLiveEvent): Response<String>
+    suspend fun addLiveEvent(@Body addLiveEvent: AddLiveEvent): Response<JSONObject>
 }

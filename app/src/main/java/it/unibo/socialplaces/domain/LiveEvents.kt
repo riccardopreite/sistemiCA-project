@@ -1,11 +1,14 @@
 package it.unibo.socialplaces.domain
 
 import android.util.Log
+import android.widget.Toast
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import retrofit2.HttpException
 import java.io.IOException
+import kotlin.coroutines.coroutineContext
 
 object LiveEvents {
     private const val TAG = "domain.LiveEvents"
@@ -95,9 +98,12 @@ object LiveEvents {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Live events successfully added.")
-            val markId = response.body()!!
+            val body = response.body()!!
+            println(response.code())
+            println(body)
+            val liveId = body["id"] as String
             val currentLive = LiveEvent(
-                markId,
+                liveId,
                 addLiveEvent.address,
                 addLiveEvent.latitude,
                 addLiveEvent.longitude,
@@ -112,7 +118,7 @@ object LiveEvents {
                     addLiveEvent.longitude,
                     addLiveEvent.name,
                     addLiveEvent.address,
-                    markId,
+                    liveId,
                     true
                 )
             }
@@ -120,7 +126,7 @@ object LiveEvents {
                updateList()
             }
 
-            return markId
+            return liveId
         } else {
             Log.e(TAG, response.errorBody().toString())
         }
