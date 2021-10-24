@@ -3,10 +3,7 @@ package it.unibo.socialplaces.domain
 import android.util.Log
 import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.RetrofitInstances
-import it.unibo.socialplaces.model.friends.AddFriendshipConfirmation
-import it.unibo.socialplaces.model.friends.AddFriendshipRequest
-import it.unibo.socialplaces.model.friends.Friend
-import it.unibo.socialplaces.model.friends.RemoveFriendshipRequest
+import it.unibo.socialplaces.model.friends.*
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import retrofit2.HttpException
 import java.io.IOException
@@ -94,6 +91,25 @@ object Friends {
 
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
+        } else {
+            Log.e(TAG, response.errorBody().toString())
+        }
+    }
+
+    suspend fun denyFriend(senderOfFriendshipRequest: String) {
+        Log.v(TAG, "denyFriend")
+        val response = try {
+            api.denyFriend(AddFriendshipDenial(userId, senderOfFriendshipRequest))
+        } catch (e: IOException) {
+            e.message?.let { Log.e(TAG, it) }
+            return
+        } catch (e: HttpException) {
+            e.message?.let { Log.e(TAG, it) }
+            return
+        }
+
+        if(response.isSuccessful) {
+            Log.i(TAG, "Friend request coming from $senderOfFriendshipRequest successfully denied.")
         } else {
             Log.e(TAG, response.errorBody().toString())
         }

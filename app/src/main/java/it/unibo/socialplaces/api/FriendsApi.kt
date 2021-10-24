@@ -1,9 +1,6 @@
 package it.unibo.socialplaces.api
 
-import it.unibo.socialplaces.model.friends.AddFriendshipConfirmation
-import it.unibo.socialplaces.model.friends.AddFriendshipRequest
-import it.unibo.socialplaces.model.friends.Friend
-import it.unibo.socialplaces.model.friends.RemoveFriendshipRequest
+import it.unibo.socialplaces.model.friends.*
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -16,6 +13,9 @@ interface FriendsApi {
 
     @POST("/friends/confirm")
     suspend fun confirmFriend(@Body addFriendshipConfirmation: AddFriendshipConfirmation): Response<Unit>
+
+    @POST("/friends/deny")
+    suspend fun denyFriend(@Body addFriendshipDenial: AddFriendshipDenial): Response<Unit>
 
     @HTTP(method = "DELETE", path = "/friends/remove", hasBody = true   )
     suspend fun removeFriend(@Body removeFriendshipRequest: RemoveFriendshipRequest): Response<Unit>
