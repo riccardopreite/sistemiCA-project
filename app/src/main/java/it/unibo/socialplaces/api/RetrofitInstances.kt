@@ -76,4 +76,8 @@ object RetrofitInstances {
         retrofitBuilder
             .create(NotificationApi::class.java)
     }
+    val recommentadionApi: RecommendationApi by lazy {
+        retrofitBuilder
+            .create(RecommendationApi::class.java)
+    }
 }
