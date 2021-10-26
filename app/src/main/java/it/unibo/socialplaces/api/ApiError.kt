@@ -1,3 +1,6 @@
 package it.unibo.socialplaces.api
 
-data class ApiError(val message: String)
+sealed class ApiError(val msg: String) {
+    data class Message(val message: String): ApiError(message)
+    class Generic: ApiError("Impossible to retrieve the body of the error response.")
+}

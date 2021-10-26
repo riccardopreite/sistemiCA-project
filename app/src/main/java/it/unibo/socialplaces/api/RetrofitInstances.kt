@@ -1,10 +1,11 @@
 package it.unibo.socialplaces.api
 
-import it.unibo.socialplaces.R
 import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
+import okhttp3.ResponseBody
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.InputStream
@@ -50,30 +51,40 @@ object RetrofitInstances {
     }
 
     private val retrofitBuilder: Retrofit by lazy {
-        Retrofit.Builder()
+        val builder = Retrofit.Builder()
             .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+        builder.responseBodyConverter<ApiError>(ApiError::class.java, emptyArray<Annotation>())
+        builder
+    }
+
+    private val errorConverter: Converter<ResponseBody, ApiError> by lazy {
+        retrofitBuilder.responseBodyConverter(ApiError.Message::class.java, emptyArray<Annotation>())
     }
 
     val friendsApi: FriendsApi by lazy {
-        retrofitBuilder
-            .create(FriendsApi::class.java)
+        retrofitBuilder.create(FriendsApi::class.java)
     }
 
     val liveEventsApi: LiveEventsApi by lazy {
-        retrofitBuilder
-            .create(LiveEventsApi::class.java)
+        retrofitBuilder.create(LiveEventsApi::class.java)
     }
 
     val pointOfInterestsApi: PointOfInterestsApi by lazy {
-        retrofitBuilder
-            .create(PointOfInterestsApi::class.java)
+        retrofitBuilder.create(PointOfInterestsApi::class.java)
     }
 
     val notificationApi: NotificationApi by lazy {
-        retrofitBuilder
-            .create(NotificationApi::class.java)
+        retrofitBuilder.create(NotificationApi::class.java)
+    }
+
+    fun handleApiError(body: ResponseBody?): ApiError {
+        if(body == null) {
+            return ApiError.Generic()
+        }
+        return errorConverter.convert(body) ?: ApiError.Generic()
     }
 }

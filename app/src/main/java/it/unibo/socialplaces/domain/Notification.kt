@@ -1,10 +1,12 @@
 package it.unibo.socialplaces.domain
 
 import android.util.Log
+import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.model.notification.NotificationToken
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.RemovePointOfInterest
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -14,6 +16,8 @@ object Notification {
     private val api by lazy {
         RetrofitInstances.notificationApi
     }
+
+    private val handleApiError: (ResponseBody?) -> ApiError = RetrofitInstances::handleApiError
 
     private lateinit var userId: String
 
@@ -45,7 +49,7 @@ object Notification {
         if(response.isSuccessful) {
             Log.i(TAG, "Updated Token succesfully")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 

@@ -5,6 +5,7 @@ import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.model.friends.*
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -14,6 +15,8 @@ object Friends {
     private val api by lazy {
         RetrofitInstances.friendsApi
     }
+
+    private val handleApiError: (ResponseBody?) -> ApiError = RetrofitInstances::handleApiError
 
     private lateinit var userId: String
 
@@ -52,7 +55,7 @@ object Friends {
             friends.addAll(response.body()!!)
             return friends
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
 
         return emptyList()
@@ -73,7 +76,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request to $friendUsername successfully sent.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
@@ -92,7 +95,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
@@ -111,7 +114,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $senderOfFriendshipRequest successfully denied.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
@@ -130,7 +133,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend with username $friendUsername successfully removed.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 

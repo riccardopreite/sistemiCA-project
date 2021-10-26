@@ -1,10 +1,12 @@
 package it.unibo.socialplaces.domain
 
 import android.util.Log
+import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.RemovePointOfInterest
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 
@@ -14,6 +16,8 @@ object PointsOfInterest {
     private val api by lazy {
         RetrofitInstances.pointOfInterestsApi
     }
+
+    private val handleApiError: (ResponseBody?) -> ApiError = RetrofitInstances::handleApiError
 
     private lateinit var userId: String
 
@@ -78,7 +82,7 @@ object PointsOfInterest {
                 pointsOfInterest
             }
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
 
         return emptyList()
@@ -92,7 +96,6 @@ object PointsOfInterest {
             } else {
                 api.addPointOfInterest(addPointOfInterest)
             }
-
         } catch (e: IOException) {
             e.message?.let {
                 Log.e(TAG, it)
@@ -109,10 +112,10 @@ object PointsOfInterest {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Point of interest successfully added.")
-            val markId = response.body()!!
-            Log.i(TAG, markId)
+            val addedPointOfInterest = response.body()!!
+            Log.i(TAG, addedPointOfInterest.markId)
             val currentPOI = PointOfInterest(
-                markId,
+                addedPointOfInterest.markId,
                 addPointOfInterest.poi.address,
                 addPointOfInterest.poi.type,
                 addPointOfInterest.poi.latitude,
@@ -129,7 +132,7 @@ object PointsOfInterest {
                     addPointOfInterest.poi.longitude,
                     addPointOfInterest.poi.name,
                     addPointOfInterest.poi.address,
-                    markId,
+                    addedPointOfInterest.markId,
                     false
                 )
             }
@@ -137,9 +140,9 @@ object PointsOfInterest {
                 updateList()
             }
 
-            return markId
+            return addedPointOfInterest.markId
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
 
         return ""
@@ -160,7 +163,7 @@ object PointsOfInterest {
         if(response.isSuccessful) {
             Log.i(TAG, "Point of interest successfully removed.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 

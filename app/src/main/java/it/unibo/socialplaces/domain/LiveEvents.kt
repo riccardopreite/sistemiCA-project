@@ -1,10 +1,14 @@
 package it.unibo.socialplaces.domain
 
 import android.util.Log
+import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
+import okhttp3.ResponseBody
+import retrofit2.Converter
 import retrofit2.HttpException
+import retrofit2.Retrofit
 import java.io.IOException
 
 object LiveEvents {
@@ -13,6 +17,8 @@ object LiveEvents {
     private val api by lazy {
         RetrofitInstances.liveEventsApi
     }
+
+    private val handleApiError: (ResponseBody?) -> ApiError = RetrofitInstances::handleApiError
 
     private lateinit var userId: String
 
@@ -71,7 +77,7 @@ object LiveEvents {
             liveEvents.addAll(response.body()!!)
             return liveEvents
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
 
         return emptyList()
@@ -95,9 +101,9 @@ object LiveEvents {
 
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Live events successfully added.")
-            val markId = response.body()!!
+            val addedLiveEvent = response.body()!!
             val currentLive = LiveEvent(
-                markId,
+                addedLiveEvent.id,
                 addLiveEvent.address,
                 addLiveEvent.latitude,
                 addLiveEvent.longitude,
@@ -112,7 +118,7 @@ object LiveEvents {
                     addLiveEvent.longitude,
                     addLiveEvent.name,
                     addLiveEvent.address,
-                    markId,
+                    addedLiveEvent.id,
                     true
                 )
             }
@@ -120,10 +126,11 @@ object LiveEvents {
                updateList()
             }
 
-            return markId
+            return addedLiveEvent.id
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
+
         return ""
     }
 
