@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "96359585812-rjtkjs2uh40v802qo5dtvva2m73d5c4a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "it.unibo.socialplaces",
+            "certificate_hash": "223f18203155abac8a0f54cf0e5a9e949734caa7"
+          }
+        },
+        {
           "client_id": "96359585812-ncas1kvl8tv6nf0e25oq310n657akc0a.apps.googleusercontent.com",
           "client_type": 3
         }

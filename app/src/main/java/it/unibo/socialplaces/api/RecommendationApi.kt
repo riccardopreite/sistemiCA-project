@@ -10,9 +10,9 @@ interface RecommendationApi {
     @POST("/recommendation/train")
     suspend fun trainModel(@Body trainRequest: ValidationRequest): Response<Unit>
 
-    @GET("/recommendation/validity")
+    @POST("/recommendation/validity")
     suspend fun validityPlace(@Body validationRequest: ValidationRequest): Response<Unit>
 
-    @GET("/recommendation/places")
+    @POST("/recommendation/places")
     suspend fun recommendPlace(@Body placeRequest: PlaceRequest): Response<Unit>
 }

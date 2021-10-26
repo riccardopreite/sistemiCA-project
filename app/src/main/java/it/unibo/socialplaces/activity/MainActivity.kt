@@ -1,6 +1,9 @@
 package it.unibo.socialplaces.activity
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
 import android.content.Context
@@ -11,6 +14,7 @@ import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
+import android.os.SystemClock
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import it.unibo.socialplaces.R
+import it.unibo.socialplaces.activity.handler.RecommendationAlarm
 import it.unibo.socialplaces.activity.list.LiveEventsListActivity
 import it.unibo.socialplaces.domain.LiveEvents
 import it.unibo.socialplaces.domain.PointsOfInterest
@@ -37,6 +42,7 @@ import it.unibo.socialplaces.service.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
@@ -55,6 +61,17 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             locationServiceIsBound = false
+        }
+    }
+    /**
+     * Permission request launcher (for read activity permission).
+     */
+    private val requestActivityLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
+        if(isGranted) {
+            Log.i(TAG, "Permission to read activity GRANTED.")
+        } else {
+            Log.i(TAG, "Permission to read activity DENIED.")
         }
     }
 
@@ -95,7 +112,9 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        checkLocationPermissions()
+        checkActivityPermission()
+        //requestActivityPermission()
+
     }
 
     private fun loadPoisAndLiveEvents(force: Boolean = false) {
@@ -115,6 +134,46 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    /**
+     * This method checks permissions to ACTIVITY_RECOGNITION.
+     */
+    private fun checkActivityPermission() {
+        Log.v(TAG, "checkActivityPermission")
+        // Location permission check
+        when {
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.i(TAG, "Enabling activity services since permissions were given.")
+                checkLocationPermissions()
+                startAlarmService()
+
+            }
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.ACTIVITY_RECOGNITION
+            ) -> {
+                Log.i(TAG, "Asking the user for activity recognition (rationale).")
+                // addition rationale should be displayed
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+                builder.setTitle(title)
+                    .setMessage(R.string.activity_permission_required)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        requestActivityLauncher.launch(
+                            Manifest.permission.ACTIVITY_RECOGNITION
+                        )
+                    } // The user can only accept location functionalities.
+                builder.create().show()
+            }
+            else -> {
+                Log.i(TAG, "Asking the user for activity permissions.")
+                requestActivityLauncher.launch(
+                    Manifest.permission.ACTIVITY_RECOGNITION
+                )
+            }
+        }
+    }
     /**
      * This method checks permissions to ACCESS_FINE_LOCATION and later calls [checkBackgroundLocationPermissions].
      */
@@ -201,13 +260,24 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // Since background location is checked later, this check must be done earlier.
         when(permissions[0]) {
+
              Manifest.permission.ACCESS_BACKGROUND_LOCATION -> {
-                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startLocationService()
                 }
                 loadPoisAndLiveEvents(force = true)
             }
+            Manifest.permission.ACTIVITY_RECOGNITION -> {
+
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.v(TAG,"ACTIVITY GRANTED")
+                    startAlarmService()
+                }
+                checkLocationPermissions()
+            }
             Manifest.permission.ACCESS_FINE_LOCATION -> {
+
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     checkBackgroundLocationPermissions()
                 } else {
@@ -228,12 +298,34 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Toast.makeText(this, R.string.location_service_started, Toast.LENGTH_SHORT).show()
     }
 
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private fun startAlarmService(){
+        Log.v(TAG,"SETTING ALARM MANAGER ")
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmIntent = Intent(this, RecommendationAlarm::class.java)
+
+        val recommendationIntent = PendingIntent.getBroadcast(
+            this, 0,
+            alarmIntent,
+            0
+        )
+
+        Log.d(TAG, "Starting Alarm")
+        alarmManager.setInexactRepeating(
+            AlarmManager.RTC_WAKEUP,
+            System.currentTimeMillis()+10,
+            AlarmManager.INTERVAL_HOUR * 3,
+            recommendationIntent
+        )
+        Toast.makeText(this, "Alarm is set "+SystemClock.elapsedRealtime(), Toast.LENGTH_LONG).show()
+    }
+
     private fun stopLocationService() {
         Log.v(TAG, "stopLocationService")
         val stopIntent = Intent(applicationContext, LocationService::class.java)
         stopIntent.action = LocationService.STOP_LOCATION_SERVICE
         startService(stopIntent)
-        Toast.makeText(this, R.string.location_service_stopped, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.location_service_stopped, Toast.LENGTH_LONG).show()
     }
 
     override fun onStop() {

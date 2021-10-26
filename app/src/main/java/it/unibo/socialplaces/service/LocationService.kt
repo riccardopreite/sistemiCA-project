@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import it.unibo.socialplaces.activity.handler.RecommendationAlarm
 
 class LocationService: Service() {
     interface LocationListener {

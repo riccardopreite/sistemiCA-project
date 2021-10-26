@@ -25,7 +25,7 @@ object Recommendation {
     }
 
     suspend fun trainModel(trainRequest: ValidationRequest) {
-        Log.v(TAG, "addNotificationToken")
+        Log.v(TAG, "trainModel")
         if(!this::userId.isInitialized) {
             // This occurs when the app has just been installed and
             // this method is called from inside PushNotificationService.
@@ -53,7 +53,7 @@ object Recommendation {
     }
 
     suspend fun validityPlace(validityRequest: ValidationRequest) {
-        Log.v(TAG, "addNotificationToken")
+        Log.v(TAG, "validate place")
         if(!this::userId.isInitialized) {
             // This occurs when the app has just been installed and
             // this method is called from inside PushNotificationService.
@@ -81,7 +81,7 @@ object Recommendation {
     }
 
     suspend fun recommendPlace(placeRequest: PlaceRequest) {
-        Log.v(TAG, "addNotificationToken")
+        Log.v(TAG, "recommend place")
         if(!this::userId.isInitialized) {
             // This occurs when the app has just been installed and
             // this method is called from inside PushNotificationService.

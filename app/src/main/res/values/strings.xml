@@ -95,6 +95,7 @@
     <string name="timer">Timer:</string>
     <string name="nolive">No live events are registered!</string>
     <string name="location_permission_required">This app requires location services to be enabled to work properly.</string>
+    <string name="activity_permission_required">This app requires activity recognition to be enabled to work properly.</string>
     <string name="background_location_permission_required">This app requires background location services to be enabled to work properly.</string>
     <string name="add_to_user_pois">Add to mine</string>
     <string name="no_address">Address not found</string>

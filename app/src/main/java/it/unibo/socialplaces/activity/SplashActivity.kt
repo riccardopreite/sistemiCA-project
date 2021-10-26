@@ -9,9 +9,7 @@ import android.widget.ProgressBar
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.config.Auth
-import it.unibo.socialplaces.domain.Friends
-import it.unibo.socialplaces.domain.LiveEvents
-import it.unibo.socialplaces.domain.PointsOfInterest
+import it.unibo.socialplaces.domain.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +32,8 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
             if(Auth.isUserAuthenticated()) {
                 val username = Auth.getUsername()
                 username?.let {
+                    Notification.setUserId(username)
+                    Recommendation.setUserId(username)
                     Friends.setUserId(username)
                     LiveEvents.setUserId(username)
                     PointsOfInterest.setUserId(username)
