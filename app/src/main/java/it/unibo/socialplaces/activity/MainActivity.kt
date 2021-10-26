@@ -14,7 +14,6 @@ import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
-import android.os.SystemClock
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.handler.RecommendationAlarm
-import it.unibo.socialplaces.activity.list.LiveEventsListActivity
 import it.unibo.socialplaces.domain.LiveEvents
 import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.MainFragment
@@ -42,7 +40,7 @@ import it.unibo.socialplaces.service.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import java.lang.Exception
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
@@ -300,7 +298,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun startAlarmService(){
-        Log.v(TAG,"SETTING ALARM MANAGER ")
+        Log.v(TAG,"SETTING ALARM MANAGER")
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, RecommendationAlarm::class.java)
 
@@ -310,14 +308,21 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             0
         )
 
+        try{
+            Log.d(TAG, "Stopping alarm")
+            alarmManager.cancel(recommendationIntent)
+        }
+        catch (e:Exception){
+            Log.d(TAG, "Alarm never started")
+
+        }
         Log.d(TAG, "Starting Alarm")
-        alarmManager.setInexactRepeating(
+        alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis()+10,
+            System.currentTimeMillis()+1,
             AlarmManager.INTERVAL_HOUR * 3,
             recommendationIntent
         )
-        Toast.makeText(this, "Alarm is set "+SystemClock.elapsedRealtime(), Toast.LENGTH_LONG).show()
     }
 
     private fun stopLocationService() {

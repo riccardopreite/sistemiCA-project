@@ -35,7 +35,8 @@ object Recommendation {
             return
         }
         val response = try {
-            trainRequest.user = userId
+            if(this::userId.isInitialized)
+                trainRequest.user = userId
             api.trainModel(trainRequest)
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
@@ -63,7 +64,8 @@ object Recommendation {
             return
         }
         val response = try {
-            validityRequest.user = userId
+            if(this::userId.isInitialized)
+                validityRequest.user = userId
             api.validityPlace(validityRequest)
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
@@ -91,7 +93,8 @@ object Recommendation {
             return
         }
         val response = try {
-            placeRequest.user = userId
+            if(this::userId.isInitialized)
+                placeRequest.user = userId
             api.recommendPlace(placeRequest)
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }

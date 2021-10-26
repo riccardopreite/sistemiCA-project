@@ -40,12 +40,14 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         val close = navBar.findViewById<ImageView>(R.id.close)
 
         val userIconUri = Auth.getUserProfileIcon()
+        if(userIconUri != null){
+            // Loading the user icon inside ImageView icon.
+            val picasso = Picasso.get()
+            picasso.load(userIconUri).into(icon)
+            user.text = Auth.getUserFullName()
+            email.text = Auth.getUserEmailAddress()
+        }
 
-        // Loading the user icon inside ImageView icon.
-        val picasso = Picasso.get()
-        picasso.load(userIconUri).into(icon)
-        user.text = Auth.getUserFullName()
-        email.text = Auth.getUserEmailAddress()
 
         close.setOnClickListener {
             activity?.let {

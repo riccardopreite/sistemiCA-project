@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.ActivityRecognitionClient
+import it.unibo.socialplaces.config.Auth
 import it.unibo.socialplaces.domain.Recommendation.recommendPlace
 import it.unibo.socialplaces.model.recommendation.PlaceRequest
 import it.unibo.socialplaces.service.RecognizedActivity
@@ -27,11 +28,11 @@ class RecommendationAlarm : BroadcastReceiver() {
      *
      * Variable for PlaceRequest data class
      */
-    private var seconds_in_day: Int = 0
-    private var week_day: Int = 0
+    private var secondsInDay: Int = 0
+    private var weekDay: Int = 0
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
-    private lateinit var human_activity: String
+    private lateinit var humanActivity: String
     private var dayDict =  hashMapOf<Int, Int>()
 
     /**
@@ -64,20 +65,20 @@ class RecommendationAlarm : BroadcastReceiver() {
     private val mMessageReceiver: BroadcastReceiver = object :  BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
 
-            human_activity = intent.extras?.get("type") as String
+            humanActivity = intent.extras?.get("type") as String
             val confidence = intent.extras?.get("confidence") as Int
 
-            Log.d(TAG, "Got activity: $human_activity")
+            Log.d(TAG, "Got activity: $humanActivity")
 
-            if(human_activity != "" && confidence > 75){
+            if(humanActivity != "" && confidence > 75){
                 setTime()
                 val place = PlaceRequest (
-                    "",
+                    Auth.getUserEmailAddress()!!,
                     latitude,
                     longitude,
-                    human_activity,
-                    seconds_in_day,
-                    week_day
+                    humanActivity,
+                    secondsInDay,
+                    weekDay
                 )
 
 
@@ -128,8 +129,8 @@ class RecommendationAlarm : BroadcastReceiver() {
     }
 
     private fun setTime(){
-        seconds_in_day = (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
-        week_day = dayDict[Calendar.DAY_OF_WEEK]!!
+        secondsInDay = (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
+        weekDay = dayDict[Calendar.DAY_OF_WEEK]!!
     }
 
     /**

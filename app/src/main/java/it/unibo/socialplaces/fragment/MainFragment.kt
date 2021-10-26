@@ -1,6 +1,8 @@
 package it.unibo.socialplaces.fragment
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import it.unibo.socialplaces.R
@@ -126,15 +129,18 @@ class MainFragment : Fragment(R.layout.fragment_main),
         })
         autoCompleteFragment.view?.let {
             val layout = it as LinearLayout
+
             val menuIcon = layout.getChildAt(0) as ImageView
+            val userIconUri = Auth.getUserProfileIcon()
+            if(userIconUri != null){
+                Picasso.get()
+                    .load(userIconUri)
+                    .transform(CircleTransform())
+                    .resize(140, 140)
+                    .into(menuIcon)
+                layout.background = ContextCompat.getDrawable(this.requireContext(), R.drawable.layout_bg)
 
-            Picasso.get()
-                .load(Auth.getUserProfileIcon())
-                .transform(CircleTransform())
-                .resize(140, 140)
-                .into(menuIcon)
-
-            layout.background = ContextCompat.getDrawable(this.requireContext(), R.drawable.layout_bg)
+            }
 
             activity?.let { a ->
                 Log.d(TAG, "autoCompleteFragment.view exists.")
@@ -165,6 +171,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
         map = googleMap
         map.setOnMarkerClickListener(this)
         map.setOnMapClickListener(this)
+        if (
+            ActivityCompat.checkSelfPermission(this.requireContext(),Manifest.permission.ACCESS_FINE_LOCATION)
+            ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            map.isMyLocationEnabled = true
+        }
 
         poisList.forEach {
             createMarker(it.latitude,it.longitude,it.name,it.address,it.markId)
@@ -236,13 +249,14 @@ class MainFragment : Fragment(R.layout.fragment_main),
             return
         }
         val currentPosition = LatLng(location.latitude, location.longitude)
-        if(this::currentPositionMarker.isInitialized) {
+
+        /*if(this::currentPositionMarker.isInitialized) {
             if(currentPositionMarker.position == currentPosition) {
                 return
             }
             currentPositionMarker.remove()
         }
-        drawCurrentPositionMarker(currentPosition)
+        drawCurrentPositionMarker(currentPosition)*/
 
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17F))
     }
@@ -313,7 +327,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             updatePoiAndLive()
 
             CoroutineScope(Dispatchers.Main).launch {
-                drawCurrentPositionMarker(currentPositionMarker.position)
+                //drawCurrentPositionMarker(currentPositionMarker.position)
                 poisList.forEach {
                     createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
                 }
