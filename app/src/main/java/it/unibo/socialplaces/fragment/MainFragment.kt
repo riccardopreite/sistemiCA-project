@@ -248,7 +248,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     private fun drawCurrentPositionMarker(currentPosition: LatLng) {
-        val markerIcon = ContextCompat.getDrawable(requireContext(), R.mipmap.ic_launcher_foreground)
+        val markerIcon = ContextCompat.getDrawable(requireContext(), R.mipmap.ic_social_foreground)
         markerIcon?.toBitmap(150, 150)?.let { ic ->
             map.addMarker(
                 MarkerOptions()

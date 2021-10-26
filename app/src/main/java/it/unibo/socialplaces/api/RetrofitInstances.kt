@@ -81,6 +81,10 @@ object RetrofitInstances {
         retrofitBuilder.create(NotificationApi::class.java)
     }
 
+    val recommendationApi: RecommendationApi by lazy {
+        retrofitBuilder.create(RecommendationApi::class.java)
+    }
+
     fun handleApiError(body: ResponseBody?): ApiError {
         if(body == null) {
             return ApiError.Generic()

@@ -6,9 +6,7 @@ import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import okhttp3.ResponseBody
-import retrofit2.Converter
 import retrofit2.HttpException
-import retrofit2.Retrofit
 import java.io.IOException
 
 object LiveEvents {

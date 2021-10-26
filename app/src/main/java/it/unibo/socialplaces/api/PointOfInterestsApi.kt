@@ -4,6 +4,7 @@ import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.AddedPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.RemovePointOfInterest
+import org.json.JSONObject
 import retrofit2.Response
 import retrofit2.http.*
 

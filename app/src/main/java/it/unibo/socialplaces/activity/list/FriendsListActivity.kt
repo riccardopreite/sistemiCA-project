@@ -7,7 +7,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import it.unibo.socialplaces.R
-import it.unibo.socialplaces.activity.ListActivity
 import it.unibo.socialplaces.domain.Friends
 import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.FriendsFragment
@@ -90,7 +89,6 @@ class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
         CoroutineScope(Dispatchers.IO).launch {
             Friends.removeFriend(friendUsername)
             CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
-
         }
     }
 

@@ -113,7 +113,6 @@ object PointsOfInterest {
         if(response.isSuccessful && response.body() != null) {
             Log.i(TAG, "Point of interest successfully added.")
             val addedPointOfInterest = response.body()!!
-            Log.i(TAG, addedPointOfInterest.markId)
             val currentPOI = PointOfInterest(
                 addedPointOfInterest.markId,
                 addPointOfInterest.poi.address,

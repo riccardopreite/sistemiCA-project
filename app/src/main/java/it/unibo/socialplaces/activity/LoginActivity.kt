@@ -6,10 +6,7 @@ import android.util.Log
 import it.unibo.socialplaces.config.Auth
 import it.unibo.socialplaces.exception.NotAuthenticatedException
 import it.unibo.socialplaces.config.PushNotification
-import it.unibo.socialplaces.domain.Friends
-import it.unibo.socialplaces.domain.LiveEvents
-import it.unibo.socialplaces.domain.Notification
-import it.unibo.socialplaces.domain.PointsOfInterest
+import it.unibo.socialplaces.domain.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,7 +46,7 @@ class LoginActivity : AppCompatActivity() {
                             LiveEvents.setUserId(it)
                             PointsOfInterest.setUserId(it)
                             Notification.setUserId(it)
-
+                            Recommendation.setUserId(it)
                             // Loading the notification manager (doing it now since we
                             // are sure every field for the user in the database is set.
                             PushNotification.loadNotificationManager()
