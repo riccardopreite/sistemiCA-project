@@ -14,7 +14,7 @@ object Recommendation {
     private const val TAG = "domain.Recommendation"
 
     private val api by lazy {
-        RetrofitInstances.recommentadionApi
+        RetrofitInstances.recommendationApi
     }
 
     private lateinit var userId: String
