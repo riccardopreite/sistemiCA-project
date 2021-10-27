@@ -28,9 +28,6 @@ class RecognizedActivityReceiver(
         Calendar.SUNDAY to 6
     )
 
-    private var latitude: Double = 0.0
-    private var longitude: Double = 0.0
-
     override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "onReceive")
         val humanActivity = intent.extras!!.get("type") as String
@@ -43,6 +40,15 @@ class RecognizedActivityReceiver(
         val secondsInDay =
             (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
         val weekDay = dayDict[Calendar.DAY_OF_WEEK]!!
+
+        val sharedPref = context.getSharedPreferences("sharePlaces",Context.MODE_PRIVATE)?: return
+        val latitude = sharedPref.getFloat("latitude",200.0F).toDouble()
+        val longitude = sharedPref.getFloat("longitude",200.0F).toDouble()
+        Log.v(TAG, "lat $latitude lon $longitude")
+
+        if(latitude == 200.0 || longitude == 200.0){
+            return
+        }
 
         val placeRequest = PlaceRequest(
             Auth.getUsername()!!,

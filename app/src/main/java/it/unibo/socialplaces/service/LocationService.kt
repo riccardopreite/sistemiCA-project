@@ -2,17 +2,22 @@ package it.unibo.socialplaces.service
 
 import android.annotation.SuppressLint
 import android.app.*
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.location.Location
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import it.unibo.socialplaces.receiver.RecommendationAlarm
 
 class LocationService: Service() {
     interface LocationListener {
@@ -22,7 +27,8 @@ class LocationService: Service() {
     inner class LocationBinder: Binder() {
         fun getService(): LocationService = this@LocationService
     }
-    
+
+
     companion object {
         private const val TAG = "LocationService"
 
@@ -53,6 +59,12 @@ class LocationService: Service() {
             lastLocation = locationResult.lastLocation
             Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
             listener?.onLocationChanged(this@LocationService, lastLocation)
+            val sharedPref = getSharedPreferences("sharePlaces",Context.MODE_PRIVATE)?: return
+            with (sharedPref.edit()) {
+                putFloat("latitude", lastLocation.latitude.toFloat())
+                putFloat("longitude", lastLocation.longitude.toFloat())
+                apply()
+            }
         }
     }
 
@@ -109,7 +121,6 @@ class LocationService: Service() {
                 Log.v(TAG, "Could not start the location service because")
             }
         }
-
 
     }
 

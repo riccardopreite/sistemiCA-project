@@ -306,7 +306,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 //        Log.d(TAG, "Starting Alarm")
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis(),
+            System.currentTimeMillis()+10,
             AlarmManager.INTERVAL_HOUR * 3,
             recommendationIntent
         )

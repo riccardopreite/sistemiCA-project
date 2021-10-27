@@ -75,6 +75,7 @@ class PushNotificationService: FirebaseMessagingService() {
                 .setSmallIcon(R.drawable.ic_social)
 
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
             manager.notify(1000, notificationBuilder.build())
             Log.v(TAG,"NOTIFY")
 
