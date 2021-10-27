@@ -12,6 +12,7 @@ import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.domain.Notification
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import it.unibo.socialplaces.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +22,7 @@ class PushNotificationService: FirebaseMessagingService() {
     companion object {
         private const val TAG = "service.PushNotificationService"
 
-        const val NOTIFICATION_CHANNEL_ID = "com.example"
+        const val NOTIFICATION_CHANNEL_ID = "it.unibo"
         const val CHANNEL_NAME = "Maptry: Push notification"
     }
 
@@ -71,9 +72,12 @@ class PushNotificationService: FirebaseMessagingService() {
                 .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
+                .setSmallIcon(R.drawable.ic_social)
 
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.notify(Random.nextInt(), notificationBuilder.build())
+            manager.notify(1000, notificationBuilder.build())
+            Log.v(TAG,"NOTIFY")
+
         }
     }
 

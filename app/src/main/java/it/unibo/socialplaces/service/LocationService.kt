@@ -30,7 +30,7 @@ class LocationService: Service() {
         const val STOP_LOCATION_SERVICE = "stopLocationService"
 
         const val NOTIFICATION_ID = 2
-        const val NOTIFICATION_CHANNEL_ID = "com.example"
+        const val NOTIFICATION_CHANNEL_ID = "it.unibo"
         const val CHANNEL_NAME = "Maptry: Background Location Retrieval Service"
     }
 
