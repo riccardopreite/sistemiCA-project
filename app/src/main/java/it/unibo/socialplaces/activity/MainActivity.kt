@@ -23,7 +23,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import it.unibo.socialplaces.R
-import it.unibo.socialplaces.activity.handler.RecommendationAlarm
+import it.unibo.socialplaces.receiver.RecommendationAlarm
 import it.unibo.socialplaces.domain.LiveEvents
 import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.MainFragment
@@ -40,13 +40,13 @@ import it.unibo.socialplaces.service.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
     CreatePoiOrLiveDialogFragment.CreatePoiDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
-    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener{
+    LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
+
     private lateinit var locationService: LocationService
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
@@ -61,15 +61,16 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             locationServiceIsBound = false
         }
     }
+
     /**
      * Permission request launcher (for read activity permission).
      */
-    private val requestActivityLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+    private val requestHumanActivityPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             isGranted: Boolean ->
         if(isGranted) {
-            Log.i(TAG, "Permission to read activity GRANTED.")
+            Log.i(TAG, "Permission to read human activity GRANTED.")
         } else {
-            Log.i(TAG, "Permission to read activity DENIED.")
+            Log.i(TAG, "Permission to read human activity DENIED.")
         }
     }
 
@@ -111,8 +112,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         checkActivityPermission()
-        //requestActivityPermission()
-
     }
 
     private fun loadPoisAndLiveEvents(force: Boolean = false) {
@@ -145,8 +144,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.i(TAG, "Enabling activity services since permissions were given.")
                 checkLocationPermissions()
-                startAlarmService()
-
             }
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
@@ -158,7 +155,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 builder.setTitle(title)
                     .setMessage(R.string.activity_permission_required)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
-                        requestActivityLauncher.launch(
+                        requestHumanActivityPermissionLauncher.launch(
                             Manifest.permission.ACTIVITY_RECOGNITION
                         )
                     } // The user can only accept location functionalities.
@@ -166,7 +163,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             }
             else -> {
                 Log.i(TAG, "Asking the user for activity permissions.")
-                requestActivityLauncher.launch(
+                requestHumanActivityPermissionLauncher.launch(
                     Manifest.permission.ACTIVITY_RECOGNITION
                 )
             }
@@ -225,6 +222,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             ) == PackageManager.PERMISSION_GRANTED -> {
                 Log.i(TAG, "Enabling background location services since permissions were given.")
                 startLocationService()
+                startAlarmService()
                 loadPoisAndLiveEvents(force = true)
             }
             ActivityCompat.shouldShowRequestPermissionRationale(
@@ -258,29 +256,24 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         // Since background location is checked later, this check must be done earlier.
         when(permissions[0]) {
-
-             Manifest.permission.ACCESS_BACKGROUND_LOCATION -> {
-
-                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startLocationService()
-                }
-                loadPoisAndLiveEvents(force = true)
-            }
             Manifest.permission.ACTIVITY_RECOGNITION -> {
-
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.v(TAG,"ACTIVITY GRANTED")
-                    startAlarmService()
+                    checkLocationPermissions()
                 }
-                checkLocationPermissions()
             }
             Manifest.permission.ACCESS_FINE_LOCATION -> {
-
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     checkBackgroundLocationPermissions()
                 } else {
                     Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_SHORT).show()
                 }
+            }
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION -> {
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startLocationService()
+                    startAlarmService()
+                }
+                loadPoisAndLiveEvents(force = true)
             }
             else -> Unit
         }
@@ -298,28 +291,22 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun startAlarmService(){
-        Log.v(TAG,"SETTING ALARM MANAGER")
+        Log.v(TAG, "startAlarmService")
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, RecommendationAlarm::class.java)
 
-        val recommendationIntent = PendingIntent.getBroadcast(
-            this, 0,
-            alarmIntent,
-            0
-        )
+        val recommendationIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, 0)
 
-        try{
-            Log.d(TAG, "Stopping alarm")
-            alarmManager.cancel(recommendationIntent)
-        }
-        catch (e:Exception){
-            Log.d(TAG, "Alarm never started")
-
-        }
-        Log.d(TAG, "Starting Alarm")
+//        try {
+//            Log.d(TAG, "Stopping alarm")
+//            alarmManager.cancel(recommendationIntent)
+//        } catch (e:Exception) {
+//            Log.d(TAG, "Alarm never started")
+//        }
+//        Log.d(TAG, "Starting Alarm")
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis()+1,
+            System.currentTimeMillis(),
             AlarmManager.INTERVAL_HOUR * 3,
             recommendationIntent
         )
@@ -390,6 +377,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         dialog.dismiss()
         startActivity(intent)
     }
+
     override fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent) {
         Log.v(TAG, "LiveEventDetailsDialogFragment.onShareButtonPressed")
         sharePlace(liveEvent.name, liveEvent.address, liveEvent.latitude, liveEvent.longitude)

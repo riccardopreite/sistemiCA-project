@@ -27,7 +27,8 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="n">
 
-        <receiver android:name=".activity.handler.RecommendationAlarm"
+        <!-- Receivers -->
+        <receiver android:name=".receiver.RecommendationAlarm"
             android:enabled="true" />
 
         <!-- Services -->
@@ -35,6 +36,7 @@
             android:name=".service.RecognizedActivity"
             android:exported="false">
         </service>
+
         <service
             android:name=".service.PushNotificationService"
             android:exported="false">
