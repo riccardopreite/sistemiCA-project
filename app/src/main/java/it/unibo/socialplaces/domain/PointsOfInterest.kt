@@ -23,7 +23,7 @@ object PointsOfInterest {
 
     private val pointsOfInterest: MutableList<PointOfInterest> = emptyList<PointOfInterest>().toMutableList()
 
-    private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
+    private lateinit var createMarker: (Double,Double,String,String,String,String) -> Unit
     private lateinit var updateList: () -> Unit
     private var validCreateMarkerCallback: Boolean = false
     private var validUpdateListCallback: Boolean = false
@@ -33,7 +33,7 @@ object PointsOfInterest {
         userId = user
     }
 
-    fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
+    fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,String) -> Unit){
         this.createMarker = createMarker
         validCreateMarkerCallback = true
     }
@@ -132,7 +132,7 @@ object PointsOfInterest {
                     addPointOfInterest.poi.name,
                     addPointOfInterest.poi.address,
                     addedPointOfInterest.markId,
-                    false
+                    addPointOfInterest.poi.type
                 )
             }
             if(validUpdateListCallback) {

@@ -2,22 +2,19 @@ package it.unibo.socialplaces.service
 
 import android.annotation.SuppressLint
 import android.app.*
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.Color
 import android.location.Location
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
-import android.preference.PreferenceManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
-import it.unibo.socialplaces.receiver.RecommendationAlarm
+import it.unibo.socialplaces.config.PushNotification
+import it.unibo.socialplaces.config.PushNotification.setManager
 
 class LocationService: Service() {
     interface LocationListener {
@@ -36,9 +33,11 @@ class LocationService: Service() {
         const val STOP_LOCATION_SERVICE = "stopLocationService"
 
         const val NOTIFICATION_ID = 2
-        const val NOTIFICATION_CHANNEL_ID = "it.unibo"
-        const val CHANNEL_NAME = "Maptry: Background Location Retrieval Service"
+        const val NOTIFICATION_CHANNEL_ID = "it.unibo.location"
+        const val CHANNEL_NAME = "SocialPlaces: Background Location Retrieval Service"
     }
+
+    private lateinit var manager: NotificationManager
 
     private val binder = LocationBinder()
 
@@ -150,15 +149,20 @@ class LocationService: Service() {
 
     private fun createNotificationChannel() {
         Log.v(TAG, "createNotificationChannel")
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(channel)
+        //val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        //manager.createNotificationChannelGroup(NotificationChannelGroup(NOTIFICATION_CHANNEL_ID, CHANNEL_NAME))
+
         val resultIntent = Intent()
         val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
+        manager = setManager(getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+        manager.createNotificationChannel(channel)
         val notification = createNotification(pendingIntent)
         startForeground(NOTIFICATION_ID, notification)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         intent?.let {
            it.action?.let { action ->
                when (action) {

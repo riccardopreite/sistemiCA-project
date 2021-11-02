@@ -2,7 +2,9 @@ package it.unibo.socialplaces.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -138,12 +140,12 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     .transform(CircleTransform())
                     .resize(140, 140)
                     .into(menuIcon)
-                layout.background = ContextCompat.getDrawable(this.requireContext(), R.drawable.layout_bg)
+               layout.setBackgroundResource(R.drawable.layout_bg)// = Color.WHITE //  resources.getDrawable(R.drawable.layout_bg,null)
 
             }
 
             activity?.let { a ->
-                Log.d(TAG, "autoCompleteFragment.view exists.")
+                Log.d(TAG, "autoCompleteFragment.view exists2.")
                 menuIcon.setOnClickListener {
                     val mainMenuFragment = MainMenuFragment()
                     a.supportFragmentManager.beginTransaction().apply {
@@ -180,11 +182,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         poisList.forEach {
-            createMarker(it.latitude,it.longitude,it.name,it.address,it.markId)
+            createMarker(it.latitude,it.longitude,it.name,it.address,it.markId,it.type)
         }
 
         liveEventsList.forEach {
-            createMarker(it.latitude,it.longitude,it.name,it.address,it.id,true)
+            createMarker(it.latitude,it.longitude,it.name,it.address,it.id,"live")
         }
     }
 
@@ -289,8 +291,21 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
-    private fun createMarker(latitude: Double, longitude: Double, name: String, address: String, id: String, isLive: Boolean=false) {
-        val color = if(isLive) BitmapDescriptorFactory.HUE_GREEN else BitmapDescriptorFactory.HUE_RED
+    private fun createMarker(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String) {
+        val color =
+        when (type.lowercase()){
+            "restaurants" ->
+                BitmapDescriptorFactory.HUE_RED
+            "leisure" ->
+                BitmapDescriptorFactory.HUE_MAGENTA
+            "sport" ->
+                BitmapDescriptorFactory.HUE_ORANGE
+            "live" ->
+                BitmapDescriptorFactory.HUE_BLUE
+            else ->
+                BitmapDescriptorFactory.HUE_ROSE
+        }
+
 
         val marker = map.addMarker(
             MarkerOptions()
@@ -307,14 +322,14 @@ class MainFragment : Fragment(R.layout.fragment_main),
         Log.v(TAG, "onResume")
         super.onResume()
 
-        PointsOfInterest.setCreateMarkerCallback { lat, lon, name, addr, id, isLive ->
+        PointsOfInterest.setCreateMarkerCallback { lat, lon, name, addr, id, type ->
             CoroutineScope(Dispatchers.Main).launch {
-                createMarker(lat, lon, name, addr, id, isLive)
+                createMarker(lat, lon, name, addr, id, type)
             }
         }
-        LiveEvents.setCreateMarkerCallback { lat, lon, name, addr, id, isLive ->
+        LiveEvents.setCreateMarkerCallback { lat, lon, name, addr, id, _ ->
             CoroutineScope(Dispatchers.Main).launch {
-                createMarker(lat, lon, name, addr, id, isLive)
+                createMarker(lat, lon, name, addr, id, "live")
             }
         }
         PointsOfInterest.setUpdatePoiCallback(this::updatePoiAndLive)
@@ -329,10 +344,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
             CoroutineScope(Dispatchers.Main).launch {
                 //drawCurrentPositionMarker(currentPositionMarker.position)
                 poisList.forEach {
-                    createMarker(it.latitude, it.longitude, it.name, it.address, it.markId)
+                    createMarker(it.latitude, it.longitude, it.name, it.address, it.markId,it.type)
                 }
                 liveEventsList.forEach {
-                    createMarker(it.latitude, it.longitude, it.name, it.address, it.id, true)
+                    createMarker(it.latitude, it.longitude, it.name, it.address, it.id, "live")
                 }
             }
         }
