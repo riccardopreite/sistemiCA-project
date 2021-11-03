@@ -1,9 +1,9 @@
-package it.unibo.socialplaces.activity.notification
+package it.unibo.socialplaces.activity.handler
 
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.maps.model.PointOfInterest
+import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.config.PushNotification
 
@@ -16,11 +16,11 @@ class PlaceRecommendationActivity: AppCompatActivity(R.layout.activity_main) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         val extras = intent.extras!!
-        val poi = extras.get("place") as PointOfInterest
         val notificationId = extras.getInt("notificationId")
-        println(poi)
+        val poi = extras.getParcelable<PointOfInterest>("place")
         PushNotification.notificationManager.cancel(notificationId)
-        Log.v(TAG,"Here show poi on map")
+
+        Log.v(TAG,"A new point of interest has been published: $poi.")
     }
     //Shows poi on map
 }

@@ -1,4 +1,4 @@
-package it.unibo.socialplaces.activity.notification
+package it.unibo.socialplaces.activity.handler
 
 import android.os.Bundle
 import android.util.Log
@@ -15,10 +15,10 @@ class LiveEventActivity: AppCompatActivity() {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         val extras = intent.extras!!
-        val live = extras.get("liveEvent") as LiveEvent
         val notificationId = extras.getInt("notificationId")
-        println(live)
+        val live = extras.getParcelable<LiveEvent>("liveEvent")
         PushNotification.notificationManager.cancel(notificationId)
-        Log.v(TAG,"Here show live on map")
+
+        Log.i(TAG, "A new live event has been published: $live.")
     }
 }

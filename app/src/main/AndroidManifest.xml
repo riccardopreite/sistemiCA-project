@@ -139,20 +139,10 @@
 
         <!-- Activities for handling push notifications -->
         <activity
-            android:name=".activity.handler.NewFriendRequestActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="New friend request"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="new-friend-request" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
             android:name=".activity.handler.FriendRequestAcceptedActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Friend request accepted"
+            android:parentActivityName=".activity.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="friend-request-accepted" />
@@ -161,16 +151,12 @@
         </activity>
 
         <activity
-            android:name=".activity.notification.FriendAcceptedActivity"
-            android:parentActivityName=".activity.MainActivity" />
-
-        <activity
-            android:name=".activity.notification.LiveEventActivity"
+            android:name=".activity.handler.LiveEventActivity"
             android:parentActivityName=".activity.MainActivity" />
 
 
         <activity
-            android:name=".activity.notification.PlaceRecommendationActivity"
+            android:name=".activity.handler.PlaceRecommendationActivity"
             android:parentActivityName=".activity.MainActivity" />
 
     </application>
