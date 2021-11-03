@@ -56,7 +56,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private lateinit var poisList: MutableList<PointOfInterest>
     private lateinit var liveEventsList: MutableList<LiveEvent>
     private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
-    private lateinit var currentPositionMarker: Marker
+    private lateinit var currentLatLng: LatLng
 
     // API
     private val geocoder by lazy {
@@ -250,31 +250,23 @@ class MainFragment : Fragment(R.layout.fragment_main),
             Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current position.")
             return
         }
-        val currentPosition = LatLng(location.latitude, location.longitude)
+        val newPosition = LatLng(location.latitude, location.longitude)
 
-        /*if(this::currentPositionMarker.isInitialized) {
-            if(currentPositionMarker.position == currentPosition) {
-                return
-            }
-            currentPositionMarker.remove()
+        if(this::currentLatLng.isInitialized && checkIfPositionsAreEqualApproximated(newPosition, currentLatLng)) {
+            return
         }
-        drawCurrentPositionMarker(currentPosition)*/
 
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 17F))
+        currentLatLng = newPosition
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(newPosition, 17F))
     }
 
-    private fun drawCurrentPositionMarker(currentPosition: LatLng) {
-        val markerIcon = ContextCompat.getDrawable(requireContext(), R.mipmap.ic_social_foreground)
-        markerIcon?.toBitmap(100, 100)?.let { ic ->
-            map.addMarker(
-                MarkerOptions()
-                    .position(currentPosition)
-                    .icon(BitmapDescriptorFactory.fromBitmap(ic))
-                    .alpha(1f)
-            )?.let {
-                currentPositionMarker = it
-            }
-        }
+    private fun checkIfPositionsAreEqualApproximated(pos0: LatLng, pos1: LatLng): Boolean {
+        val lat0 = "%.4f".format(pos0.latitude).toDouble()
+        val lon0 = "%.4f".format(pos0.longitude).toDouble()
+        val lat1 = "%.4f".format(pos1.latitude).toDouble()
+        val lon1 = "%.4f".format(pos1.longitude).toDouble()
+
+        return lat0 == lat1 && lon0 == lon1
     }
 
     private fun updateMapUI(supportMapFragment: SupportMapFragment) {
@@ -342,7 +334,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
             updatePoiAndLive()
 
             CoroutineScope(Dispatchers.Main).launch {
-                //drawCurrentPositionMarker(currentPositionMarker.position)
                 poisList.forEach {
                     createMarker(it.latitude, it.longitude, it.name, it.address, it.markId,it.type)
                 }
