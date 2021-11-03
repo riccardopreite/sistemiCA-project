@@ -14,15 +14,15 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.PointOfInterest
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.activity.notification.*
-import it.unibo.socialplaces.config.PushNotification.setManager
+import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.domain.Notification
 import it.unibo.socialplaces.model.liveevents.LiveEvent
+import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import it.unibo.socialplaces.receiver.FriendRequestBroadcast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,29 +34,34 @@ class PushNotificationService: FirebaseMessagingService() {
     companion object {
         private const val TAG = "service.PushNotificationService"
 
-        const val NOTIFICATION_CHANNEL_ID = "it.unibo.push"
-        const val CHANNEL_NAME = "SocialPlaces : Push notification"
-        private const val FriendRequest = "new-friend-request"
-        private const val FriendAccepted = "friend-request-accepted"
-        private const val LiveEvent = "new-live-event"
-        private const val PlaceRecommendation = "place-recommendation"
-        private const val ModelRetrained = "model-retrained"
+        const val NOTIFICATION_CHANNEL_ID = "it.unibo.socialplaces.pushnotification"
+        const val CHANNEL_NAME = "SocialPlaces: Push notification"
+
+        private const val newFriendRequestAction = "new-friend-request"
+        private const val friendRequestAcceptedAction = "friend-request-accepted"
+        private const val newLiveEventAction = "new-live-event"
+        private const val placeRecommendationAction = "place-recommendation"
+        private const val modelRetrainedAction = "model-retrained"
     }
+
     private var UNIQUEREQUESTCODE = 0
-    private lateinit var manager :NotificationManager
+
+    private lateinit var notificationManager: NotificationManager
+
     private val channel = NotificationChannel(
         NOTIFICATION_CHANNEL_ID,
         CHANNEL_NAME,
         NotificationManager.IMPORTANCE_HIGH
     ).apply {
-        description = "channel for user notification"
+        description = "Channel for push notifications."
         lightColor = Color.BLUE
         lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
         enableVibration(true)
     }
 
-    private val defaultSoundUri: Uri =
-        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+    private val defaultSoundUri: Uri = RingtoneManager.getDefaultUri(
+            RingtoneManager.TYPE_NOTIFICATION
+        )
 
     private val friendRequestedIntent =  Intent(this, FriendRequestBroadcast::class.java)
     private val friendAcceptedIntent =  Intent(this, FriendAcceptedActivity::class.java)
@@ -70,39 +75,25 @@ class PushNotificationService: FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         Log.v(TAG, "onMessageReceived")
         super.onMessageReceived(message)
-        manager = setManager(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(channel)
+        notificationManager = PushNotification.setManager(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+        notificationManager.createNotificationChannel(channel)
 
+        val data = message.data
         message.notification?.let {
             val id = System.currentTimeMillis().toInt().absoluteValue
-            val builder = when(it.clickAction) {
-                FriendRequest -> {
-                    createFriendRequestNotification(it,id)
-                }
-                FriendAccepted -> {
-                    createFriendAcceptedNotification(it,id)
-                }
-                LiveEvent -> {
-                    createLiveEventNotification(it,id)
-                }
-                PlaceRecommendation -> {
-                    createPlaceRecommendationNotification(it,id)
-                }
-                ModelRetrained -> {
-                    createModelRetrainedNotification(it,id)
-                }
-                else -> {
-                    null
-                }
-            }
-
-            if (builder != null){
+            when(it.clickAction) {
+                newFriendRequestAction -> createFriendRequestNotification(it, id, data)
+                friendRequestAcceptedAction -> createFriendAcceptedNotification(it, id, data)
+                newLiveEventAction -> createLiveEventNotification(it, id, data)
+                placeRecommendationAction -> createPlaceRecommendationNotification(it, id, data)
+                modelRetrainedAction -> createModelRetrainedNotification(it, id)
+                else -> null
+            }?.let {
                 with(NotificationManagerCompat.from(this)) {
-                    Log.v(TAG, "NOTIFY WITH COUNTER $id")
-                    notify(id, builder)
+                    Log.d(TAG, "Showing notification with id=$id.")
+                    notify(id, it)
                 }
             }
-
         }
     }
 
@@ -110,7 +101,6 @@ class PushNotificationService: FirebaseMessagingService() {
      * Model retrained just show the new accuracy
      */
     private fun createModelRetrainedNotification(notificationMessage: RemoteMessage.Notification,id: Int): android.app.Notification {
-
         return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_social)
             .setContentTitle(notificationMessage.title)
@@ -121,7 +111,6 @@ class PushNotificationService: FirebaseMessagingService() {
             .setSound(defaultSoundUri)
             .setVisibility(VISIBILITY_PUBLIC)
             .build()
-
     }
 
     /**
@@ -131,30 +120,40 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     private fun createPlaceRecommendationNotification(
         notificationMessage: RemoteMessage.Notification,
-        id: Int): android.app.Notification {
-        val body = notificationMessage.body!!
+        id: Int,
+        data: MutableMap<String, String>
+    ): android.app.Notification? {
+        if(!data.keys.containsAll(
+                listOf("markId", "address", "type", "latitude", "longitude", "name", "phoneNumber", "visibility", "url")
+            )
+        ) {
+            return null
+        }
 
-        val latLng  = body[0] as LatLng
-        val placeId = body[1] as String
-        val name    = body[2] as String
-
-        val recommendedPlace = PointOfInterest(latLng,placeId,name)
+        val recommendedPlace = PointOfInterest(
+            data["markId"]!!,
+            data["address"]!!,
+            data["type"]!!,
+            data["latitude"]!!.toDouble(),
+            data["longitude"]!!.toDouble(),
+            data["name"]!!,
+            data["phoneNumber"]!!,
+            data["visibility"]!!,
+            data["url"]!!,
+        )
         placeRecommendationIntent.putExtra("notificationId",id)
         placeRecommendationIntent.putExtra("place",recommendedPlace)
         val recommendationPending = createPendingIntent(placeRecommendationIntent)
 
-        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_social)
-            .setContentTitle(notificationMessage.title)
-            .setContentText(notificationMessage.body)
-            .setPriority(NotificationManager.IMPORTANCE_HIGH)
-            .setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
-            .setContentIntent(recommendationPending)
-            .setAutoCancel(true)
-            .setSound(defaultSoundUri)
-            .setVisibility(VISIBILITY_PUBLIC)
-            .build()
+        val baseBuilder = baseNotificationBuilder(
+            notificationMessage.title!!,
+            notificationMessage.body!!,
+            android.app.Notification.CATEGORY_RECOMMENDATION
+        )
 
+        baseBuilder.setContentIntent(recommendationPending)
+
+        return baseBuilder.build()
     }
     /**
      * It could be the same of recommendation
@@ -164,34 +163,39 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     private fun createLiveEventNotification(
         notificationMessage: RemoteMessage.Notification,
-        id: Int): android.app.Notification {
+        id: Int,
+        data: MutableMap<String, String>
+    ): android.app.Notification? {
+        if(!data.keys.containsAll(
+                listOf("id", "address", "latitude", "longitude", "name", "owner", "expirationDate")
+            )
+        ) {
+            return null
+        }
 
-        val body = notificationMessage.body!!
-
-        val liveId         = body[0] as String
-        val address        = body[1] as String
-        val latitude       = body[2] as Double
-        val longitude      = body[3] as Double
-        val name           = body[4] as String
-        val owner          = body[5] as String
-        val expirationDate = body[6] as Long
-        val liveEvent = LiveEvent(liveId,address,latitude,longitude,name,owner,expirationDate)
+        val liveEvent = LiveEvent(
+            data["id"]!!,
+            data["address"]!!,
+            data["latitude"]!!.toDouble(),
+            data["longitude"]!!.toDouble(),
+            data["name"]!!,
+            data["owner"]!!,
+            data["expirationDate"]!!.toLong()
+        )
 
         liveEventIntent.putExtra("notificationId",id)
         liveEventIntent.putExtra("liveEvent",liveEvent)
         val livePending = createPendingIntent(liveEventIntent)
 
-        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_social)
-            .setContentTitle(notificationMessage.title)
-            .setContentText(notificationMessage.body)
-            .setPriority(NotificationManager.IMPORTANCE_HIGH)
-            .setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
-            .setContentIntent(livePending)
-            .setAutoCancel(true)
-            .setSound(defaultSoundUri)
-            .setVisibility(VISIBILITY_PUBLIC)
-            .build()
+        val baseBuilder = baseNotificationBuilder(
+            notificationMessage.title!!,
+            notificationMessage.body!!,
+            android.app.Notification.CATEGORY_RECOMMENDATION
+        )
+
+        baseBuilder.setContentIntent(livePending)
+
+        return baseBuilder.build()
     }
 
     /**
@@ -201,7 +205,9 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     private fun createFriendAcceptedNotification(
         notificationMessage: RemoteMessage.Notification,
-        id: Int): android.app.Notification {
+        id: Int,
+        data: MutableMap<String, String>
+    ): android.app.Notification {
 
         val body = notificationMessage.body!!
         friendAcceptedIntent.putExtra("notificationId",id)
@@ -227,7 +233,8 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     private fun createFriendRequestNotification(
         notificationMessage: RemoteMessage.Notification,
-        id: Int
+        id: Int,
+        data: MutableMap<String, String>
     ): android.app.Notification {
         val body = notificationMessage.body!!
         val friendUsername = body[0] as String //contain directly friend username
@@ -262,6 +269,17 @@ class PushNotificationService: FirebaseMessagingService() {
 
     }
 
+    private fun baseNotificationBuilder(title: String, body: String, category: String): NotificationCompat.Builder {
+        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setCategory(category)
+            .setSmallIcon(R.mipmap.ic_social)
+            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setVisibility(VISIBILITY_PUBLIC)
+    }
 
 
     @SuppressLint("UnspecifiedImmutableFlag")
