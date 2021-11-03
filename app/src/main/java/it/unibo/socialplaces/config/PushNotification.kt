@@ -1,8 +1,10 @@
 package it.unibo.socialplaces.config
 
 import android.app.NotificationManager
+import android.app.Service
 import android.content.Context
 import android.util.Log
+import androidx.core.content.ContextCompat.getSystemService
 import it.unibo.socialplaces.domain.Notification
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
@@ -12,16 +14,16 @@ import kotlinx.coroutines.launch
 object PushNotification {
     private const val TAG = "PushNotification"
 
-    private lateinit var manager: NotificationManager
+    private var manager: NotificationManager? = null
 
-    fun getManager(): NotificationManager {
-        return this.manager
-    }
-    fun setManager(manager: NotificationManager):NotificationManager{
-        if (!this::manager.isInitialized)
-            this.manager = manager
-        return getManager()
-    }
+    var notificationManager: NotificationManager
+        get() = manager!!
+        set(value) {
+            if(manager == null) {
+                manager = value;
+            }
+        }
+
     fun loadNotificationManager() {
         Log.v(TAG, "loadNotificationManager")
 

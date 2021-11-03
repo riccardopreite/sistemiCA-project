@@ -49,22 +49,6 @@
             </intent-filter>
         </service>
 
-        <activity
-            android:name=".activity.notification.FriendAcceptedActivity"
-            android:parentActivityName=".activity.MainActivity" />
-
-
-        <activity
-            android:name=".activity.notification.LiveEventActivity"
-            android:parentActivityName=".activity.MainActivity" />
-
-
-        <activity
-            android:name=".activity.notification.PlaceRecommendationActivity"
-            android:parentActivityName=".activity.MainActivity" />
-
-
-
         <service
             android:name=".service.LocationService"
             android:description="@string/location_service_description"
@@ -175,6 +159,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.notification.FriendAcceptedActivity"
+            android:parentActivityName=".activity.MainActivity" />
+
+        <activity
+            android:name=".activity.notification.LiveEventActivity"
+            android:parentActivityName=".activity.MainActivity" />
+
+
+        <activity
+            android:name=".activity.notification.PlaceRecommendationActivity"
+            android:parentActivityName=".activity.MainActivity" />
 
     </application>
 

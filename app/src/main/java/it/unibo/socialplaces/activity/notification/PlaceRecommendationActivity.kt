@@ -19,7 +19,7 @@ class PlaceRecommendationActivity: AppCompatActivity(R.layout.activity_main) {
         val poi = extras.get("place") as PointOfInterest
         val notificationId = extras.getInt("notificationId")
         println(poi)
-        PushNotification.getManager().cancel(notificationId!!)
+        PushNotification.notificationManager.cancel(notificationId)
         Log.v(TAG,"Here show poi on map")
     }
     //Shows poi on map

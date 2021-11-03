@@ -36,8 +36,6 @@ class LocationService: Service() {
         const val CHANNEL_NAME = "SocialPlaces: Background Location Retrieval Service"
     }
 
-    private lateinit var notificationManager: NotificationManager
-
     private val binder = LocationBinder()
 
     private var listener: LocationListener? = null
@@ -150,8 +148,8 @@ class LocationService: Service() {
 
         val resultIntent = Intent()
         val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
-        notificationManager = PushNotification.setManager(getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-        notificationManager.createNotificationChannel(channel)
+        PushNotification.notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        PushNotification.notificationManager.createNotificationChannel(channel)
         val notification = createNotification(pendingIntent)
         startForeground(NOTIFICATION_ID, notification)
     }

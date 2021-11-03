@@ -17,7 +17,7 @@ class FriendAcceptedActivity: AppCompatActivity() {
         val friendUsername = extras.getString("friendUsername")
         val notificationId = extras.getInt("notificationId")
         println(friendUsername)
-        PushNotification.getManager().cancel(notificationId)
+        PushNotification.notificationManager.cancel(notificationId)
         Log.v(TAG,"Here show friendUsername: $friendUsername on menu")
     }
 

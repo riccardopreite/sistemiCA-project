@@ -18,7 +18,7 @@ class LiveEventActivity: AppCompatActivity() {
         val live = extras.get("liveEvent") as LiveEvent
         val notificationId = extras.getInt("notificationId")
         println(live)
-        PushNotification.getManager().cancel(notificationId)
+        PushNotification.notificationManager.cancel(notificationId)
         Log.v(TAG,"Here show live on map")
     }
 }

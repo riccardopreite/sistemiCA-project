@@ -19,19 +19,22 @@ class FriendRequestBroadcast: BroadcastReceiver() {
         val action = intent!!.action
         val notificationId = intent.extras?.getInt("notificationId")
         val friendUsername = intent.extras?.getString("friendUsername")
-        if (action == "accept"){
-            Log.v(TAG,"accept friend request")
-            CoroutineScope(Dispatchers.Main).launch {
-                Friends.addFriend(friendUsername!!)
+        when (action) {
+            "accept" -> {
+                Log.i(TAG, "Friend request accepted!")
+                CoroutineScope(Dispatchers.Main).launch {
+                    Friends.addFriend(friendUsername!!)
+                }
             }
-        }
-        else if(action == "deny"){
-            Log.v(TAG,"deny friend request")
-            CoroutineScope(Dispatchers.Main).launch {
-                Friends.denyFriend(friendUsername!!)
+            "deny" -> {
+                Log.v(TAG, "Friend request denied!")
+                CoroutineScope(Dispatchers.Main).launch {
+                    Friends.denyFriend(friendUsername!!)
+                }
             }
+            else -> Unit
         }
-        PushNotification.getManager().cancel(notificationId!!)
+        PushNotification.notificationManager.cancel(notificationId!!)
     }
 
 }
