@@ -2,30 +2,32 @@ package it.unibo.socialplaces.service
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
-import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.media.RingtoneManager
+import android.net.Uri
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import androidx.core.app.NotificationManagerCompat
-import it.unibo.socialplaces.activity.MainActivity
-import it.unibo.socialplaces.domain.Notification
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.PointOfInterest
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import it.unibo.socialplaces.R
+import it.unibo.socialplaces.activity.MainActivity
+import it.unibo.socialplaces.activity.notification.*
 import it.unibo.socialplaces.config.PushNotification.setManager
+import it.unibo.socialplaces.domain.Notification
+import it.unibo.socialplaces.model.liveevents.LiveEvent
+import it.unibo.socialplaces.receiver.FriendRequestBroadcast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
-import kotlin.random.Random
-import android.media.RingtoneManager
-import android.net.Uri
-import android.os.Build
 
 
 class PushNotificationService: FirebaseMessagingService() {
@@ -34,7 +36,13 @@ class PushNotificationService: FirebaseMessagingService() {
 
         const val NOTIFICATION_CHANNEL_ID = "it.unibo.push"
         const val CHANNEL_NAME = "SocialPlaces : Push notification"
+        private const val FriendRequest = "new-friend-request"
+        private const val FriendAccepted = "friend-request-accepted"
+        private const val LiveEvent = "new-live-event"
+        private const val PlaceRecommendation = "place-recommendation"
+        private const val ModelRetrained = "model-retrained"
     }
+    private var UNIQUEREQUESTCODE = 0
     private lateinit var manager :NotificationManager
     private val channel = NotificationChannel(
         NOTIFICATION_CHANNEL_ID,
@@ -47,6 +55,17 @@ class PushNotificationService: FirebaseMessagingService() {
         enableVibration(true)
     }
 
+    private val defaultSoundUri: Uri =
+        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+    private val friendRequestedIntent =  Intent(this, FriendRequestBroadcast::class.java)
+    private val friendAcceptedIntent =  Intent(this, FriendAcceptedActivity::class.java)
+    private val liveEventIntent =  Intent(this, LiveEventActivity::class.java)
+    private val placeRecommendationIntent =  Intent(this, PlaceRecommendationActivity::class.java)
+
+    private val emptyIntent = Intent(this,null)
+    private val emptyPendingIntent = PendingIntent.getActivity(this,0,emptyIntent,0)
+
     @SuppressLint("UnspecifiedImmutableFlag")
     override fun onMessageReceived(message: RemoteMessage) {
         Log.v(TAG, "onMessageReceived")
@@ -55,55 +74,213 @@ class PushNotificationService: FirebaseMessagingService() {
         manager.createNotificationChannel(channel)
 
         message.notification?.let {
-            val intent = when(it.clickAction) {
-                "new-friend-request" -> {
-                    Intent(this, MainActivity::class.java) // TODO Sostituire con corretti intent
+            val id = System.currentTimeMillis().toInt().absoluteValue
+            val builder = when(it.clickAction) {
+                FriendRequest -> {
+                    createFriendRequestNotification(it,id)
                 }
-                "friend-request-accepted" -> {
-                    Intent(this, MainActivity::class.java) // TODO Sostituire con corretti intent
+                FriendAccepted -> {
+                    createFriendAcceptedNotification(it,id)
                 }
-                "new-live-event" -> {
-                    Intent(this, MainActivity::class.java) // TODO Sostituire con corretti intent
+                LiveEvent -> {
+                    createLiveEventNotification(it,id)
                 }
-                "place-recommendation" -> {
-                    Intent(this, MainActivity::class.java) // TODO Sostituire con corretti intent
+                PlaceRecommendation -> {
+                    createPlaceRecommendationNotification(it,id)
                 }
-                "model-retrained" -> {
-                    Intent(this, MainActivity::class.java) // TODO Sostituire con corretti intent
+                ModelRetrained -> {
+                    createModelRetrainedNotification(it,id)
                 }
                 else -> {
-                    Intent(this, MainActivity::class.java) // TODO Sostituire con corretti intent
-                } // TODO Capire quali altri casi ci sono, per ora ho messo solo quelli di sopra
-            }.apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    null
+                }
             }
 
-            val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
-
-            val defaultSoundUri: Uri =
-                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-
-            val builder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_social)
-                .setContentTitle(it.title)
-                .setContentText(it.body)
-                .setPriority(NotificationManager.IMPORTANCE_HIGH)
-                .setContentIntent(pendingIntent)
-                .setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
-                .setAutoCancel(true)
-                .setSound(defaultSoundUri)
-                .setVisibility(VISIBILITY_PUBLIC)
-
-                .build()
-
-
-            with(NotificationManagerCompat.from(this)) {
-                val id = System.currentTimeMillis().toInt().absoluteValue
-                Log.v(TAG, "NOTIFY WITH COUNTER $id")
-                notify(id, builder)
+            if (builder != null){
+                with(NotificationManagerCompat.from(this)) {
+                    Log.v(TAG, "NOTIFY WITH COUNTER $id")
+                    notify(id, builder)
+                }
             }
 
         }
+    }
+
+    /**
+     * Model retrained just show the new accuracy
+     */
+    private fun createModelRetrainedNotification(notificationMessage: RemoteMessage.Notification,id: Int): android.app.Notification {
+
+        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_social)
+            .setContentTitle(notificationMessage.title)
+            .setContentText(notificationMessage.body)
+            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setCategory(android.app.Notification.CATEGORY_STATUS)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setVisibility(VISIBILITY_PUBLIC)
+            .build()
+
+    }
+
+    /**
+     * It could be the same of live event
+     * Place recommendation should show the poi on the map (Maybe also route button to place?)
+     * In theory id is not necessary cause of Autocancel
+     */
+    private fun createPlaceRecommendationNotification(
+        notificationMessage: RemoteMessage.Notification,
+        id: Int): android.app.Notification {
+        val body = notificationMessage.body!!
+
+        val latLng  = body[0] as LatLng
+        val placeId = body[1] as String
+        val name    = body[2] as String
+
+        val recommendedPlace = PointOfInterest(latLng,placeId,name)
+        placeRecommendationIntent.putExtra("notificationId",id)
+        placeRecommendationIntent.putExtra("place",recommendedPlace)
+        val recommendationPending = createPendingIntent(placeRecommendationIntent)
+
+        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_social)
+            .setContentTitle(notificationMessage.title)
+            .setContentText(notificationMessage.body)
+            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
+            .setContentIntent(recommendationPending)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setVisibility(VISIBILITY_PUBLIC)
+            .build()
+
+    }
+    /**
+     * It could be the same of recommendation
+     * Live event should show the poi on the map (Maybe also route button to place?)
+     * In theory id is not necessary cause of Autocancel
+
+     */
+    private fun createLiveEventNotification(
+        notificationMessage: RemoteMessage.Notification,
+        id: Int): android.app.Notification {
+
+        val body = notificationMessage.body!!
+
+        val liveId         = body[0] as String
+        val address        = body[1] as String
+        val latitude       = body[2] as Double
+        val longitude      = body[3] as Double
+        val name           = body[4] as String
+        val owner          = body[5] as String
+        val expirationDate = body[6] as Long
+        val liveEvent = LiveEvent(liveId,address,latitude,longitude,name,owner,expirationDate)
+
+        liveEventIntent.putExtra("notificationId",id)
+        liveEventIntent.putExtra("liveEvent",liveEvent)
+        val livePending = createPendingIntent(liveEventIntent)
+
+        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_social)
+            .setContentTitle(notificationMessage.title)
+            .setContentText(notificationMessage.body)
+            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
+            .setContentIntent(livePending)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setVisibility(VISIBILITY_PUBLIC)
+            .build()
+    }
+
+    /**
+     * Show friendList and high light new friend
+     * In theory id is not necessary cause of Autocancel
+
+     */
+    private fun createFriendAcceptedNotification(
+        notificationMessage: RemoteMessage.Notification,
+        id: Int): android.app.Notification {
+
+        val body = notificationMessage.body!!
+        friendAcceptedIntent.putExtra("notificationId",id)
+        friendAcceptedIntent.putExtra("friendUsername",body[0])
+        val friendPending = createPendingIntent(friendAcceptedIntent)
+
+        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_social)
+            .setContentTitle(notificationMessage.title)
+            .setContentText(notificationMessage.body)
+            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setCategory(android.app.Notification.CATEGORY_SOCIAL)
+            .setContentIntent(friendPending)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setVisibility(VISIBILITY_PUBLIC)
+            .build()
+    }
+
+    /**
+     * Onclick disabled just replay only with accept or deny friend request
+     * In theory id is not necessary cause of Autocancel
+     */
+    private fun createFriendRequestNotification(
+        notificationMessage: RemoteMessage.Notification,
+        id: Int
+    ): android.app.Notification {
+        val body = notificationMessage.body!!
+        val friendUsername = body[0] as String //contain directly friend username
+
+        friendRequestedIntent.action="accept"
+        friendRequestedIntent.putExtra("notificationId",id)
+        friendRequestedIntent.putExtra("friendUsername",friendUsername)
+        val friendRequestAcceptedPending = createPendingIntent(friendRequestedIntent)
+
+        friendRequestedIntent.action="deny"
+        friendRequestedIntent.putExtra("notificationId",id)
+        friendRequestedIntent.putExtra("friendUsername",friendUsername)
+        val friendRequestDeniedPending = createPendingIntent(friendRequestedIntent)
+
+
+        val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_social)
+            .setContentTitle(notificationMessage.title)
+            .setContentText(notificationMessage.body)
+            .setPriority(NotificationManager.IMPORTANCE_HIGH)
+            .setCategory(android.app.Notification.CATEGORY_SOCIAL)
+            .setContentIntent(emptyPendingIntent)
+            .addAction(R.drawable.ic_addfriendnotification,getString(R.string.addFriend),friendRequestAcceptedPending)
+            .addAction(R.drawable.ic_closenotification,getString(R.string.denyFriend),friendRequestDeniedPending)
+            .setAutoCancel(false)
+            .setSound(defaultSoundUri)
+            .setVisibility(VISIBILITY_PUBLIC)
+            .build()
+
+        notification.flags = android.app.Notification.FLAG_NO_CLEAR
+        return notification
+
+    }
+
+
+
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private fun createPendingIntent(activityIntent: Intent?): PendingIntent {
+        val backIntent = Intent(this, MainActivity::class.java)
+        backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        val arrayOfIntent =
+            if (activityIntent != null)
+                arrayOf(backIntent, activityIntent)
+            else
+                arrayOf(backIntent)
+
+        return PendingIntent.getActivities(
+            this,
+            UNIQUEREQUESTCODE++,
+            arrayOfIntent,
+            PendingIntent.FLAG_ONE_SHOT
+        )
     }
 
     override fun onNewToken(token: String) {

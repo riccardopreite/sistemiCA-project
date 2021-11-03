@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
 
 open class ListActivity: AppCompatActivity(R.layout.activity_list) {
     companion object {
-        private val TAG: String = it.unibo.socialplaces.activity.ListActivity::class.qualifiedName!!
+        private val TAG: String = ListActivity::class.qualifiedName!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.v(it.unibo.socialplaces.activity.ListActivity.Companion.TAG, "onCreate")
+        Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
     }
 

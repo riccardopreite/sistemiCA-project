@@ -30,6 +30,9 @@
         <!-- Receivers -->
         <receiver android:name=".receiver.RecommendationAlarm"
             android:enabled="true" />
+        <receiver
+            android:name=".receiver.FriendRequestBroadcast"
+            android:enabled="true" />
 
         <!-- Services -->
         <service
@@ -45,6 +48,22 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".activity.notification.FriendAcceptedActivity"
+            android:parentActivityName=".activity.MainActivity" />
+
+
+        <activity
+            android:name=".activity.notification.LiveEventActivity"
+            android:parentActivityName=".activity.MainActivity" />
+
+
+        <activity
+            android:name=".activity.notification.PlaceRecommendationActivity"
+            android:parentActivityName=".activity.MainActivity" />
+
+
 
         <service
             android:name=".service.LocationService"
