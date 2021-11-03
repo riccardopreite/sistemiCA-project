@@ -68,8 +68,7 @@ class PushNotificationService: FirebaseMessagingService() {
     private val liveEventIntent =  Intent(this, LiveEventActivity::class.java)
     private val placeRecommendationIntent =  Intent(this, PlaceRecommendationActivity::class.java)
 
-    private val emptyIntent = Intent(this,null)
-    private val emptyPendingIntent = PendingIntent.getActivity(this,0,emptyIntent,0)
+    private val emptyPendingIntent = PendingIntent.getActivity(this,0,Intent(),0)
 
     @SuppressLint("UnspecifiedImmutableFlag")
     override fun onMessageReceived(message: RemoteMessage) {
@@ -101,16 +100,14 @@ class PushNotificationService: FirebaseMessagingService() {
      * Model retrained just show the new accuracy
      */
     private fun createModelRetrainedNotification(notificationMessage: RemoteMessage.Notification,id: Int): android.app.Notification {
-        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_social)
-            .setContentTitle(notificationMessage.title)
-            .setContentText(notificationMessage.body)
-            .setPriority(NotificationManager.IMPORTANCE_HIGH)
-            .setCategory(android.app.Notification.CATEGORY_STATUS)
-            .setAutoCancel(true)
-            .setSound(defaultSoundUri)
-            .setVisibility(VISIBILITY_PUBLIC)
-            .build()
+
+        val baseBuilder = baseNotificationBuilder(
+            notificationMessage.title!!,
+            notificationMessage.body!!,
+            android.app.Notification.CATEGORY_STATUS
+        )
+
+        return baseBuilder.build()
     }
 
     /**
@@ -207,24 +204,28 @@ class PushNotificationService: FirebaseMessagingService() {
         notificationMessage: RemoteMessage.Notification,
         id: Int,
         data: MutableMap<String, String>
-    ): android.app.Notification {
+    ): android.app.Notification? {
 
-        val body = notificationMessage.body!!
+        if(!data.keys.contains("friendUsername")
+        ) {
+            return null
+        }
+
+        val friendUsername = data["friendUsername"]!!
         friendAcceptedIntent.putExtra("notificationId",id)
-        friendAcceptedIntent.putExtra("friendUsername",body[0])
+        friendAcceptedIntent.putExtra("friendUsername",friendUsername)
         val friendPending = createPendingIntent(friendAcceptedIntent)
 
-        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_social)
-            .setContentTitle(notificationMessage.title)
-            .setContentText(notificationMessage.body)
-            .setPriority(NotificationManager.IMPORTANCE_HIGH)
-            .setCategory(android.app.Notification.CATEGORY_SOCIAL)
-            .setContentIntent(friendPending)
-            .setAutoCancel(true)
-            .setSound(defaultSoundUri)
-            .setVisibility(VISIBILITY_PUBLIC)
-            .build()
+
+        val baseBuilder = baseNotificationBuilder(
+            notificationMessage.title!!,
+            notificationMessage.body!!,
+            android.app.Notification.CATEGORY_SOCIAL
+        )
+
+        baseBuilder.setContentIntent(friendPending)
+
+        return baseBuilder.build()
     }
 
     /**
@@ -235,9 +236,13 @@ class PushNotificationService: FirebaseMessagingService() {
         notificationMessage: RemoteMessage.Notification,
         id: Int,
         data: MutableMap<String, String>
-    ): android.app.Notification {
-        val body = notificationMessage.body!!
-        val friendUsername = body[0] as String //contain directly friend username
+    ): android.app.Notification? {
+        if(!data.keys.contains("friendUsername")
+        ) {
+            return null
+        }
+
+        val friendUsername = data["friendUsername"]!!
 
         friendRequestedIntent.action="accept"
         friendRequestedIntent.putExtra("notificationId",id)
@@ -249,24 +254,22 @@ class PushNotificationService: FirebaseMessagingService() {
         friendRequestedIntent.putExtra("friendUsername",friendUsername)
         val friendRequestDeniedPending = createPendingIntent(friendRequestedIntent)
 
+        val baseBuilder = baseNotificationBuilder(
+            notificationMessage.title!!,
+            notificationMessage.body!!,
+            android.app.Notification.CATEGORY_SOCIAL
+        )
 
-        val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_social)
-            .setContentTitle(notificationMessage.title)
-            .setContentText(notificationMessage.body)
-            .setPriority(NotificationManager.IMPORTANCE_HIGH)
-            .setCategory(android.app.Notification.CATEGORY_SOCIAL)
+        val notification = baseBuilder
+            .setAutoCancel(false)
             .setContentIntent(emptyPendingIntent)
             .addAction(R.drawable.ic_addfriendnotification,getString(R.string.addFriend),friendRequestAcceptedPending)
             .addAction(R.drawable.ic_closenotification,getString(R.string.denyFriend),friendRequestDeniedPending)
-            .setAutoCancel(false)
-            .setSound(defaultSoundUri)
-            .setVisibility(VISIBILITY_PUBLIC)
             .build()
 
         notification.flags = android.app.Notification.FLAG_NO_CLEAR
-        return notification
 
+        return notification
     }
 
     private fun baseNotificationBuilder(title: String, body: String, category: String): NotificationCompat.Builder {

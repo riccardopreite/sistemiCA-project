@@ -14,7 +14,6 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import it.unibo.socialplaces.config.PushNotification
-import it.unibo.socialplaces.config.PushNotification.setManager
 
 class LocationService: Service() {
     interface LocationListener {
@@ -37,7 +36,7 @@ class LocationService: Service() {
         const val CHANNEL_NAME = "SocialPlaces: Background Location Retrieval Service"
     }
 
-    private lateinit var manager: NotificationManager
+    private lateinit var notificationManager: NotificationManager
 
     private val binder = LocationBinder()
 
@@ -113,7 +112,6 @@ class LocationService: Service() {
                     locationUpdateCallback,
                     Looper.getMainLooper()
                 )
-
                 createNotificationChannel()
             }
             addOnFailureListener {
@@ -149,14 +147,11 @@ class LocationService: Service() {
 
     private fun createNotificationChannel() {
         Log.v(TAG, "createNotificationChannel")
-        //val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        //manager.createNotificationChannelGroup(NotificationChannelGroup(NOTIFICATION_CHANNEL_ID, CHANNEL_NAME))
 
         val resultIntent = Intent()
         val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
-        manager = setManager(getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
-        manager.createNotificationChannel(channel)
+        notificationManager = PushNotification.setManager(getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+        notificationManager.createNotificationChannel(channel)
         val notification = createNotification(pendingIntent)
         startForeground(NOTIFICATION_ID, notification)
     }

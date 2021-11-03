@@ -4,9 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import it.unibo.socialplaces.config.PushNotification.getManager
-import it.unibo.socialplaces.domain.Friends.addFriend
-import it.unibo.socialplaces.domain.Friends.removeFriend
+import it.unibo.socialplaces.config.PushNotification
+import it.unibo.socialplaces.domain.Friends
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,21 +22,16 @@ class FriendRequestBroadcast: BroadcastReceiver() {
         if (action == "accept"){
             Log.v(TAG,"accept friend request")
             CoroutineScope(Dispatchers.Main).launch {
-                addFriend(friendUsername!!)
+                Friends.addFriend(friendUsername!!)
             }
-
         }
         else if(action == "deny"){
-            /**
-             * Not sure about this
-             */
             Log.v(TAG,"deny friend request")
             CoroutineScope(Dispatchers.Main).launch {
-                removeFriend(friendUsername!!)
+                Friends.denyFriend(friendUsername!!)
             }
-
         }
-        getManager().cancel(notificationId!!)
+        PushNotification.getManager().cancel(notificationId!!)
     }
 
 }
