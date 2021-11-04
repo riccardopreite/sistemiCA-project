@@ -337,7 +337,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     override fun onLocationChanged(service: Service, location: Location) {
-        Log.d(TAG, "Location reached MainActivity: $location")
         if(this::onLocationUpdated.isInitialized) {
             onLocationUpdated(location)
         }

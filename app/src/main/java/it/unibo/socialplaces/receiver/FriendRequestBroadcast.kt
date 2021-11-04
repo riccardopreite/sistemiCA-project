@@ -12,29 +12,34 @@ import kotlinx.coroutines.launch
 
 class FriendRequestBroadcast: BroadcastReceiver() {
     companion object{
-        private const val TAG = "receiver.FriendRequestBroadcast"
-
+        private val TAG = FriendRequestBroadcast::class.qualifiedName!!
     }
+
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.v(TAG, "onReceive")
         val action = intent!!.action
-        val notificationId = intent.extras?.getInt("notificationId")
-        val friendUsername = intent.extras?.getString("friendUsername")
+        val notificationId = intent.getIntExtra("notificationId", -1)
+        val friendUsername = intent.getStringExtra("friendUsername")
+        Log.d(TAG, "Handling notification with id=$notificationId.")
+
+        CoroutineScope(Dispatchers.Main).launch {
+            PushNotification.notificationManager.cancel(notificationId)
+        }
         when (action) {
             "accept" -> {
                 Log.i(TAG, "Friend request accepted!")
-                CoroutineScope(Dispatchers.Main).launch {
-                    Friends.addFriend(friendUsername!!)
+                CoroutineScope(Dispatchers.IO).launch {
+                    Friends.confirmFriend(friendUsername!!)
                 }
             }
             "deny" -> {
                 Log.v(TAG, "Friend request denied!")
-                CoroutineScope(Dispatchers.Main).launch {
+                CoroutineScope(Dispatchers.IO).launch {
                     Friends.denyFriend(friendUsername!!)
                 }
             }
             else -> Unit
         }
-        PushNotification.notificationManager.cancel(notificationId!!)
     }
 
 }

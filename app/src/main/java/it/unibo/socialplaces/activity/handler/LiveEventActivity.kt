@@ -14,9 +14,8 @@ class LiveEventActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        val extras = intent.extras!!
-        val notificationId = extras.getInt("notificationId")
-        val live = extras.getParcelable<LiveEvent>("liveEvent")
+        val notificationId = intent.getIntExtra("notificationId", -1)
+        val live = intent.getParcelableExtra<LiveEvent>("liveEvent")
         PushNotification.notificationManager.cancel(notificationId)
 
         Log.i(TAG, "A new live event has been published: $live.")

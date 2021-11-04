@@ -13,9 +13,8 @@ class FriendRequestAcceptedActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        val extras = intent.extras!!
-        val friendUsername = extras.getString("friendUsername")
-        val notificationId = extras.getInt("notificationId")
+        val notificationId = intent.getIntExtra("notificationId", -1)
+        val friendUsername = intent.getStringExtra("friendUsername")
         PushNotification.notificationManager.cancel(notificationId)
 
         Log.i(TAG,"You are now friend with $friendUsername!")

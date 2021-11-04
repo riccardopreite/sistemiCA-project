@@ -51,9 +51,9 @@ class LocationService: Service() {
 
     private val locationUpdateCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
-            Log.v(TAG, "LocationCallback.onLocationResult $locationResult")
+//            Log.v(TAG, "LocationCallback.onLocationResult $locationResult")
             lastLocation = locationResult.lastLocation
-            Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
+//            Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
             listener?.onLocationChanged(this@LocationService, lastLocation)
             val sharedPref = getSharedPreferences("sharePlaces",Context.MODE_PRIVATE)?: return
             with (sharedPref.edit()) {

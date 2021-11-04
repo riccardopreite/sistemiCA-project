@@ -15,9 +15,8 @@ class PlaceRecommendationActivity: AppCompatActivity(R.layout.activity_main) {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
-        val extras = intent.extras!!
-        val notificationId = extras.getInt("notificationId")
-        val poi = extras.getParcelable<PointOfInterest>("place")
+        val notificationId = intent.getIntExtra("notificationId", -1)
+        val poi = intent.getParcelableExtra<PointOfInterest>("place")
         PushNotification.notificationManager.cancel(notificationId)
 
         Log.v(TAG,"A new point of interest has been published: $poi.")

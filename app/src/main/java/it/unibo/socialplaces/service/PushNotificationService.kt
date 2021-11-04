@@ -27,6 +27,7 @@ import it.unibo.socialplaces.receiver.FriendRequestBroadcast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlin.math.absoluteValue
 
 
@@ -71,7 +72,7 @@ class PushNotificationService: FirebaseMessagingService() {
         val data = message.data
         message.notification?.let {
             // Using the timestamp as notification id.
-            val notificationId = System.currentTimeMillis().toInt().absoluteValue
+            val notificationId = Clock.System.now().epochSeconds.toInt()
             when(it.clickAction) {
                 newFriendRequestAction -> createFriendRequestNotification(it, notificationId, data)
                 friendRequestAcceptedAction -> createFriendAcceptedNotification(it, notificationId, data)
@@ -79,11 +80,9 @@ class PushNotificationService: FirebaseMessagingService() {
                 placeRecommendationAction -> createPlaceRecommendationNotification(it, notificationId, data)
                 modelRetrainedAction -> createModelRetrainedNotification(it, notificationId)
                 else -> null
-            }?.let {
-                with(NotificationManagerCompat.from(this)) {
-                    Log.d(TAG, "Showing notification with id=$notificationId.")
-                    notify(notificationId, it)
-                }
+            }?.let { notification ->
+                Log.d(TAG, "Showing notification with id=$notificationId.")
+                PushNotification.notificationManager.notify(notificationId, notification)
             }
         }
     }
@@ -101,6 +100,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * Model retrained just show the new accuracy
      */
     private fun createModelRetrainedNotification(notificationMessage: RemoteMessage.Notification,id: Int): android.app.Notification {
+        Log.v(TAG, "createModelRetrainedNotification")
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
             notificationMessage.body!!,
@@ -120,6 +120,7 @@ class PushNotificationService: FirebaseMessagingService() {
         id: Int,
         data: Map<String, String>
     ): android.app.Notification? {
+        Log.v(TAG, "createPlaceRecommendationNotification")
         if(!data.keys.containsAll(
                 listOf("markId", "address", "type", "latitude", "longitude", "name", "phoneNumber", "visibility", "url")
             )
@@ -165,6 +166,7 @@ class PushNotificationService: FirebaseMessagingService() {
         id: Int,
         data: Map<String, String>
     ): android.app.Notification? {
+        Log.v(TAG, "createPlaceRecommendationNotification")
         if(!data.keys.containsAll(
                 listOf("id", "address", "latitude", "longitude", "name", "owner", "expirationDate")
             )
@@ -208,6 +210,7 @@ class PushNotificationService: FirebaseMessagingService() {
         id: Int,
         data: Map<String, String>
     ): android.app.Notification? {
+        Log.v(TAG, "createFriendAcceptedNotification")
         if(!data.keys.contains("friendUsername")) {
             return null
         }
@@ -240,11 +243,14 @@ class PushNotificationService: FirebaseMessagingService() {
         id: Int,
         data: Map<String, String>
     ): android.app.Notification? {
+        Log.v(TAG, "createFriendRequestNotification")
         if(!data.keys.contains("friendUsername")) {
             return null
         }
 
         val friendUsername = data["friendUsername"]!!
+
+        Log.d(TAG, "Creating notification with id=$id")
 
         val friendRequestedIntent = Intent(this, FriendRequestBroadcast::class.java)
         friendRequestedIntent.apply {
@@ -252,7 +258,7 @@ class PushNotificationService: FirebaseMessagingService() {
             putExtra("friendUsername", friendUsername) // String
         }
 
-        val friendRequestAcceptedPending = PendingIntent.getActivity(
+        val friendRequestAcceptedPending = PendingIntent.getBroadcast(
             this,
             0,
             friendRequestedIntent.apply {
@@ -261,7 +267,7 @@ class PushNotificationService: FirebaseMessagingService() {
             0
         )
 
-        val friendRequestDeniedPending = PendingIntent.getActivity(
+        val friendRequestDeniedPending = PendingIntent.getBroadcast(
             this,
             0,
             friendRequestedIntent.apply {
@@ -269,6 +275,8 @@ class PushNotificationService: FirebaseMessagingService() {
             },
             0
         )
+
+        Log.d(TAG, friendRequestedIntent.extras.toString())
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
