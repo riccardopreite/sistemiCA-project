@@ -3,6 +3,7 @@ package it.unibo.socialplaces.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
@@ -10,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
@@ -22,7 +24,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
+import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.receiver.RecommendationAlarm
 import it.unibo.socialplaces.domain.LiveEvents
 import it.unibo.socialplaces.domain.PointsOfInterest
@@ -61,7 +66,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             locationServiceIsBound = false
         }
     }
-
     /**
      * Permission request launcher (for read activity permission).
      */
@@ -112,6 +116,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         checkActivityPermission()
+        PushNotification.notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
 
     private fun loadPoisAndLiveEvents(force: Boolean = false) {
@@ -119,7 +124,25 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         CoroutineScope(Dispatchers.IO).launch {
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = LiveEvents.getLiveEvents(forceSync = force)
-            val mainFragment = MainFragment.newInstance(poisList, leList)
+            var poi :PointOfInterest? = null
+
+            val activeNotifications = PushNotification.notificationManager.activeNotifications
+            for (notification in activeNotifications) {
+                val notificationId = intent.getIntExtra("notificationId", -1)
+
+
+                if (notification.id == notificationId) {
+                    PushNotification.notificationManager.cancel(notificationId)
+                    when (intent.action){
+                        "recommendation" -> {
+                            poi = intent.getParcelableExtra("place")
+
+                        }
+                    }
+                }
+            }
+
+            val mainFragment = MainFragment.newInstance(poisList, leList,poi)
             onLocationUpdated = mainFragment::onCurrentLocationUpdated
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
@@ -172,7 +195,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     /**
      * This method checks permissions to ACCESS_FINE_LOCATION and later calls [checkBackgroundLocationPermissions].
      */
-    private fun checkLocationPermissions() {
+    private fun checkLocationPermissions()  {
         Log.v(TAG, "checkLocationPermissions")
         // Location permission check
         when {
@@ -260,23 +283,48 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     checkLocationPermissions()
                 }
+                else{
+                    finishActivityForNoPermissionGranted(R.string.human_activity_permission_denied)
+                }
             }
             Manifest.permission.ACCESS_FINE_LOCATION -> {
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     checkBackgroundLocationPermissions()
                 } else {
-                    Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_SHORT).show()
+                    finishActivityForNoPermissionGranted(R.string.location_permission_denied)
                 }
             }
             Manifest.permission.ACCESS_BACKGROUND_LOCATION -> {
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startLocationService()
                     startAlarmService()
+                    loadPoisAndLiveEvents(force = true)
                 }
-                loadPoisAndLiveEvents(force = true)
+                else{
+                    finishActivityForNoPermissionGranted(R.string.access_background_location_permission_denied)
+                }
+
             }
             else -> Unit
         }
+    }
+
+    private fun finishActivityForNoPermissionGranted(permissionDenied: Int) {
+        val snackbar = Snackbar.make(
+            findViewById(android.R.id.content),
+            permissionDenied,
+            5000
+        )
+        snackbar.setActionTextColor(Color.DKGRAY)
+        snackbar.view.setBackgroundColor(Color.BLACK)
+
+        snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                super.onDismissed(transientBottomBar, event)
+                finish()
+            }
+        })
+        snackbar.show()
     }
 
     private fun startLocationService() {
@@ -329,11 +377,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 //            locationServiceIsBound = false
 //            stopLocationService()
 //        }
-    }
-
-    override fun onDestroy() {
-        Log.v(TAG, "onDestroy")
-        super.onDestroy()
     }
 
     override fun onLocationChanged(service: Service, location: Location) {

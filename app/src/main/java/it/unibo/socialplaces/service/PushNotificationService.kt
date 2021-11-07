@@ -115,6 +115,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * Place recommendation should show the poi on the map (Maybe also route button to place?)
      * In theory id is not necessary cause of Autocancel
      */
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun createPlaceRecommendationNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
@@ -144,7 +145,18 @@ class PushNotificationService: FirebaseMessagingService() {
             putExtra("notificationId", id) // Int
             putExtra("place", recommendedPlace) // Parcelable
         }
-        val recommendationPending = createPendingIntent(placeRecommendationIntent)
+        //val recommendationPending = createPendingIntent(placeRecommendationIntent)
+
+
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        //backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        notificationIntent.action = "recommendation"
+        notificationIntent.putExtra("notificationId", id)
+        notificationIntent.putExtra("place", recommendedPlace)
+
+        val recommendationPending = PendingIntent.getActivity(this, REQUEST_CODE_COUNTER++,notificationIntent,PendingIntent.FLAG_ONE_SHOT)
+
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
@@ -285,7 +297,6 @@ class PushNotificationService: FirebaseMessagingService() {
         )
 
         val notification = baseBuilder
-            .setAutoCancel(false)
             .addAction(R.drawable.ic_addfriendnotification, getString(R.string.addFriend), friendRequestAcceptedPending)
             .addAction(R.drawable.ic_closenotification, getString(R.string.denyFriend), friendRequestDeniedPending)
             .build()
@@ -305,7 +316,7 @@ class PushNotificationService: FirebaseMessagingService() {
             .setCategory(category)
             .setSmallIcon(R.mipmap.ic_social)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
-            .setAutoCancel(true)
+            .setAutoCancel(false)
             .setSound(defaultSoundUri)
             .setVisibility(VISIBILITY_PUBLIC)
     }
@@ -314,7 +325,8 @@ class PushNotificationService: FirebaseMessagingService() {
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun createPendingIntent(activityIntent: Intent?): PendingIntent {
         val backIntent = Intent(this, MainActivity::class.java)
-        backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        //backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        backIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
         val arrayOfIntent =
             if (activityIntent != null)

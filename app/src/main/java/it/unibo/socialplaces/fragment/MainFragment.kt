@@ -2,9 +2,7 @@ package it.unibo.socialplaces.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -15,8 +13,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.ui.CircleTransform
 import it.unibo.socialplaces.config.Auth
@@ -55,6 +51,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     // App state
     private lateinit var poisList: MutableList<PointOfInterest>
     private lateinit var liveEventsList: MutableList<LiveEvent>
+    private var notificationPoi: PointOfInterest? = null
     private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
     private lateinit var currentLatLng: LatLng
 
@@ -69,13 +66,21 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
         private const val ARG_POISLIST = "poisList"
         private const val ARG_LIVEEVENTSLIST = "liveEventsList"
+        private const val ARG_NOTIFICATIONPOI = "notificationPoi"
 
         @JvmStatic
-        fun newInstance(poisList: List<PointOfInterest>, liveEventsList: List<LiveEvent>) =
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>,
+            poi: PointOfInterest?
+        ) =
             MainFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
+                    if (poi != null){
+                        putParcelable(ARG_NOTIFICATIONPOI,poi)
+                    }
                 }
             }
     }
@@ -101,6 +106,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 Log.e(TAG, "liveEventsList inside savedInstanceState was null. Loading an emptyList.")
                 liveEventsList = emptyList<LiveEvent>().toMutableList()
             }
+
+            notificationPoi = it.getParcelable(ARG_NOTIFICATIONPOI)
+
         }
 
         Places.initialize(requireContext(), getString(R.string.places_api))
@@ -188,6 +196,22 @@ class MainFragment : Fragment(R.layout.fragment_main),
         liveEventsList.forEach {
             createMarker(it.latitude,it.longitude,it.name,it.address,it.id,"live")
         }
+
+        notificationPoi?.let{
+            if(!poisList.contains(it)){
+                createMarker(it.latitude,it.longitude,it.name,it.address,it.markId,it.type)
+            }
+            /**
+             * booleano vedo posto = true
+             *
+             * dismiss dialog posto notifiaxtio booleano vedo posto = false
+             */
+            val notificationPoiLatLng = LatLng(it.latitude,it.longitude)
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(notificationPoiLatLng, 17F))
+            //move map camera
+        }
+
+
     }
 
     override fun onMapClick(positionOnMap: LatLng) {
