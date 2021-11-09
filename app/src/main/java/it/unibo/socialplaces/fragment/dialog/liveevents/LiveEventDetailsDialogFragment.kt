@@ -27,7 +27,7 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
     internal lateinit var listener: LiveEventDetailsDialogListener
 
     private lateinit var onDismissCallback: () -> Unit
-    private var validateOnDismissCallback: Boolean = false
+
     // App state
     private lateinit var liveEvent: LiveEvent
 
@@ -44,9 +44,9 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
                 }
             }
     }
+
     fun setOnDismissCallback(onDismissCallback:() -> Unit) {
         this.onDismissCallback = onDismissCallback
-        validateOnDismissCallback = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,11 +100,10 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
             throw ClassCastException("$context must implement LiveEventDetailsDialogListener")
         }
     }
+
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        if(validateOnDismissCallback){
-            onDismissCallback()
-        }
-        validateOnDismissCallback = false
+
+        onDismissCallback()
     }
 }

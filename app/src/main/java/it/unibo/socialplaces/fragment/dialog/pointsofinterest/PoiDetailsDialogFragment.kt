@@ -23,8 +23,10 @@ class PoiDetailsDialogFragment : DialogFragment() {
     }
 
     internal lateinit var listener: PoiDetailsDialogListener
+
+
     private lateinit var onDismissCallback: () -> Unit
-    private var validateOnDismissCallback: Boolean = false
+
     // App state
     private lateinit var poi: PointOfInterest
 
@@ -42,9 +44,9 @@ class PoiDetailsDialogFragment : DialogFragment() {
 
             }
     }
+
     fun setOnDismissCallback(onDismissCallback:() -> Unit) {
         this.onDismissCallback = onDismissCallback
-        validateOnDismissCallback = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,10 +102,8 @@ class PoiDetailsDialogFragment : DialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         Log.v(TAG, "onDismiss")
         super.onDismiss(dialog)
-        if(validateOnDismissCallback){
-            onDismissCallback()
-        }
-        validateOnDismissCallback = false
+
+        onDismissCallback()
     }
 
 }

@@ -39,9 +39,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
-import android.content.DialogInterface
-
-
 
 
 class MainFragment : Fragment(R.layout.fragment_main),
@@ -51,16 +48,24 @@ class MainFragment : Fragment(R.layout.fragment_main),
     // UI
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
+    private val markerColors = mapOf(
+        "restaurants" to BitmapDescriptorFactory.HUE_ORANGE,
+        "leisure" to BitmapDescriptorFactory.HUE_GREEN,
+        "sport" to BitmapDescriptorFactory.HUE_BLUE,
+        "live" to BitmapDescriptorFactory.HUE_YELLOW
+    )
 
     // App state
     private lateinit var poisList: MutableList<PointOfInterest>
     private lateinit var liveEventsList: MutableList<LiveEvent>
+    private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
+
     private var notificationPoi: PointOfInterest? = null
     private var notificationLive: LiveEvent? = null
     private var friendUsername: String? = null
-    private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
     private lateinit var currentLatLng: LatLng
     private var isShowingDetails: Boolean = false
+
     // API
     private val geocoder by lazy {
         Geocoder(this.requireContext())
@@ -156,7 +161,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
             notificationPoi = it.getParcelable(ARG_NOTIFICATIONPOI)
             notificationLive = it.getParcelable(ARG_NOTIFICATIONLIVE)
             friendUsername = it.getString(ARG_NOTIFICATIONFRIEND)
-
         }
 
         Places.initialize(requireContext(), getString(R.string.places_api))
@@ -190,14 +194,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
             val menuIcon = layout.getChildAt(0) as ImageView
             val userIconUri = Auth.getUserProfileIcon()
-            if(userIconUri != null){
+            if(userIconUri != null) {
                 Picasso.get()
                     .load(userIconUri)
                     .transform(CircleTransform())
                     .resize(140, 140)
                     .into(menuIcon)
-               layout.setBackgroundResource(R.drawable.layout_bg)// = Color.WHITE //  resources.getDrawable(R.drawable.layout_bg,null)
-
+                layout.setBackgroundResource(R.drawable.layout_bg)
             }
 
             activity?.let { a ->
@@ -245,15 +248,14 @@ class MainFragment : Fragment(R.layout.fragment_main),
             createMarker(it.latitude,it.longitude,it.name,it.address,it.id,"live")
         }
 
-        notificationPoi?.let{
-            val isCreateMarker = !poisList.contains(it)
-            showNotifiedPoiOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,isCreateMarker)
+        notificationPoi?.let {
+            val shouldCreateMarker = !poisList.contains(it)
+            showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,shouldCreateMarker)
         }
 
-
         notificationLive?.let {
-            val isCreateMarker = !liveEventsList.contains(it)
-            showNotifiedPoiOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",isCreateMarker)
+            val shouldCreateMarker = !liveEventsList.contains(it)
+            showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",shouldCreateMarker)
         }
 
         friendUsername?.let {
@@ -261,16 +263,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
 
         }
-
-
-
     }
-    private fun showNotifiedPoiOnMap(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String,isCreateMarker:Boolean){
-        if(isCreateMarker)
-            createMarker(latitude,longitude,name,address,id,type)
+    private fun showNotifiedPoiOrLiveOnMap(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String, shouldCreateMarker: Boolean){
+        if(shouldCreateMarker) {
+            createMarker(latitude, longitude, name, address, id, type)
+        }
 
-        val notificationPoiLatLng = LatLng(latitude,longitude)
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(notificationPoiLatLng, 17F))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude,longitude), 17F))
         markers[id]?.let { onMarkerClick(it) }
     }
 
@@ -283,6 +282,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             Log.e(TAG, "Exception thrown while using the geocoder: ${exc.message}")
             null
         }
+
         val createPoiDialog = address?.let {
             Log.v(TAG,"Address found:")
             println(it)
@@ -303,29 +303,32 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
-        isShowingDetails = true
         Log.v(TAG, "GoogleMap.OnMarkerClickListener.onMarkerClick")
+        isShowingDetails = true
         // Searching for the marker in the map of saved markers.
         val foundMarker = markers.entries.filter { it.value == marker }
         if(foundMarker.isNotEmpty()) {
             // The marker has been found, hence we need to discover if it is a live event or point of interest.
             val markerId = foundMarker[0].key
+
             val foundPoi = poisList.filter { it.markId == markerId }
             if(foundPoi.isNotEmpty()) {
-
                 val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0])
-                poiDetailFragment.setOnDismissCallback(this::onDialogDismissed)
+//                poiDetailFragment.setOnDismissCallback(this::onDialogDismissed)
+                poiDetailFragment.setOnDismissCallback { isShowingDetails = false }
 
                 activity?.let {
-                    currentLatLng = LatLng(foundPoi[0].latitude,foundPoi[0].longitude)
+//                    currentLatLng = LatLng(foundPoi[0].latitude,foundPoi[0].longitude)
                     poiDetailFragment.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
                 }
             }
+
             val foundLiveEvent = liveEventsList.filter { it.id == markerId }
             if(foundLiveEvent.isNotEmpty()) {
-                currentLatLng = LatLng(foundLiveEvent[0].latitude,foundLiveEvent[0].longitude)
+//                currentLatLng = LatLng(foundLiveEvent[0].latitude,foundLiveEvent[0].longitude)
                 val liveDetailFragment = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
-                liveDetailFragment.setOnDismissCallback(this::onDialogDismissed)
+//                liveDetailFragment.setOnDismissCallback(this::onDialogDismissed)
+                liveDetailFragment.setOnDismissCallback { isShowingDetails = false }
 
                 activity?.let {
                     liveDetailFragment.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
@@ -336,10 +339,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
         return false
     }
 
-    private fun onDialogDismissed(){
+    private fun onDialogDismissed() {
         Log.v(TAG,"Dialog dismissed from passed fun")
         isShowingDetails = false
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17F))
+//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17F))
     }
 
     fun onCurrentLocationUpdated(location: Location) {
@@ -352,11 +355,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
         if(this::currentLatLng.isInitialized && checkIfPositionsAreEqualApproximated(newPosition, currentLatLng)) {
             return
         }
+
         if(!isShowingDetails){
             currentLatLng = newPosition
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(newPosition, 17F))
         }
-
     }
 
     private fun checkIfPositionsAreEqualApproximated(pos0: LatLng, pos1: LatLng): Boolean {
@@ -383,20 +386,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     private fun createMarker(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String) {
-        val color =
-        when (type.lowercase()){
-            "restaurants" ->
-                BitmapDescriptorFactory.HUE_RED
-            "leisure" ->
-                BitmapDescriptorFactory.HUE_MAGENTA
-            "sport" ->
-                BitmapDescriptorFactory.HUE_ORANGE
-            "live" ->
-                BitmapDescriptorFactory.HUE_BLUE
-            else ->
-                BitmapDescriptorFactory.HUE_ROSE
-        }
-
+        val color = markerColors[type.lowercase()] ?: BitmapDescriptorFactory.HUE_RED
 
         val marker = map.addMarker(
             MarkerOptions()
@@ -406,6 +396,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 .snippet(address)
                 .alpha(0.7f)
         )
+
         marker?.let { markers[id] = it }
     }
 

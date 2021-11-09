@@ -128,28 +128,31 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             var live :LiveEvent? = null
             var friend :String? = null
 
-            val activeNotifications = PushNotification.notificationManager.activeNotifications
-            for (notification in activeNotifications) {
-                val notificationId = intent.getIntExtra("notificationId", -1)
+            val notificationId = intent.getIntExtra("notificationId", -1)
+            val foundNotifications = PushNotification.notificationManager.activeNotifications.any { it.id == notificationId }
 
+            val mainFragment = if(foundNotifications) {
+                PushNotification.notificationManager.cancel(notificationId)
 
-                if (notification.id == notificationId) {
-                    PushNotification.notificationManager.cancel(notificationId)
-                    when (intent.action){
-                        "recommendation" -> {
-                            poi = intent.getParcelableExtra("place")
-                        }
-                        "liveEvent" -> {
-                            live = intent.getParcelableExtra("live")
-                        }
-                        "friendRequestAccepted" -> {
-                            friend = intent.getStringExtra("friendUsername")
-                        }
+                when (intent.action) {
+                    "recommendation" -> {
+                        poi = intent.getParcelableExtra("place")
+                        MainFragment.newInstance(poisList, leList, poi)
                     }
+                    "liveEvent" -> {
+                        live = intent.getParcelableExtra("live")
+                        MainFragment.newInstance(poisList, leList, live)
+                    }
+                    "friendRequestAccepted" -> {
+                        friend = intent.getStringExtra("friendUsername")
+                        MainFragment.newInstance(poisList, leList, friend)
+                    }
+                    else -> MainFragment.newInstance(poisList, leList)
                 }
+            } else {
+                MainFragment.newInstance(poisList, leList)
             }
 
-            val mainFragment = MainFragment.newInstance(poisList, leList,poi)
             onLocationUpdated = mainFragment::onCurrentLocationUpdated
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
