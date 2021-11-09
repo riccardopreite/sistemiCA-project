@@ -1,8 +1,10 @@
 package it.unibo.socialplaces.fragment.dialog.liveevents
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -24,6 +26,8 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
 
     internal lateinit var listener: LiveEventDetailsDialogListener
 
+    private lateinit var onDismissCallback: () -> Unit
+    private var validateOnDismissCallback: Boolean = false
     // App state
     private lateinit var liveEvent: LiveEvent
 
@@ -39,6 +43,10 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
                     putParcelable(ARG_LIVEEVENT, liveEvent)
                 }
             }
+    }
+    fun setOnDismissCallback(onDismissCallback:() -> Unit) {
+        this.onDismissCallback = onDismissCallback
+        validateOnDismissCallback = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,5 +99,12 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
         } catch(e: ClassCastException) {
             throw ClassCastException("$context must implement LiveEventDetailsDialogListener")
         }
+    }
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        if(validateOnDismissCallback){
+            onDismissCallback()
+        }
+        validateOnDismissCallback = false
     }
 }

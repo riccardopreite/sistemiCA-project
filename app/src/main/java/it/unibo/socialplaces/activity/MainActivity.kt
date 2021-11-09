@@ -125,6 +125,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = LiveEvents.getLiveEvents(forceSync = force)
             var poi :PointOfInterest? = null
+            var live :LiveEvent? = null
+            var friend :String? = null
 
             val activeNotifications = PushNotification.notificationManager.activeNotifications
             for (notification in activeNotifications) {
@@ -136,7 +138,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                     when (intent.action){
                         "recommendation" -> {
                             poi = intent.getParcelableExtra("place")
-
+                        }
+                        "liveEvent" -> {
+                            live = intent.getParcelableExtra("live")
+                        }
+                        "friendRequestAccepted" -> {
+                            friend = intent.getStringExtra("friendUsername")
                         }
                     }
                 }

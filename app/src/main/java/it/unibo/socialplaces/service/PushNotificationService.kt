@@ -18,7 +18,6 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.activity.handler.FriendRequestAcceptedActivity
 import it.unibo.socialplaces.activity.handler.LiveEventActivity
-import it.unibo.socialplaces.activity.handler.PlaceRecommendationActivity
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.domain.Notification
 import it.unibo.socialplaces.model.liveevents.LiveEvent
@@ -28,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlin.math.absoluteValue
 
 
 class PushNotificationService: FirebaseMessagingService() {
@@ -141,15 +139,7 @@ class PushNotificationService: FirebaseMessagingService() {
             data["url"]!!,
         )
 
-        val placeRecommendationIntent = Intent(this, PlaceRecommendationActivity::class.java).apply {
-            putExtra("notificationId", id) // Int
-            putExtra("place", recommendedPlace) // Parcelable
-        }
-        //val recommendationPending = createPendingIntent(placeRecommendationIntent)
-
-
         val notificationIntent = Intent(this, MainActivity::class.java)
-        //backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         notificationIntent.action = "recommendation"
         notificationIntent.putExtra("notificationId", id)

@@ -8,7 +8,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import it.unibo.socialplaces.R
-import it.unibo.socialplaces.activity.ListActivity
 import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.PointsOfInterestFragment
 import it.unibo.socialplaces.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment

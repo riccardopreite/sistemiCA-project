@@ -39,6 +39,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
+import android.content.DialogInterface
+
+
+
 
 class MainFragment : Fragment(R.layout.fragment_main),
     OnMapReadyCallback,
@@ -52,9 +56,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private lateinit var poisList: MutableList<PointOfInterest>
     private lateinit var liveEventsList: MutableList<LiveEvent>
     private var notificationPoi: PointOfInterest? = null
+    private var notificationLive: LiveEvent? = null
+    private var friendUsername: String? = null
     private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
     private lateinit var currentLatLng: LatLng
-
+    private var isShowingDetails: Boolean = false
     // API
     private val geocoder by lazy {
         Geocoder(this.requireContext())
@@ -67,6 +73,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
         private const val ARG_POISLIST = "poisList"
         private const val ARG_LIVEEVENTSLIST = "liveEventsList"
         private const val ARG_NOTIFICATIONPOI = "notificationPoi"
+        private const val ARG_NOTIFICATIONLIVE = "notificationLive"
+        private const val ARG_NOTIFICATIONFRIEND = "notificationFriend"
 
         @JvmStatic
         fun newInstance(
@@ -74,13 +82,51 @@ class MainFragment : Fragment(R.layout.fragment_main),
             liveEventsList: List<LiveEvent>,
             poi: PointOfInterest?
         ) =
+            newInstance(poisList,liveEventsList).apply {
+                arguments?.apply {
+                    if (poi != null){
+                        putParcelable(ARG_NOTIFICATIONPOI,poi)
+                    }
+                }
+            }
+
+        @JvmStatic
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>,
+            live: LiveEvent?
+        ) =
+            newInstance(poisList,liveEventsList).apply {
+                arguments?.apply {
+                    if (live != null){
+                        putParcelable(ARG_NOTIFICATIONLIVE,live)
+                    }
+                }
+            }
+
+        @JvmStatic
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>,
+            friendUsername: String?
+        ) =
+            newInstance(poisList,liveEventsList).apply {
+                arguments?.apply {
+                    if (friendUsername != null){
+                        putString(ARG_NOTIFICATIONFRIEND,friendUsername)
+                    }
+                }
+            }
+
+        @JvmStatic
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>
+        ) =
             MainFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
-                    if (poi != null){
-                        putParcelable(ARG_NOTIFICATIONPOI,poi)
-                    }
                 }
             }
     }
@@ -108,6 +154,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
 
             notificationPoi = it.getParcelable(ARG_NOTIFICATIONPOI)
+            notificationLive = it.getParcelable(ARG_NOTIFICATIONLIVE)
+            friendUsername = it.getString(ARG_NOTIFICATIONFRIEND)
 
         }
 
@@ -198,21 +246,34 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         notificationPoi?.let{
-            if(!poisList.contains(it)){
-                createMarker(it.latitude,it.longitude,it.name,it.address,it.markId,it.type)
-            }
-            /**
-             * booleano vedo posto = true
-             *
-             * dismiss dialog posto notifiaxtio booleano vedo posto = false
-             */
-            val notificationPoiLatLng = LatLng(it.latitude,it.longitude)
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(notificationPoiLatLng, 17F))
-            //move map camera
+            val isCreateMarker = !poisList.contains(it)
+            showNotifiedPoiOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,isCreateMarker)
         }
 
 
+        notificationLive?.let {
+            val isCreateMarker = !liveEventsList.contains(it)
+            showNotifiedPoiOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",isCreateMarker)
+        }
+
+        friendUsername?.let {
+
+
+
+        }
+
+
+
     }
+    private fun showNotifiedPoiOnMap(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String,isCreateMarker:Boolean){
+        if(isCreateMarker)
+            createMarker(latitude,longitude,name,address,id,type)
+
+        val notificationPoiLatLng = LatLng(latitude,longitude)
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(notificationPoiLatLng, 17F))
+        markers[id]?.let { onMarkerClick(it) }
+    }
+
 
     override fun onMapClick(positionOnMap: LatLng) {
         Log.v(TAG, "GoogleMap.OnMapClickListener.onMapClick")
@@ -242,6 +303,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
+        isShowingDetails = true
         Log.v(TAG, "GoogleMap.OnMarkerClickListener.onMarkerClick")
         // Searching for the marker in the map of saved markers.
         val foundMarker = markers.entries.filter { it.value == marker }
@@ -250,23 +312,34 @@ class MainFragment : Fragment(R.layout.fragment_main),
             val markerId = foundMarker[0].key
             val foundPoi = poisList.filter { it.markId == markerId }
             if(foundPoi.isNotEmpty()) {
-                val poiDetailsDialog = PoiDetailsDialogFragment.newInstance(foundPoi[0])
+
+                val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0])
+                poiDetailFragment.setOnDismissCallback(this::onDialogDismissed)
 
                 activity?.let {
-                    poiDetailsDialog.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
+                    currentLatLng = LatLng(foundPoi[0].latitude,foundPoi[0].longitude)
+                    poiDetailFragment.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
                 }
             }
             val foundLiveEvent = liveEventsList.filter { it.id == markerId }
             if(foundLiveEvent.isNotEmpty()) {
-                val liveEventDialog = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
+                currentLatLng = LatLng(foundLiveEvent[0].latitude,foundLiveEvent[0].longitude)
+                val liveDetailFragment = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
+                liveDetailFragment.setOnDismissCallback(this::onDialogDismissed)
 
                 activity?.let {
-                    liveEventDialog.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
+                    liveDetailFragment.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
                 }
             }
         }
 
         return false
+    }
+
+    private fun onDialogDismissed(){
+        Log.v(TAG,"Dialog dismissed from passed fun")
+        isShowingDetails = false
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17F))
     }
 
     fun onCurrentLocationUpdated(location: Location) {
@@ -279,9 +352,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
         if(this::currentLatLng.isInitialized && checkIfPositionsAreEqualApproximated(newPosition, currentLatLng)) {
             return
         }
+        if(!isShowingDetails){
+            currentLatLng = newPosition
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(newPosition, 17F))
+        }
 
-        currentLatLng = newPosition
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(newPosition, 17F))
     }
 
     private fun checkIfPositionsAreEqualApproximated(pos0: LatLng, pos1: LatLng): Boolean {

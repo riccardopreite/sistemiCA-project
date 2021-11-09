@@ -12,6 +12,8 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import java.lang.ClassCastException
 import java.lang.IllegalStateException
+import android.content.DialogInterface
+
 
 class PoiDetailsDialogFragment : DialogFragment() {
     // Listener
@@ -21,7 +23,8 @@ class PoiDetailsDialogFragment : DialogFragment() {
     }
 
     internal lateinit var listener: PoiDetailsDialogListener
-
+    private lateinit var onDismissCallback: () -> Unit
+    private var validateOnDismissCallback: Boolean = false
     // App state
     private lateinit var poi: PointOfInterest
 
@@ -36,7 +39,12 @@ class PoiDetailsDialogFragment : DialogFragment() {
                 arguments = Bundle().apply {
                     putParcelable(ARG_POI, poi)
                 }
+
             }
+    }
+    fun setOnDismissCallback(onDismissCallback:() -> Unit) {
+        this.onDismissCallback = onDismissCallback
+        validateOnDismissCallback = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,8 +80,8 @@ class PoiDetailsDialogFragment : DialogFragment() {
             routeBtn.setOnClickListener {
                 listener.onRouteButtonPressed(this, poi.address)
             }
-
             builder.setView(dialogView)
+
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
     }
@@ -88,4 +96,14 @@ class PoiDetailsDialogFragment : DialogFragment() {
             throw ClassCastException("$context must implement FriendPoiDialogListener")
         }
     }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        Log.v(TAG, "onDismiss")
+        super.onDismiss(dialog)
+        if(validateOnDismissCallback){
+            onDismissCallback()
+        }
+        validateOnDismissCallback = false
+    }
+
 }
