@@ -314,20 +314,16 @@ class MainFragment : Fragment(R.layout.fragment_main),
             val foundPoi = poisList.filter { it.markId == markerId }
             if(foundPoi.isNotEmpty()) {
                 val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0])
-//                poiDetailFragment.setOnDismissCallback(this::onDialogDismissed)
                 poiDetailFragment.setOnDismissCallback { isShowingDetails = false }
 
                 activity?.let {
-//                    currentLatLng = LatLng(foundPoi[0].latitude,foundPoi[0].longitude)
                     poiDetailFragment.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
                 }
             }
 
             val foundLiveEvent = liveEventsList.filter { it.id == markerId }
             if(foundLiveEvent.isNotEmpty()) {
-//                currentLatLng = LatLng(foundLiveEvent[0].latitude,foundLiveEvent[0].longitude)
                 val liveDetailFragment = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
-//                liveDetailFragment.setOnDismissCallback(this::onDialogDismissed)
                 liveDetailFragment.setOnDismissCallback { isShowingDetails = false }
 
                 activity?.let {
@@ -337,12 +333,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         return false
-    }
-
-    private fun onDialogDismissed() {
-        Log.v(TAG,"Dialog dismissed from passed fun")
-        isShowingDetails = false
-//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 17F))
     }
 
     fun onCurrentLocationUpdated(location: Location) {
@@ -421,20 +411,20 @@ class MainFragment : Fragment(R.layout.fragment_main),
             Log.i(TAG, "Clearing the map from previously added markers, re-adding them.")
             map.clear()
 
-            updatePoiAndLive()
-
-            CoroutineScope(Dispatchers.Main).launch {
-                poisList.forEach {
-                    createMarker(it.latitude, it.longitude, it.name, it.address, it.markId,it.type)
-                }
-                liveEventsList.forEach {
-                    createMarker(it.latitude, it.longitude, it.name, it.address, it.id, "live")
+            updatePoiAndLive {
+                CoroutineScope(Dispatchers.Main).launch {
+                    poisList.forEach {
+                        createMarker(it.latitude, it.longitude, it.name, it.address, it.markId, it.type)
+                    }
+                    liveEventsList.forEach {
+                        createMarker(it.latitude, it.longitude, it.name, it.address, it.id, "live")
+                    }
                 }
             }
         }
     }
 
-    private fun updatePoiAndLive() {
+    private fun updatePoiAndLive(thenCallback: () -> Unit = {}) {
         CoroutineScope(Dispatchers.IO).launch {
             poisList.clear()
             liveEventsList.clear()
@@ -446,6 +436,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
                 putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
             }
+        }.invokeOnCompletion {
+            thenCallback()
         }
     }
 

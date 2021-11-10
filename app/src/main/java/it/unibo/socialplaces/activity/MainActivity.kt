@@ -116,44 +116,48 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         checkActivityPermission()
-        PushNotification.notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        PushNotification.loadNotificationManager(this)
+    }
+
+    override fun onResume() {
+        Log.v(TAG, "onResume")
+        super.onResume()
+
+        val notificationId = intent.getIntExtra("notificationId", -1)
+        val foundNotifications = PushNotification.existsNotification(notificationId)
+        if(foundNotifications) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val poisList = PointsOfInterest.getPointsOfInterest()
+                val leList = LiveEvents.getLiveEvents()
+                val mainFragment = buildMainFragment(poisList, leList, foundNotifications)
+
+                PushNotification.cancelNotification(notificationId)
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    supportFragmentManager.beginTransaction().apply {
+                        replace(R.id.main_fragment, mainFragment)
+                        setReorderingAllowed(true)
+                        commit()
+                    }
+                }
+            }
+        }
     }
 
     private fun loadPoisAndLiveEvents(force: Boolean = false) {
         Log.v(TAG, "loadPoisAndLiveEvents")
+        Log.d(TAG, "${if(force) "Forcing" else "NOT forcing"} the load of points of interest and live events!")
         CoroutineScope(Dispatchers.IO).launch {
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = LiveEvents.getLiveEvents(forceSync = force)
-            var poi :PointOfInterest? = null
-            var live :LiveEvent? = null
-            var friend :String? = null
 
             val notificationId = intent.getIntExtra("notificationId", -1)
-            val foundNotifications = PushNotification.notificationManager.activeNotifications.any { it.id == notificationId }
-
-            val mainFragment = if(foundNotifications) {
-                PushNotification.notificationManager.cancel(notificationId)
-
-                when (intent.action) {
-                    "recommendation" -> {
-                        poi = intent.getParcelableExtra("place")
-                        MainFragment.newInstance(poisList, leList, poi)
-                    }
-                    "liveEvent" -> {
-                        live = intent.getParcelableExtra("live")
-                        MainFragment.newInstance(poisList, leList, live)
-                    }
-                    "friendRequestAccepted" -> {
-                        friend = intent.getStringExtra("friendUsername")
-                        MainFragment.newInstance(poisList, leList, friend)
-                    }
-                    else -> MainFragment.newInstance(poisList, leList)
-                }
-            } else {
-                MainFragment.newInstance(poisList, leList)
+            val foundNotifications = PushNotification.existsNotification(notificationId)
+            val mainFragment = buildMainFragment(poisList, leList, foundNotifications)
+            if(foundNotifications) {
+                PushNotification.cancelNotification(notificationId)
             }
 
-            onLocationUpdated = mainFragment::onCurrentLocationUpdated
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
                     replace(R.id.main_fragment, mainFragment)
@@ -162,6 +166,39 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 }
             }
         }
+    }
+
+    private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>, foundNotifications: Boolean): MainFragment {
+        val mainFragment = if(foundNotifications) {
+            when (intent.action) {
+                "recommendation" -> {
+                    Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
+                    val poi: PointOfInterest = intent.getParcelableExtra("place")!!
+                    MainFragment.newInstance(poisList, leList, poi)
+                }
+                "liveEvent" -> {
+                    Log.i(TAG, "Handling a notification with a Live Event creation.")
+                    val live: LiveEvent = intent.getParcelableExtra("live")!!
+                    MainFragment.newInstance(poisList, leList, live)
+                }
+                "friendRequestAccepted" -> {
+                    Log.i(TAG, "Handling a notification with a friend request accepted.")
+                    val friend = intent.getStringExtra("friendUsername")!!
+                    MainFragment.newInstance(poisList, leList, friend)
+                }
+                else -> {
+                    Log.e(TAG, "Handling a strange behaviour: intent.action = ${intent.action} not recognized.")
+                    MainFragment.newInstance(poisList, leList)
+                }
+            }
+        } else {
+            Log.i(TAG, "No notifications found. Do you think is a normal behaviour?")
+            MainFragment.newInstance(poisList, leList)
+        }
+
+        onLocationUpdated = mainFragment::onCurrentLocationUpdated
+
+        return mainFragment
     }
 
     /**
@@ -282,7 +319,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             }
         }
     }
-
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         Log.v(TAG, "onRequestPermissionsResult")

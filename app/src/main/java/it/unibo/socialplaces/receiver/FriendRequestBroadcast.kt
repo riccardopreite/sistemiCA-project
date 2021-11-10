@@ -13,29 +13,36 @@ import kotlinx.coroutines.launch
 class FriendRequestBroadcast: BroadcastReceiver() {
     companion object{
         private val TAG = FriendRequestBroadcast::class.qualifiedName!!
+
+        // Actions received via action field in intent.
+        private const val acceptFriendshipRequestAction = "accept-friendship-request"
+        private const val denyFriendshipRequestAction = "deny-friendship-request"
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.v(TAG, "onReceive")
-        val action = intent!!.action
+        if(intent == null) {
+            Log.e(TAG, "Intent is null!")
+            return
+        }
+
         val notificationId = intent.getIntExtra("notificationId", -1)
-        val friendUsername = intent.getStringExtra("friendUsername")
+        val friendUsername = intent.getStringExtra("friendUsername") ?: ""
         Log.d(TAG, "Handling notification with id=$notificationId.")
 
-        CoroutineScope(Dispatchers.Main).launch {
-            PushNotification.notificationManager.cancel(notificationId)
-        }
-        when (action) {
-            "accept" -> {
-                Log.i(TAG, "Friend request accepted!")
+        PushNotification.cancelNotification(notificationId)
+
+        when (intent.action) {
+            acceptFriendshipRequestAction -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Friends.confirmFriend(friendUsername!!)
+                    Friends.confirmFriend(friendUsername)
+                    Log.i(TAG, "Friend request accepted!")
                 }
             }
-            "deny" -> {
-                Log.v(TAG, "Friend request denied!")
+            denyFriendshipRequestAction -> {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Friends.denyFriend(friendUsername!!)
+                    Friends.denyFriend(friendUsername)
+                    Log.v(TAG, "Friend request denied!")
                 }
             }
             else -> Unit

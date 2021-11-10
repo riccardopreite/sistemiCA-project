@@ -33,28 +33,23 @@ class PushNotificationService: FirebaseMessagingService() {
     companion object {
         private const val TAG = "service.PushNotificationService"
 
-        const val NOTIFICATION_CHANNEL_ID = "it.unibo.socialplaces.pushnotification"
-        const val CHANNEL_NAME = "SocialPlaces: Push notification"
-
         private var REQUEST_CODE_COUNTER = 0
 
+        // Actions received via notification data fields
         private const val newFriendRequestAction = "new-friend-request"
         private const val friendRequestAcceptedAction = "friend-request-accepted"
         private const val newLiveEventAction = "new-live-event"
         private const val placeRecommendationAction = "place-recommendation"
         private const val modelRetrainedAction = "model-retrained"
+
+        // Actions set in action field in Intents for broadcasting
+        private const val acceptFriendshipRequestAction = "accept-friendship-request"
+        private const val denyFriendshipRequestAction = "deny-friendship-request"
     }
 
-    private val channel = NotificationChannel(
-        NOTIFICATION_CHANNEL_ID,
-        CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_HIGH
-    ).apply {
-        description = "Channel for push notifications."
-        lightColor = Color.BLUE
-        lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
-        enableVibration(true)
-    }
+    private val placeRecommendationNotificationExpectedKeys = listOf("markId", "address", "type", "latitude", "longitude", "name", "phoneNumber", "visibility", "url")
+    private val liveEventNotificationExpectedKeys = listOf("id", "address", "latitude", "longitude", "name", "owner", "expirationDate")
+    private val friendAcceptedNotificationExpectedKeys = listOf("friendUsername")
 
     private val defaultSoundUri: Uri = RingtoneManager.getDefaultUri(
             RingtoneManager.TYPE_NOTIFICATION
@@ -64,8 +59,7 @@ class PushNotificationService: FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         Log.v(TAG, "onMessageReceived")
         super.onMessageReceived(message)
-        PushNotification.notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        PushNotification.notificationManager.createNotificationChannel(channel)
+        PushNotification.loadNotificationManager(this)
 
         val data = message.data
         message.notification?.let {
@@ -80,7 +74,7 @@ class PushNotificationService: FirebaseMessagingService() {
                 else -> null
             }?.let { notification ->
                 Log.d(TAG, "Showing notification with id=$notificationId.")
-                PushNotification.notificationManager.notify(notificationId, notification)
+                PushNotification.displayNotification(notificationId, notification)
             }
         }
     }
@@ -88,10 +82,7 @@ class PushNotificationService: FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         Log.v(TAG, "onNewToken")
         super.onNewToken(token)
-        CoroutineScope(Dispatchers.IO).launch {
-            Notification.addNotificationToken(token)
-            Log.i(TAG, "The Firebase Messaging token was updated.")
-        }
+        PushNotification.uploadNotificationToken(token)
     }
 
     /**
@@ -120,10 +111,7 @@ class PushNotificationService: FirebaseMessagingService() {
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createPlaceRecommendationNotification")
-        if(!data.keys.containsAll(
-                listOf("markId", "address", "type", "latitude", "longitude", "name", "phoneNumber", "visibility", "url")
-            )
-        ) {
+        if(!data.keys.containsAll(placeRecommendationNotificationExpectedKeys)) {
             return null
         }
 
@@ -139,14 +127,18 @@ class PushNotificationService: FirebaseMessagingService() {
             data["url"]!!,
         )
 
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        notificationIntent.action = "recommendation"
-        notificationIntent.putExtra("notificationId", id)
-        notificationIntent.putExtra("place", recommendedPlace)
-
-        val recommendationPending = PendingIntent.getActivity(this, REQUEST_CODE_COUNTER++,notificationIntent,PendingIntent.FLAG_ONE_SHOT)
-
+        val notificationIntent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            action = "recommendation"
+            putExtra("notificationId", id)
+            putExtra("place", recommendedPlace)
+        }
+        val recommendationPending = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
@@ -163,16 +155,14 @@ class PushNotificationService: FirebaseMessagingService() {
      * Live event should show the poi on the map (Maybe also route button to place?)
      * In theory id is not necessary cause of Autocancel
      */
+
     private fun createLiveEventNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createPlaceRecommendationNotification")
-        if(!data.keys.containsAll(
-                listOf("id", "address", "latitude", "longitude", "name", "owner", "expirationDate")
-            )
-        ) {
+        if(!data.keys.containsAll(liveEventNotificationExpectedKeys)) {
             return null
         }
 
@@ -213,7 +203,7 @@ class PushNotificationService: FirebaseMessagingService() {
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createFriendAcceptedNotification")
-        if(!data.keys.contains("friendUsername")) {
+        if(!data.keys.containsAll(friendAcceptedNotificationExpectedKeys)) {
             return null
         }
 
@@ -246,7 +236,7 @@ class PushNotificationService: FirebaseMessagingService() {
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createFriendRequestNotification")
-        if(!data.keys.contains("friendUsername")) {
+        if(!data.keys.containsAll(friendAcceptedNotificationExpectedKeys)) {
             return null
         }
 
@@ -254,31 +244,32 @@ class PushNotificationService: FirebaseMessagingService() {
 
         Log.d(TAG, "Creating notification with id=$id")
 
-        val friendRequestedIntent = Intent(this, FriendRequestBroadcast::class.java)
-        friendRequestedIntent.apply {
+        val acceptFriendshipRequestedIntent = Intent(this, FriendRequestBroadcast::class.java).apply {
             putExtra("notificationId", id) // Int
             putExtra("friendUsername", friendUsername) // String
-        }
+        }.apply { action = acceptFriendshipRequestAction }
 
-        val friendRequestAcceptedPending = PendingIntent.getBroadcast(
+        val denyFriendshipRequestedIntent = Intent(this, FriendRequestBroadcast::class.java).apply {
+            putExtra("notificationId", id) // Int
+            putExtra("friendUsername", friendUsername) // String
+        }.apply { action = denyFriendshipRequestAction }
+
+        // ATTENTION: If the intents get modified along the way, the modifications get
+        // discarded due to the PendingIntent.FLAG_IMMUTABLE flag.
+
+        val acceptFriendshipRequestedPending = PendingIntent.getBroadcast(
             this,
             0,
-            friendRequestedIntent.apply {
-                action = "accept"
-            },
-            0
+            acceptFriendshipRequestedIntent,
+            PendingIntent.FLAG_IMMUTABLE
         )
 
-        val friendRequestDeniedPending = PendingIntent.getBroadcast(
+        val denyFriendshipRequestedPending = PendingIntent.getBroadcast(
             this,
             0,
-            friendRequestedIntent.apply {
-                action = "deny"
-            },
-            0
+            denyFriendshipRequestedIntent,
+            PendingIntent.FLAG_IMMUTABLE
         )
-
-        Log.d(TAG, friendRequestedIntent.extras.toString())
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
@@ -286,21 +277,18 @@ class PushNotificationService: FirebaseMessagingService() {
             android.app.Notification.CATEGORY_SOCIAL
         )
 
-        val notification = baseBuilder
-            .addAction(R.drawable.ic_addfriendnotification, getString(R.string.addFriend), friendRequestAcceptedPending)
-            .addAction(R.drawable.ic_closenotification, getString(R.string.denyFriend), friendRequestDeniedPending)
-            .build()
+        baseBuilder.addAction(R.drawable.ic_addfriendnotification, getString(R.string.addFriend), acceptFriendshipRequestedPending)
+        baseBuilder.addAction(R.drawable.ic_closenotification, getString(R.string.denyFriend), denyFriendshipRequestedPending)
 
-        notification.flags = android.app.Notification.FLAG_NO_CLEAR
-
-        return notification
+        return baseBuilder.build().apply { flags = android.app.Notification.FLAG_NO_CLEAR }
     }
 
     /**
-     * Returns a builder for notifications with some default configuration.
+     * Returns a builder for notifications with some default configuration
+     * (such as title, body, category which are the method's arguments, priority, sound, etc.).
      */
     private fun baseNotificationBuilder(title: String, body: String, category: String): NotificationCompat.Builder {
-        return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+        return NotificationCompat.Builder(applicationContext, PushNotification.NOTIFICATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(body)
             .setCategory(category)
@@ -315,8 +303,7 @@ class PushNotificationService: FirebaseMessagingService() {
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun createPendingIntent(activityIntent: Intent?): PendingIntent {
         val backIntent = Intent(this, MainActivity::class.java)
-        //backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        backIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        backIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
 
         val arrayOfIntent =
             if (activityIntent != null)

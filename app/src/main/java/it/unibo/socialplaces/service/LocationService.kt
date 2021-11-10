@@ -13,7 +13,6 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
-import it.unibo.socialplaces.config.PushNotification
 
 class LocationService: Service() {
     interface LocationListener {
@@ -45,8 +44,7 @@ class LocationService: Service() {
     private val locationRequest: LocationRequest = LocationRequest.create().apply {
         interval = 5000
         fastestInterval = 2000
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY // Forse un po' troppo.
-//        priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     }
 
     private val locationUpdateCallback = object : LocationCallback() {
@@ -148,8 +146,8 @@ class LocationService: Service() {
 
         val resultIntent = Intent()
         val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
-        PushNotification.notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        PushNotification.notificationManager.createNotificationChannel(channel)
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
         val notification = createNotification(pendingIntent)
         startForeground(NOTIFICATION_ID, notification)
     }

@@ -15,7 +15,7 @@ class FriendRequestAcceptedActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val notificationId = intent.getIntExtra("notificationId", -1)
         val friendUsername = intent.getStringExtra("friendUsername")
-        PushNotification.notificationManager.cancel(notificationId)
+        PushNotification.cancelNotification(notificationId)
 
         Log.i(TAG,"You are now friend with $friendUsername!")
     }

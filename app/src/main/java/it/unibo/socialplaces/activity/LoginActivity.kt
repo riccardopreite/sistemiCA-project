@@ -54,7 +54,8 @@ class LoginActivity : AppCompatActivity() {
 
                             // Loading the notification manager (doing it now since we
                             // are sure every field for the user in the database is set.
-                            PushNotification.loadNotificationManager()
+                            PushNotification.setupNotificationToken()
+                            PushNotification.loadNotificationManager(this@LoginActivity)
                         }
 
                     } else {

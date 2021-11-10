@@ -16,7 +16,7 @@ class LiveEventActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val notificationId = intent.getIntExtra("notificationId", -1)
         val live = intent.getParcelableExtra<LiveEvent>("liveEvent")
-        PushNotification.notificationManager.cancel(notificationId)
+        PushNotification.cancelNotification(notificationId)
 
         Log.i(TAG, "A new live event has been published: $live.")
     }
