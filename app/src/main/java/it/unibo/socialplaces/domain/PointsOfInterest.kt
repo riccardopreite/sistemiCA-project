@@ -11,7 +11,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 object PointsOfInterest {
-    private const val TAG = "domain.PointsOfInterest"
+    private val TAG = PointsOfInterest::class.qualifiedName
 
     private val api by lazy {
         RetrofitInstances.pointOfInterestsApi

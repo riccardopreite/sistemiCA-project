@@ -11,7 +11,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 object Notification {
-    private const val TAG = "domain.Notification"
+    private val TAG = Notification::class.qualifiedName
 
     private val api by lazy {
         RetrofitInstances.notificationApi

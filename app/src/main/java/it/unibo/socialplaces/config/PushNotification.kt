@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object PushNotification {
-    private const val TAG = "PushNotification"
+    private val TAG = PushNotification::class.qualifiedName
 
     const val NOTIFICATION_CHANNEL_ID = "it.unibo.socialplaces.pushnotification"
     private const val CHANNEL_NAME = "SocialPlaces: Push notification"

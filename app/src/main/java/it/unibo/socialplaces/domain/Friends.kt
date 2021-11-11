@@ -10,7 +10,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 object Friends {
-    private const val TAG = "domain.Friends"
+    private val TAG = Friends::class.qualifiedName
 
     private val api by lazy {
         RetrofitInstances.friendsApi

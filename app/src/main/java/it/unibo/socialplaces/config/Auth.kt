@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
 object Auth {
-    private const val TAG = "Auth"
+    private val TAG = Auth::class.qualifiedName
 
     private object Google {
         lateinit var googleSignInOptions: GoogleSignInOptions

@@ -25,7 +25,7 @@ class LocationService: Service() {
 
 
     companion object {
-        private const val TAG = "LocationService"
+        private val TAG = LocationService::class.qualifiedName
 
         const val START_LOCATION_SERVICE = "startLocationService"
         const val STOP_LOCATION_SERVICE = "stopLocationService"

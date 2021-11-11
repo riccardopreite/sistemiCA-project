@@ -31,7 +31,7 @@ import kotlinx.datetime.Clock
 
 class PushNotificationService: FirebaseMessagingService() {
     companion object {
-        private const val TAG = "service.PushNotificationService"
+        private val TAG = PushNotificationService::class.qualifiedName
 
         private var REQUEST_CODE_COUNTER = 0
 

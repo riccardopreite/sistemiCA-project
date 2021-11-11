@@ -126,6 +126,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         val notificationId = intent.getIntExtra("notificationId", -1)
         val foundNotifications = PushNotification.existsNotification(notificationId)
         if(foundNotifications) {
+            Log.d(TAG, "Notification found, hence the MainFragment is not pushed.")
             CoroutineScope(Dispatchers.IO).launch {
                 val poisList = PointsOfInterest.getPointsOfInterest()
                 val leList = LiveEvents.getLiveEvents()
@@ -141,6 +142,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                     }
                 }
             }
+        } else {
+            Log.d(TAG, "No notification found, hence the MainFragment is not pushed.")
         }
     }
 

@@ -204,7 +204,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             }
 
             activity?.let { a ->
-                Log.d(TAG, "autoCompleteFragment.view exists2.")
+                Log.d(TAG, "autoCompleteFragment.view exists.")
                 menuIcon.setOnClickListener {
                     val mainMenuFragment = MainMenuFragment()
                     a.supportFragmentManager.beginTransaction().apply {

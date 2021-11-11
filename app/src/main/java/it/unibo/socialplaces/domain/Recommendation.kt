@@ -11,7 +11,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 object Recommendation {
-    private const val TAG = "domain.Recommendation"
+    private val TAG = Recommendation::class.qualifiedName
 
     private val api by lazy {
         RetrofitInstances.recommendationApi

@@ -10,7 +10,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 object LiveEvents {
-    private const val TAG = "domain.LiveEvents"
+    private val TAG = LiveEvents::class.qualifiedName
 
     private val api by lazy {
         RetrofitInstances.liveEventsApi
