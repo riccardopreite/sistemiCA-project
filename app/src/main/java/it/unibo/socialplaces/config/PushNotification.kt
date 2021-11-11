@@ -73,6 +73,8 @@ object PushNotification {
      * notifications.
      */
     fun existsNotification(id: Int): Boolean {
+        Log.d(TAG, "Active notifications' identifiers: ${notificationManager.activeNotifications.map {it.id }}")
+        Log.d(TAG, "Received id: $id")
         return notificationManager.activeNotifications.any { it.id == id }
     }
 

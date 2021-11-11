@@ -251,19 +251,20 @@ class MainFragment : Fragment(R.layout.fragment_main),
         notificationPoi?.let {
             val shouldCreateMarker = !poisList.contains(it)
             showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,shouldCreateMarker)
+            notificationPoi = null
         }
 
         notificationLive?.let {
             val shouldCreateMarker = !liveEventsList.contains(it)
             showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",shouldCreateMarker)
+            notificationLive = null
         }
 
         friendUsername?.let {
-
-
-
+            friendUsername = null
         }
     }
+
     private fun showNotifiedPoiOrLiveOnMap(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String, shouldCreateMarker: Boolean){
         if(shouldCreateMarker) {
             createMarker(latitude, longitude, name, address, id, type)
@@ -418,6 +419,22 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     }
                     liveEventsList.forEach {
                         createMarker(it.latitude, it.longitude, it.name, it.address, it.id, "live")
+                    }
+
+                    notificationPoi?.let {
+                        val shouldCreateMarker = !poisList.contains(it)
+                        showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,shouldCreateMarker)
+                        notificationPoi = null
+                    }
+
+                    notificationLive?.let {
+                        val shouldCreateMarker = !liveEventsList.contains(it)
+                        showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",shouldCreateMarker)
+                        notificationLive = null
+                    }
+
+                    friendUsername?.let {
+                        friendUsername = null
                     }
                 }
             }

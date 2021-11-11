@@ -128,8 +128,8 @@ class PushNotificationService: FirebaseMessagingService() {
         )
 
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = "recommendation"
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            action = "poi-recommendation"
             putExtra("notificationId", id)
             putExtra("place", recommendedPlace)
         }
@@ -155,7 +155,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * Live event should show the poi on the map (Maybe also route button to place?)
      * In theory id is not necessary cause of Autocancel
      */
-
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun createLiveEventNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
@@ -176,11 +176,17 @@ class PushNotificationService: FirebaseMessagingService() {
             data["expirationDate"]!!.toLong()
         )
 
-        val liveEventIntent = Intent(this, LiveEventActivity::class.java).apply {
+        val liveEventIntent = Intent(this, MainActivity::class.java).apply {
+            action = "new-live-event"
             putExtra("notificationId", id) // Int
             putExtra("liveEvent", liveEvent) // Parcelable
         }
-        val livePending = createPendingIntent(liveEventIntent)
+        val livePending = PendingIntent.getActivity(
+            this,
+            0,
+            liveEventIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
@@ -197,6 +203,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * Show friendList and high light new friend
      * In theory id is not necessary cause of Autocancel
      */
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun createFriendAcceptedNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
@@ -210,10 +217,16 @@ class PushNotificationService: FirebaseMessagingService() {
         val friendUsername = data["friendUsername"]!!
 
         val friendAcceptedIntent = Intent(this, FriendRequestAcceptedActivity::class.java).apply {
+            action = "new-friend"
             putExtra("notificationId", id) // Int
             putExtra("friendUsername", friendUsername) // String
         }
-        val friendPending = createPendingIntent(friendAcceptedIntent)
+        val friendPending = PendingIntent.getActivity(
+            this,
+            0,
+            friendAcceptedIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,

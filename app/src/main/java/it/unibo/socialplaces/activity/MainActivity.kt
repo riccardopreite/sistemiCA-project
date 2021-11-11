@@ -123,10 +123,11 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "onResume")
         super.onResume()
 
+        Log.i(TAG, intent.extras.toString())
         val notificationId = intent.getIntExtra("notificationId", -1)
         val foundNotifications = PushNotification.existsNotification(notificationId)
         if(foundNotifications) {
-            Log.d(TAG, "Notification found, hence the MainFragment is not pushed.")
+            Log.d(TAG, "Notification found, hence the MainFragment is pushed.")
             CoroutineScope(Dispatchers.IO).launch {
                 val poisList = PointsOfInterest.getPointsOfInterest()
                 val leList = LiveEvents.getLiveEvents()
@@ -154,6 +155,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = LiveEvents.getLiveEvents(forceSync = force)
 
+            Log.i(TAG, intent.extras.toString())
             val notificationId = intent.getIntExtra("notificationId", -1)
             val foundNotifications = PushNotification.existsNotification(notificationId)
             val mainFragment = buildMainFragment(poisList, leList, foundNotifications)
@@ -171,20 +173,26 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        Log.v(TAG, "onNewIntent")
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
+
     private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>, foundNotifications: Boolean): MainFragment {
         val mainFragment = if(foundNotifications) {
             when (intent.action) {
-                "recommendation" -> {
+                "poi-recommendation" -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
                     val poi: PointOfInterest = intent.getParcelableExtra("place")!!
                     MainFragment.newInstance(poisList, leList, poi)
                 }
-                "liveEvent" -> {
+                "new-live-event" -> {
                     Log.i(TAG, "Handling a notification with a Live Event creation.")
-                    val live: LiveEvent = intent.getParcelableExtra("live")!!
+                    val live: LiveEvent = intent.getParcelableExtra("liveEvent")!!
                     MainFragment.newInstance(poisList, leList, live)
                 }
-                "friendRequestAccepted" -> {
+                "new-friend" -> {
                     Log.i(TAG, "Handling a notification with a friend request accepted.")
                     val friend = intent.getStringExtra("friendUsername")!!
                     MainFragment.newInstance(poisList, leList, friend)
