@@ -99,6 +99,7 @@
     <string name="background_location_permission_required">This app requires background location services to be enabled to work properly.</string>
     <string name="add_to_user_pois">Add to mine</string>
     <string name="no_address">Address not found</string>
+    <string name="location_service">Location service</string>
     <string name="location_service_started">Location service started</string>
     <string name="location_service_stopped">Location service stopped</string>
     <string name="location_service_description">Maptry Location Service for accessing the device location in real time.</string>

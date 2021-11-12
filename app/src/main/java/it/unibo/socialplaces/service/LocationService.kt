@@ -9,6 +9,7 @@ import android.location.Location
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
+import android.text.BoringLayout
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
@@ -40,6 +41,8 @@ class LocationService: Service() {
     private var listener: LocationListener? = null
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    private var isRunning = false
 
     private val locationRequest: LocationRequest = LocationRequest.create().apply {
         interval = 5000
@@ -109,9 +112,11 @@ class LocationService: Service() {
                     Looper.getMainLooper()
                 )
                 createNotificationChannel()
+                isRunning = true
             }
             addOnFailureListener {
                 Log.v(TAG, "Could not start the location service because")
+                isRunning = false
             }
         }
 
@@ -125,8 +130,13 @@ class LocationService: Service() {
         fusedLocationProviderClient.removeLocationUpdates(locationUpdateCallback)
         stopForeground(true)
         stopSelf()
+        isRunning = false
     }
 
+    /**
+     * Returns whether the service is running or not.
+     */
+    fun isServiceRunning(): Boolean = isRunning
 
     private fun createNotification(pendingIntent: PendingIntent): Notification {
         Log.v(TAG, "createNotification")
@@ -153,7 +163,6 @@ class LocationService: Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
         intent?.let {
            it.action?.let { action ->
                when (action) {

@@ -25,6 +25,13 @@
             android:title="@string/live"
             app:showAsAction="ifRoom"/>
 
+        <item
+            android:id="@+id/location_service_switch"
+            android:icon="@drawable/ic_location"
+            android:title="@string/location_service"
+            app:actionViewClass="androidx.appcompat.widget.SwitchCompat"
+            app:showAsAction="ifRoom"/>
+
     </group>
 
 </menu>

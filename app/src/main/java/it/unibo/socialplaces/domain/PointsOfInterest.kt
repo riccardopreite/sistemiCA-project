@@ -72,7 +72,7 @@ object PointsOfInterest {
         }
 
         if(response.isSuccessful && response.body() != null) {
-            Log.i(TAG, "Found ${response.body()!!.size} points of interest of user $user.")
+            Log.i(TAG, "Found ${response.body()!!.size} points of interest of user ${if(user.isNotEmpty()) user else userId}.")
             return if(user != "" && user != userId) {
                 // Other users' pois are not cached.
                 response.body()!!

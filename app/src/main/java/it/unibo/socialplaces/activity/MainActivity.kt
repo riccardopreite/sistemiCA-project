@@ -3,7 +3,6 @@ package it.unibo.socialplaces.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
@@ -45,6 +44,7 @@ import it.unibo.socialplaces.service.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
@@ -53,29 +53,32 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
 
     private lateinit var locationService: LocationService
-    private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            Log.d(TAG, "LocationService connected to MainActivity.")
             val binder = service as LocationService.LocationBinder
             locationService = binder.getService()
             locationService.setListener(this@MainActivity)
-            locationServiceIsBound = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            locationServiceIsBound = false
+            Log.d(TAG, "LocationService disconnected from MainActivity.")
         }
     }
+
+    private fun printPermissionResult(permission: String, status: Boolean) {
+        if(status) {
+            Log.i(TAG, "Permission to access $permission GRANTED.")
+        } else {
+            Log.e(TAG, "Permission to access $permission DENIED.")
+        }
+    }
+
     /**
      * Permission request launcher (for read activity permission).
      */
     private val requestHumanActivityPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            isGranted: Boolean ->
-        if(isGranted) {
-            Log.i(TAG, "Permission to read human activity GRANTED.")
-        } else {
-            Log.i(TAG, "Permission to read human activity DENIED.")
-        }
+            isGranted: Boolean -> printPermissionResult("human activity", isGranted)
     }
 
 
@@ -83,24 +86,14 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      * Permission request launcher (for location permission).
      */
     private val requestLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            isGranted: Boolean ->
-        if(isGranted) {
-            Log.i(TAG, "Permission to use location GRANTED.")
-        } else {
-            Log.i(TAG, "Permission to use location DENIED.")
-        }
+            isGranted: Boolean -> printPermissionResult("location", isGranted)
     }
 
     /**
      * Permission request launcher (for background location permission).
      */
     private val requestBackgroundLocationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            isGranted: Boolean ->
-        if(isGranted) {
-            Log.i(TAG, "Permission to use (background) location GRANTED.")
-        } else {
-            Log.i(TAG, "Permission to use (background) location DENIED.")
-        }
+            isGranted: Boolean -> printPermissionResult("background location", isGranted)
     }
 
     /**
@@ -123,7 +116,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "onResume")
         super.onResume()
 
-        Log.i(TAG, intent.extras.toString())
         val notificationId = intent.getIntExtra("notificationId", -1)
         val foundNotifications = PushNotification.existsNotification(notificationId)
         if(foundNotifications) {
@@ -148,14 +140,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
     }
 
-    private fun loadPoisAndLiveEvents(force: Boolean = false) {
-        Log.v(TAG, "loadPoisAndLiveEvents")
-        Log.d(TAG, "${if(force) "Forcing" else "NOT forcing"} the load of points of interest and live events!")
+    private fun syncPoisAndLiveEvents() {
+        Log.v(TAG, "syncPoisAndLiveEvents")
         CoroutineScope(Dispatchers.IO).launch {
-            val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
-            val leList = LiveEvents.getLiveEvents(forceSync = force)
+            val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
+            val leList = LiveEvents.getLiveEvents(forceSync = true)
 
-            Log.i(TAG, intent.extras.toString())
             val notificationId = intent.getIntExtra("notificationId", -1)
             val foundNotifications = PushNotification.existsNotification(notificationId)
             val mainFragment = buildMainFragment(poisList, leList, foundNotifications)
@@ -304,7 +294,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 Log.i(TAG, "Enabling background location services since permissions were given.")
                 startLocationService()
                 startAlarmService()
-                loadPoisAndLiveEvents(force = true)
+                syncPoisAndLiveEvents()
             }
             ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
@@ -339,8 +329,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             Manifest.permission.ACTIVITY_RECOGNITION -> {
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     checkLocationPermissions()
-                }
-                else{
+                } else {
                     finishActivityForNoPermissionGranted(R.string.human_activity_permission_denied)
                 }
             }
@@ -355,9 +344,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startLocationService()
                     startAlarmService()
-                    loadPoisAndLiveEvents(force = true)
-                }
-                else{
+                    syncPoisAndLiveEvents()
+                } else {
                     finishActivityForNoPermissionGranted(R.string.access_background_location_permission_denied)
                 }
 
@@ -386,12 +374,18 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     private fun startLocationService() {
         Log.v(TAG, "startLocationService")
-        val startIntent = Intent(applicationContext, LocationService::class.java)
-        startIntent.action = LocationService.START_LOCATION_SERVICE
+        val startIntent = Intent(this, LocationService::class.java).apply {
+            action = LocationService.START_LOCATION_SERVICE
+        }
         startService(startIntent)
         val bindIntent = Intent(this, LocationService::class.java)
         bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
         Toast.makeText(this, R.string.location_service_started, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(connection)
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
@@ -400,40 +394,20 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, RecommendationAlarm::class.java)
 
-        val recommendationIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, 0)
+        val recommendationIntent = PendingIntent.getBroadcast(
+            this,
+            0,
+            alarmIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-//        try {
-//            Log.d(TAG, "Stopping alarm")
-//            alarmManager.cancel(recommendationIntent)
-//        } catch (e:Exception) {
-//            Log.d(TAG, "Alarm never started")
-//        }
-//        Log.d(TAG, "Starting Alarm")
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis()+10,
+            Clock.System.now().toEpochMilliseconds() + 10, // Only while developing
+//            AlarmManager.INTERVAL_HOUR * 3,
             AlarmManager.INTERVAL_HOUR * 3,
             recommendationIntent
         )
-    }
-
-    private fun stopLocationService() {
-        Log.v(TAG, "stopLocationService")
-        val stopIntent = Intent(applicationContext, LocationService::class.java)
-        stopIntent.action = LocationService.STOP_LOCATION_SERVICE
-        startService(stopIntent)
-        Toast.makeText(this, R.string.location_service_stopped, Toast.LENGTH_LONG).show()
-    }
-
-    override fun onStop() {
-        Log.v(TAG, "onStop")
-        super.onStop()
-        // TODO Add possibility to disable it.
-//        if(locationServiceIsBound) {
-//            unbindService(connection)
-//            locationServiceIsBound = false
-//            stopLocationService()
-//        }
     }
 
     override fun onLocationChanged(service: Service, location: Location) {
