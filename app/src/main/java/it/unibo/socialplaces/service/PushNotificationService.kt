@@ -156,6 +156,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * In theory id is not necessary cause of Autocancel
      */
 
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun createLiveEventNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
@@ -175,12 +176,18 @@ class PushNotificationService: FirebaseMessagingService() {
             data["owner"]!!,
             data["expirationDate"]!!.toLong()
         )
-
-        val liveEventIntent = Intent(this, LiveEventActivity::class.java).apply {
-            putExtra("notificationId", id) // Int
-            putExtra("liveEvent", liveEvent) // Parcelable
+        val liveEventIntent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            action = "liveEvent"
+            putExtra("notificationId", id)
+            putExtra("live", liveEvent)
         }
-        val livePending = createPendingIntent(liveEventIntent)
+        val livePending = PendingIntent.getActivity(
+            this,
+            0,
+            liveEventIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
@@ -197,6 +204,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * Show friendList and high light new friend
      * In theory id is not necessary cause of Autocancel
      */
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun createFriendAcceptedNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
@@ -209,12 +217,18 @@ class PushNotificationService: FirebaseMessagingService() {
 
         val friendUsername = data["friendUsername"]!!
 
-        val friendAcceptedIntent = Intent(this, FriendRequestAcceptedActivity::class.java).apply {
-            putExtra("notificationId", id) // Int
-            putExtra("friendUsername", friendUsername) // String
+        val friendAcceptedIntent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            action = "friendRequestAccepted"
+            putExtra("notificationId", id)
+            putExtra("friendUsername", friendUsername)
         }
-        val friendPending = createPendingIntent(friendAcceptedIntent)
-
+        val friendPending = PendingIntent.getActivity(
+            this,
+            0,
+            friendAcceptedIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
         val baseBuilder = baseNotificationBuilder(
             notificationMessage.title!!,
             notificationMessage.body!!,

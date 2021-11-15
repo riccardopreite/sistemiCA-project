@@ -171,6 +171,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        Log.v(TAG, "onNewIntent")
+        this.intent = intent
+    }
+
     private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>, foundNotifications: Boolean): MainFragment {
         val mainFragment = if(foundNotifications) {
             when (intent.action) {
