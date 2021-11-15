@@ -116,4 +116,5 @@
     <string name="denyFriend">Deny</string>
     <string name="human_activity_permission_denied">Permission to use human activity recognition denied. Closing app...</string>
     <string name="access_background_location_permission_denied">Permission to use background location denied. Closing app...</string>
+    <string name="default_notification_channel_id">it.unibo.socialplaces.pushnotification</string>
 </resources>

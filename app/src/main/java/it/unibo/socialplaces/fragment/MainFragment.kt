@@ -2,6 +2,7 @@ package it.unibo.socialplaces.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
@@ -35,6 +36,8 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.squareup.picasso.Picasso
+import it.unibo.socialplaces.activity.list.FriendsListActivity
+import it.unibo.socialplaces.activity.list.PointsOfInterestListActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -261,7 +264,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         friendUsername?.let {
-            friendUsername = null
+            Log.v(TAG,"IS VISIBLE "+this.isVisible)
+            startActivity(Intent(context, FriendsListActivity::class.java))
         }
     }
 

@@ -186,6 +186,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activity.handler.PlaceRecommendation"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="Place recommended"
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="place-recommendation" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
