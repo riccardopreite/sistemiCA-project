@@ -5,35 +5,38 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import it.unibo.socialplaces.activity.MainActivity
-import it.unibo.socialplaces.config.PushNotification
-import it.unibo.socialplaces.model.liveevents.LiveEvent
+import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 
-class LiveEventActivity: AppCompatActivity() {
+class PlaceRecommendation: AppCompatActivity() {
     companion object {
-        private val TAG: String = LiveEventActivity::class.qualifiedName!!
+        private val TAG: String = PlaceRecommendation::class.qualifiedName!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
+
         super.onCreate(savedInstanceState)
-        val liveEvent = LiveEvent(
-            intent.getStringExtra("id")!!,
+        val recommendedPlace = PointOfInterest(
+            intent.getStringExtra("markId")!!,
             intent.getStringExtra("address")!!,
+            intent.getStringExtra("type")!!,
             intent.getStringExtra("latitude")!!.toDouble(),
             intent.getStringExtra("longitude")!!.toDouble(),
             intent.getStringExtra("name")!!,
-            intent.getStringExtra("owner")!!,
-            intent.getStringExtra("expirationDate")!!.toLong()
+            intent.getStringExtra("phoneNumber")!!,
+            intent.getStringExtra("visibility")!!,
+            intent.getStringExtra("url")!!
         )
-        Log.i(TAG, "A new live event has been published: $liveEvent.")
+        Log.i(TAG,"Recommending place $recommendedPlace!")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = "liveEvent"
-            putExtra("liveEvent", liveEvent)
+            action = "recommendation"
+            putExtra("place", recommendedPlace)
             putExtra("notification", true)
         }
 
         startActivity(notificationIntent)
         finish()
     }
+
 }

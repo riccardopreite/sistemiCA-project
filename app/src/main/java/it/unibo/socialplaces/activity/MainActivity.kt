@@ -53,6 +53,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
 
     private lateinit var locationService: LocationService
+    private var isNotification: Boolean = false
     private var locationServiceIsBound: Boolean = false
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -123,17 +124,20 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "onResume")
         super.onResume()
 
-        val notificationId = intent.getIntExtra("notificationId", -1)
-        val foundNotifications = PushNotification.existsNotification(notificationId)
-        if(foundNotifications) {
-            Log.d(TAG, "Notification found, hence the MainFragment is not pushed.")
+        if (!isNotification){
+            isNotification = intent.getBooleanExtra("notification",false)
+        }
+
+        Log.v(TAG,"isNotification on Resume $isNotification")
+        intent.removeExtra("notification")
+        if(isNotification) {
+            Log.d(TAG, "Notification found, hence the MainFragment is pushed.")
             CoroutineScope(Dispatchers.IO).launch {
                 val poisList = PointsOfInterest.getPointsOfInterest()
                 val leList = LiveEvents.getLiveEvents()
-                val mainFragment = buildMainFragment(poisList, leList, foundNotifications)
+                Log.v(TAG,"isNotificationon resume prima buildFragment $isNotification")
 
-                PushNotification.cancelNotification(notificationId)
-
+                val mainFragment = buildMainFragment(poisList, leList)
                 CoroutineScope(Dispatchers.Main).launch {
                     supportFragmentManager.beginTransaction().apply {
                         replace(R.id.main_fragment, mainFragment)
@@ -151,16 +155,14 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "loadPoisAndLiveEvents")
         Log.d(TAG, "${if(force) "Forcing" else "NOT forcing"} the load of points of interest and live events!")
         CoroutineScope(Dispatchers.IO).launch {
+            if (!isNotification){
+                isNotification = intent.getBooleanExtra("notification",false)
+            }
+            intent.removeExtra("notification")
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = force)
             val leList = LiveEvents.getLiveEvents(forceSync = force)
 
-            val notificationId = intent.getIntExtra("notificationId", -1)
-            val foundNotifications = PushNotification.existsNotification(notificationId)
-            val mainFragment = buildMainFragment(poisList, leList, foundNotifications)
-            if(foundNotifications) {
-                PushNotification.cancelNotification(notificationId)
-            }
-
+            val mainFragment = buildMainFragment(poisList, leList)
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
                     replace(R.id.main_fragment, mainFragment)
@@ -177,8 +179,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         this.intent = intent
     }
 
-    private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>, foundNotifications: Boolean): MainFragment {
-        val mainFragment = if(foundNotifications) {
+    private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>): MainFragment {
+        val mainFragment = if(isNotification) {
             when (intent.action) {
                 "recommendation" -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
@@ -206,7 +208,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
 
         onLocationUpdated = mainFragment::onCurrentLocationUpdated
-
+        isNotification = false
         return mainFragment
     }
 
