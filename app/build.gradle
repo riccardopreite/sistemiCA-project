@@ -42,14 +42,12 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    //HAR
-    //implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
-    //END HAR
 
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'androidx.core:core-ktx:1.7.0'
+    //noinspection GradleDependency (cannot update)
+    implementation 'androidx.core:core-ktx:1.6.0'
 
     implementation 'com.google.android.gms:play-services-maps:18.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
@@ -103,16 +101,12 @@ dependencies {
 
     //noinspection GradleCompatible
     implementation 'com.android.support:recyclerview-v7:28.0.0'
-//    implementation('com.github.nkzawa:socket.io-client:0.6.0') {
-//        exclude group: 'org.json', module: 'json'
-//    }
 
     //noinspection GradleCompatible
     implementation "com.android.support:support-compat:28.0.0"
 
     //noinspection GradleDependency (cannot update)
-    implementation 'androidx.work:work-runtime-ktx:2.7.0'
-//    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    implementation 'androidx.work:work-runtime-ktx:2.6.0'
 
     /* Retrofit */
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -124,8 +118,11 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2-native-mt'
 
     /* Kotlin coroutine lifecycle scopes */
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
+    //noinspection GradleDependency (cannot update)
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
+    //noinspection GradleDependency (cannot update)
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
+
 
     /* Firebase */
     implementation platform('com.google.firebase:firebase-bom:28.4.2')
