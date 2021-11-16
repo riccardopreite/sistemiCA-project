@@ -38,6 +38,7 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 import com.squareup.picasso.Picasso
 import it.unibo.socialplaces.activity.list.FriendsListActivity
 import it.unibo.socialplaces.activity.list.PointsOfInterestListActivity
+import it.unibo.socialplaces.fragment.dialog.handler.FriendRequestDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,6 +67,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private var notificationPoi: PointOfInterest? = null
     private var notificationLive: LiveEvent? = null
     private var friendUsername: String? = null
+    private var isFriendshipRequest: Boolean = false
     private lateinit var currentLatLng: LatLng
     private var isShowingDetails: Boolean = false
 
@@ -83,6 +85,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         private const val ARG_NOTIFICATIONPOI = "notificationPoi"
         private const val ARG_NOTIFICATIONLIVE = "notificationLive"
         private const val ARG_NOTIFICATIONFRIEND = "notificationFriend"
+        private const val ARG_NOTIFICATIONISFRIENDREQUEST = "notificationFriendRequest"
 
         @JvmStatic
         fun newInstance(
@@ -116,13 +119,16 @@ class MainFragment : Fragment(R.layout.fragment_main),
         fun newInstance(
             poisList: List<PointOfInterest>,
             liveEventsList: List<LiveEvent>,
-            friendUsername: String?
+            friendUsername: String?,
+            isFriendshipRequest: Boolean
         ) =
             newInstance(poisList,liveEventsList).apply {
                 arguments?.apply {
                     if (friendUsername != null){
                         putString(ARG_NOTIFICATIONFRIEND,friendUsername)
                     }
+                    putBoolean(ARG_NOTIFICATIONISFRIENDREQUEST,isFriendshipRequest)
+
                 }
             }
 
@@ -164,6 +170,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             notificationPoi = it.getParcelable(ARG_NOTIFICATIONPOI)
             notificationLive = it.getParcelable(ARG_NOTIFICATIONLIVE)
             friendUsername = it.getString(ARG_NOTIFICATIONFRIEND)
+            isFriendshipRequest = it.getBoolean(ARG_NOTIFICATIONISFRIENDREQUEST)
         }
 
         Places.initialize(requireContext(), getString(R.string.places_api))
@@ -265,7 +272,18 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
         friendUsername?.let {
             Log.v(TAG,"IS VISIBLE "+this.isVisible)
-            startActivity(Intent(context, FriendsListActivity::class.java))
+            if(isFriendshipRequest){
+                //Crea dialog con dati richiesta amicizia
+                val friendRequestDialog = FriendRequestDialogFragment.newInstance(it)
+                Log.v(TAG, friendRequestDialog.toString())
+                activity?.let {a ->
+                    friendRequestDialog.show(a.supportFragmentManager, "FriendRequestDialogFragment")
+                }
+            }
+            else{
+                startActivity(Intent(context, FriendsListActivity::class.java))
+            }
+
         }
     }
 

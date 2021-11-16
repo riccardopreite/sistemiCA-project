@@ -15,19 +15,17 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.activity.handler.FriendRequestAcceptedActivity
 import it.unibo.socialplaces.activity.handler.LiveEventActivity
+import it.unibo.socialplaces.activity.handler.NewFriendRequestActivity
 import it.unibo.socialplaces.activity.handler.PlaceRecommendation
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
-import it.unibo.socialplaces.receiver.FriendRequestBroadcast
 import kotlinx.datetime.Clock
 
 
 class PushNotificationService: FirebaseMessagingService() {
     companion object {
         private val TAG = PushNotificationService::class.qualifiedName
-
-        private var REQUEST_CODE_COUNTER = 0
 
         // Actions received via notification data fields
         private const val newFriendRequestAction = "new-friend-request"
@@ -172,10 +170,6 @@ class PushNotificationService: FirebaseMessagingService() {
             action = "liveEvent"
             putExtra("live", liveEvent) // LiveEvent
             putExtra("notification", true)
-//            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-//            action = "friendRequestAccepted"
-//            putExtra("notificationId", id)
-//            putExtra("friendUsername", friendUsername)
         }
 
         val livePending = PendingIntent.getActivity(
@@ -240,6 +234,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * Onclick disabled just replay only with accept or deny friend request
      * In theory id is not necessary cause of Autocancel
      */
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun createFriendRequestNotification(
         notificationMessage: RemoteMessage.Notification,
         id: Int,
@@ -254,31 +249,18 @@ class PushNotificationService: FirebaseMessagingService() {
 
         Log.d(TAG, "Creating notification with id=$id")
 
-        val acceptFriendshipRequestedIntent = Intent(this, FriendRequestBroadcast::class.java).apply {
-            putExtra("notificationId", id) // Int
-            putExtra("friendUsername", friendUsername) // String
-        }.apply { action = acceptFriendshipRequestAction }
 
-        val denyFriendshipRequestedIntent = Intent(this, FriendRequestBroadcast::class.java).apply {
-            putExtra("notificationId", id) // Int
-            putExtra("friendUsername", friendUsername) // String
-        }.apply { action = denyFriendshipRequestAction }
+        val notificationFriendRequestIntent = Intent(this, MainActivity::class.java).apply {
+            action = "newFriendRequest"
+            putExtra("friendUsername", friendUsername)
+            putExtra("notification", true)
+        }
 
-        // ATTENTION: If the intents get modified along the way, the modifications get
-        // discarded due to the PendingIntent.FLAG_IMMUTABLE flag.
-
-        val acceptFriendshipRequestedPending = PendingIntent.getBroadcast(
+        val notificationFriendRequestPending = PendingIntent.getActivity(
             this,
             0,
-            acceptFriendshipRequestedIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val denyFriendshipRequestedPending = PendingIntent.getBroadcast(
-            this,
-            0,
-            denyFriendshipRequestedIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            notificationFriendRequestIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val baseBuilder = baseNotificationBuilder(
@@ -286,11 +268,9 @@ class PushNotificationService: FirebaseMessagingService() {
             notificationMessage.body!!,
             android.app.Notification.CATEGORY_SOCIAL
         )
-        baseBuilder.setAutoCancel(false)
-        baseBuilder.addAction(R.drawable.ic_addfriendnotification, getString(R.string.addFriend), acceptFriendshipRequestedPending)
-        baseBuilder.addAction(R.drawable.ic_closenotification, getString(R.string.denyFriend), denyFriendshipRequestedPending)
+        baseBuilder.setContentIntent(notificationFriendRequestPending)
 
-        return baseBuilder.build().apply { flags = android.app.Notification.FLAG_NO_CLEAR }
+        return baseBuilder.build()
     }
 
     /**
@@ -309,23 +289,4 @@ class PushNotificationService: FirebaseMessagingService() {
             .setVisibility(VISIBILITY_PUBLIC)
     }
 
-
-    @SuppressLint("UnspecifiedImmutableFlag")
-    private fun createPendingIntent(activityIntent: Intent?, notificationIntent: Intent): PendingIntent {
-        val backIntent = Intent(this, MainActivity::class.java)
-        backIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-
-        val arrayOfIntent =
-            if (activityIntent != null)
-                arrayOf(notificationIntent, activityIntent)
-            else
-                arrayOf(backIntent)
-
-        return PendingIntent.getActivities(
-            this,
-            REQUEST_CODE_COUNTER++,
-            arrayOfIntent,
-            PendingIntent.FLAG_ONE_SHOT
-        )
-    }
 }

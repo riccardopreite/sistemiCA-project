@@ -176,20 +176,25 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>): MainFragment {
         val mainFragment = if(isNotification) {
             when (intent.action) {
-                "poi-recommendation" -> {
+                "recommendation" -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
                     val poi: PointOfInterest = intent.getParcelableExtra("place")!!
                     MainFragment.newInstance(poisList, leList, poi)
                 }
-                "new-live-event" -> {
+                "liveEvent" -> {
                     Log.i(TAG, "Handling a notification with a Live Event creation.")
                     val live: LiveEvent = intent.getParcelableExtra("liveEvent")!!
                     MainFragment.newInstance(poisList, leList, live)
                 }
-                "new-friend" -> {
+                "friendRequestAccepted" -> {
                     Log.i(TAG, "Handling a notification with a friend request accepted.")
                     val friend = intent.getStringExtra("friendUsername")!!
-                    MainFragment.newInstance(poisList, leList, friend)
+                    MainFragment.newInstance(poisList, leList, friend,false)
+                }
+                "newFriendRequest" -> {
+                    Log.i(TAG, "Handling a notification with a new friend request.")
+                    val friend = intent.getStringExtra("friendUsername")!!
+                    MainFragment.newInstance(poisList, leList, friend,true)
                 }
                 else -> {
                     Log.e(TAG, "Handling a strange behaviour: intent.action = ${intent.action} not recognized.")
