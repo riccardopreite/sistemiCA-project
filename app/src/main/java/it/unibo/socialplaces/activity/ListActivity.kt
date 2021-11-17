@@ -14,12 +14,9 @@ open class ListActivity: AppCompatActivity(R.layout.activity_list) {
         private val TAG: String = ListActivity::class.qualifiedName!!
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        Log.v(TAG, "onCreate")
-        super.onCreate(savedInstanceState)
-    }
-
     protected fun pushFragment(fragment: Fragment) {
+        Log.v(TAG, "pushFragment")
+
         CoroutineScope(Dispatchers.Main).launch {
             if(!supportFragmentManager.isDestroyed) {
                 supportFragmentManager.beginTransaction().apply {

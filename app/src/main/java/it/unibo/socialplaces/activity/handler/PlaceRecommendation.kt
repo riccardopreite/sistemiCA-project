@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 
@@ -27,10 +28,11 @@ class PlaceRecommendation: AppCompatActivity() {
             intent.getStringExtra("visibility")!!,
             intent.getStringExtra("url")!!
         )
-        Log.i(TAG,"Recommending place: $recommendedPlace")
+
+        Log.i(TAG,"Received recommendation for point of interest: $recommendedPlace.")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = "recommendation"
+            action = getString(R.string.notification_place_recommendation)
             putExtra("place", recommendedPlace)
             putExtra("notification", true)
         }

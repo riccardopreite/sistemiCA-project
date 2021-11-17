@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 
 class NewFriendRequestActivity: AppCompatActivity(){
@@ -19,7 +20,7 @@ class NewFriendRequestActivity: AppCompatActivity(){
 
         Log.i(TAG,"Friend request from $friendUsername!")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
-            action = "newFriendRequest"
+            action = getString(R.string.notification_new_friend_request)
             putExtra("friendUsername", friendUsername)
             putExtra("notification", true)
         }

@@ -32,6 +32,9 @@ class LiveEventsListActivity: it.unibo.socialplaces.activity.ListActivity(),
         }
     }
 
+    /**
+     * @see LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener.onRouteButtonPressed
+     */
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
         Log.v(TAG, "LiveEventDetailsDialogFragment.onRouteButtonPressed")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
@@ -39,17 +42,25 @@ class LiveEventsListActivity: it.unibo.socialplaces.activity.ListActivity(),
         startActivity(intent)
     }
 
+    /**
+     * @see LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener.onShareButtonPressed
+     */
     override fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent) {
         Log.v(TAG, "LiveEventDetailsDialogFragment.onShareButtonPressed")
-        sharePlace(liveEvent.name, liveEvent.address, liveEvent.latitude, liveEvent.longitude)
-    }
-
-    private fun sharePlace(name: String, address: String, latitude: Double, longitude: Double) {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_place, name, address, latitude, longitude))
+            with(liveEvent) {
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    getString(R.string.share_place, name, address, latitude, longitude)
+                )
+            }
+
         }
-        val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
+        val createdIntent = Intent.createChooser(
+            shareIntent,
+            getString(R.string.share_place_intent, liveEvent.name)
+        )
         ContextCompat.startActivity(this, createdIntent, null)
     }
 }

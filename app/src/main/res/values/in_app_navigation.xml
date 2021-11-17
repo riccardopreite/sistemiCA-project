@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notification actions -->
+    <string name="notification_friend_request_accepted">friendRequestAccepted</string>
+    <string name="notification_new_live_event">liveEvent</string>
+    <string name="notification_new_friend_request">newFriendRequest</string>
+    <string name="notification_place_recommendation">recommendation</string>
+</resources>

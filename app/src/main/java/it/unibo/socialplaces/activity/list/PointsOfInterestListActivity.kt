@@ -35,7 +35,7 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
         savedInstanceState?.let {
             poiToDelete = it.getParcelable(ARG_POITODELETE) as PointOfInterest?
         }
-        updateMarkerList()
+        updatePoisList()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -48,10 +48,13 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
         poiToDelete = savedInstanceState.getParcelable(ARG_POITODELETE) as PointOfInterest?
     }
 
+    /**
+     * @see EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener.onDeleteButtonPressed
+     */
     override fun onDeleteButtonPressed(dialog: DialogFragment, poiName: String) {
         Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeleteButtonPressed")
         CoroutineScope(Dispatchers.IO).launch {
-            val pois = PointsOfInterest.getPointsOfInterest("",true)
+            val pois = PointsOfInterest.getPointsOfInterest(forceSync = true)
             poiToDelete = pois.first { it.name == poiName } // It exists for sure.
             poiToDelete?.let {
                 PointsOfInterest.removePointOfInterestLocally(it)
@@ -60,6 +63,9 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
         }
     }
 
+    /**
+     * @see EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener.onCancelDeletionButtonPressed
+     */
     override fun onCancelDeletionButtonPressed(dialog: DialogFragment) {
         Log.v(TAG, "EliminatePointOfInterestDialogListener.onCancelDeletionButtonPressed")
         poiToDelete?.let {
@@ -69,26 +75,30 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
         poiToDelete = null
     }
 
+    /**
+     * @see EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener.onDeletionConfirmation
+     */
     override fun onDeletionConfirmation(dialog: DialogFragment) {
-        Log.v(TAG, "EliminatePointOfInterestDialogListener.onDeletionConfirmation")
-        if(poiToDelete == null) {
-            Log.w(TAG, "POIS Deletion canceled")
+        Log.v(TAG, "EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener.onDeletionConfirmation")
 
-            return
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            poiToDelete?.let {
-                PointsOfInterest.removePointOfInterest(it)
+        poiToDelete?.let { poi ->
+            CoroutineScope(Dispatchers.IO).launch {
+                PointsOfInterest.removePointOfInterest(poi)
                 CoroutineScope(Dispatchers.Main).launch {
                     dialog.dismiss()
-                    updateMarkerList()
+                    updatePoisList()
                 }
             }
+        } ?: run {
+            Log.w(TAG, "Point of interest deletion cancelled.")
         }
     }
 
+    /**
+     * @see PointsOfInterestFragment.PointsOfInterestDialogListener.onPoiSelected
+     */
     override fun onPoiSelected(fragment: Fragment, poiName: String) {
-        Log.v(TAG, "PointsOfInterestDialogListener.onPoiSelected")
+        Log.v(TAG, "PointsOfInterestFragment.PointsOfInterestDialogListener.onPoiSelected")
         CoroutineScope(Dispatchers.IO).launch {
             val pois = PointsOfInterest.getPointsOfInterest()
             val selectedPoi = pois.first { it.name == poiName } // It surely exists.
@@ -96,35 +106,44 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
             poiDetailsDialogFragment.show(supportFragmentManager, "PoiDetailsDialogFragment")
         }
     }
+
+    /**
+     * @see PoiDetailsDialogFragment.PoiDetailsDialogListener.onShareButtonPressed
+     */
     override fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest) {
-        Log.v(TAG, "PoiDetailsDialogFragment.onShareButtonPressed")
-        sharePlace(poi.name, poi.address, poi.latitude, poi.longitude)
+        Log.v(TAG, "PoiDetailsDialogFragment.PoiDetailsDialogListener.onShareButtonPressed")
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            with(poi) {
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    getString(R.string.share_place, name, address, latitude, longitude)
+                )
+            }
+        }
+        val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, poi.name))
+        ContextCompat.startActivity(this, createdIntent, null)
     }
 
+    /**
+     * @see PoiDetailsDialogFragment.PoiDetailsDialogListener.onRouteButtonPressed
+     */
     override fun onRouteButtonPressed(dialog: DialogFragment, address: String) {
-        Log.v(TAG, "PoiDetailsDialogFragment.onRouteButtonPressed")
+        Log.v(TAG, "PoiDetailsDialogFragment.PoiDetailsDialogListener.onRouteButtonPressed")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=$address"))
         dialog.dismiss()
         startActivity(intent)
     }
 
-    private fun sharePlace(name: String, address: String, latitude: Double, longitude: Double) {
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_place, name, address, latitude, longitude))
-        }
-        val createdIntent = Intent.createChooser(shareIntent,getString(R.string.share_place_intent, name))
-        ContextCompat.startActivity(this, createdIntent, null)
-    }
-
-    private fun updateMarkerList(){
-        Log.v(TAG,"PointsOfInterestListActivity.updatePOISList")
+    /**
+     * Retrieves the list of points of interest and pushes the [PointsOfInterestFragment].
+     */
+    private fun updatePoisList() {
+        Log.v(TAG,"updatePoisList")
         CoroutineScope(Dispatchers.IO).launch {
-            val poisList = PointsOfInterest.getPointsOfInterest("",true)
+            val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
             val poisFragment = PointsOfInterestFragment.newInstance(poisList)
             pushFragment(poisFragment)
         }
     }
-
-
 }

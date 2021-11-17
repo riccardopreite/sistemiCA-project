@@ -4,9 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 
-class FriendRequestAcceptedActivity: AppCompatActivity() {
+class FriendRequestAcceptedActivity : AppCompatActivity() {
     companion object {
         private val TAG: String = FriendRequestAcceptedActivity::class.qualifiedName!!
     }
@@ -17,10 +18,10 @@ class FriendRequestAcceptedActivity: AppCompatActivity() {
 
         val friendUsername = intent.getStringExtra("friendUsername")
 
-        Log.i(TAG,"You are now friend with $friendUsername!")
+        Log.i(TAG, "You are now friends with $friendUsername!")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = "friendRequestAccepted"
+            action = getString(R.string.notification_friend_request_accepted)
             putExtra("friendUsername", friendUsername)
             putExtra("notification", true)
         }

@@ -25,12 +25,12 @@ import android.widget.Toast
 
 class CreatePoiOrLiveDialogFragment: DialogFragment() {
     // Listener
-    interface CreatePoiDialogListener {
+    interface CreatePoiOrLiveDialogListener {
         fun onAddLiveEvent(dialog: DialogFragment, addLiveEvent: AddLiveEvent)
         fun onAddPointOfInterest(dialog: DialogFragment, addPointOfInterestPoi: AddPointOfInterestPoi)
     }
 
-    internal lateinit var listener: CreatePoiDialogListener
+    internal lateinit var listener: CreatePoiOrLiveDialogListener
 
     // App state
     private var latitude: Double ?= null
@@ -211,7 +211,7 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
         super.onAttach(context)
 
         try {
-            listener = context as CreatePoiDialogListener
+            listener = context as CreatePoiOrLiveDialogListener
         } catch(e: ClassCastException) {
             throw ClassCastException("$context must implement CreatePoiDialogListener")
         }

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.model.liveevents.LiveEvent
@@ -26,10 +27,11 @@ class LiveEventActivity: AppCompatActivity() {
             intent.getStringExtra("owner")!!,
             intent.getStringExtra("expirationDate")!!.toLong()
         )
+
         Log.i(TAG, "A new live event has been published: $liveEvent.")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = "liveEvent"
+            action = getString(R.string.notification_new_live_event)
             putExtra("liveEvent", liveEvent)
             putExtra("notification", true)
         }

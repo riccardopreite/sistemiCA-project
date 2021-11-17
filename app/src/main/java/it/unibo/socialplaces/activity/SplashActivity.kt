@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
+import androidx.activity.result.contract.ActivityResultContracts
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.api.RetrofitInstances
 import it.unibo.socialplaces.config.Auth
@@ -19,6 +20,15 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
         private val TAG = SplashActivity::class.qualifiedName
     }
 
+    /**
+     * Replaces [onActivityResult] call after [startActivityForResult].
+     * Handles the behavior of the application after the login.
+     */
+    private val loginActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+        finish()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
@@ -27,16 +37,17 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
 
         val progressBar = findViewById<ProgressBar>(R.id.progress_bar)
         progressBar.visibility = View.VISIBLE
+
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {
             if(Auth.isUserAuthenticated()) {
                 val username = Auth.getUsername()
                 username?.let {
-                    Notification.setUserId(username)
-                    Recommendation.setUserId(username)
-                    Friends.setUserId(username)
-                    LiveEvents.setUserId(username)
-                    PointsOfInterest.setUserId(username)
+                    Notification.setUserId(it)
+                    Recommendation.setUserId(it)
+                    Friends.setUserId(it)
+                    LiveEvents.setUserId(it)
+                    PointsOfInterest.setUserId(it)
                 }
                 CoroutineScope(Dispatchers.Main).launch {
                     progressBar.visibility = View.GONE
@@ -45,23 +56,10 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
                 }
             } else {
                 CoroutineScope(Dispatchers.Main).launch {
-                    startActivityForResult(
-                        Intent(this@SplashActivity, LoginActivity::class.java),
-                        Auth.getLoginActivityRequestCode()
-                    )
+                    progressBar.visibility = View.GONE
+                    loginActivityLauncher.launch(Intent(this@SplashActivity, LoginActivity::class.java))
                 }
             }
-
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Log.v(TAG, "onActivityResult")
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if(requestCode == Auth.getLoginActivityRequestCode()) {
-            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-            finish()
         }
     }
 }
