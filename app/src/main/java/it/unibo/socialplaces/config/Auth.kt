@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 
 object Auth {
-    private val TAG = Auth::class.qualifiedName
+    private val TAG = Auth::class.qualifiedName!!
 
     private object Google {
         lateinit var googleSignInOptions: GoogleSignInOptions
@@ -99,11 +99,18 @@ object Auth {
     private object Firebase {
         lateinit var authManager: FirebaseAuth
 
+        /**
+         * Loads the Firebase instance to be used for authenticating the user.
+         */
         fun loadAuthenticationManager() {
             Log.v(TAG, "Firebase.loadAuthenticationManager")
             authManager = FirebaseAuth.getInstance()
         }
 
+        /**
+         * Authenticates the user via Google credential, given as argument.
+         * @param googleCredential the Google credentials obtained via the Google credential loading in [Google.loadGoogleCredential].
+         */
         fun signIn(googleCredential: AuthCredential): Task<AuthResult> = authManager.signInWithCredential(googleCredential)
     }
 
@@ -177,17 +184,7 @@ object Auth {
     }
 
     /**
-     * Returns the suggested request code for using in Intent in case of activities.
-     */
-    fun getLoginActivityRequestCode(): Int = 1000
-
-    /**
-     * Returns the suggested request code for using in Intent in case of system calls.
-     */
-    fun getLoginSystemRequestCode(): Int = 1100
-
-    /**
-     * Returns the suggested result code for using in Intent in case of successfull login.
+     * Returns the suggested result code for using in Intent in case of successful login.
      */
     fun getLoginSuccessResultCode(): Int = 1001
 

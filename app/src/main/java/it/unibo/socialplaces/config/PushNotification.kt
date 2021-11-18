@@ -13,14 +13,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object PushNotification {
-    private val TAG = PushNotification::class.qualifiedName
+    private val TAG = PushNotification::class.qualifiedName!!
 
     const val NOTIFICATION_CHANNEL_ID = "it.unibo.socialplaces.pushnotification"
     private const val CHANNEL_NAME = "SocialPlaces: Push notification"
 
     private var manager: NotificationManager? = null
 
-    var notificationManager: NotificationManager
+    private var notificationManager: NotificationManager
         get() = manager!!
         set(value) {
             if(manager == null) {

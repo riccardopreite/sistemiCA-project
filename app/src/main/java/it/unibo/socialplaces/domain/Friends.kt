@@ -2,31 +2,41 @@ package it.unibo.socialplaces.domain
 
 import android.util.Log
 import it.unibo.socialplaces.api.ApiError
-import it.unibo.socialplaces.api.RetrofitInstances
+import it.unibo.socialplaces.api.ApiConnectors
 import it.unibo.socialplaces.model.friends.*
-import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 
 object Friends {
-    private val TAG = Friends::class.qualifiedName
+    private val TAG = Friends::class.qualifiedName!!
 
     private val api by lazy {
-        RetrofitInstances.friendsApi
+        ApiConnectors.friendsApi
     }
 
-    private val handleApiError: (ResponseBody?) -> ApiError = RetrofitInstances::handleApiError
+    private val handleApiError: (ResponseBody?) -> ApiError = ApiConnectors::handleApiError
 
     private lateinit var userId: String
 
     private val friends: MutableList<Friend> = emptyList<Friend>().toMutableList()
 
+    /**
+     * Sets the default user (logged in user) for API calls.
+     * @param user the logged in user.
+     */
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
         userId = user
     }
 
+    /**
+     * Calls GET /friends in the SocialPlaces API.
+     * @see [it.unibo.socialplaces.api.FriendsApi.getFriends]
+     * @param forceSync when `true` actually calls the remote APIs, otherwise retrieves the cached data
+     * (which could be empty).
+     * @return the list of friends of the logged user.
+     */
     suspend fun getFriends(forceSync: Boolean = false): List<Friend> {
         Log.v(TAG, "getFriends")
         if(!forceSync) {
@@ -36,16 +46,10 @@ object Friends {
         val response = try {
             api.getFriends(userId)
         } catch (e: IOException) {
-            e.message?.let {
-                Log.e(TAG, it)
-                Log.e(TAG, "Returning empty friends list.")
-            }
+            e.message?.let { Log.e(TAG, "$it\nIOException - Returning empty friends list.") }
             return emptyList()
         } catch (e: HttpException) {
-            e.message?.let {
-                Log.e(TAG, it)
-                Log.e(TAG, "Returning empty friends list.")
-            }
+            e.message?.let { Log.e(TAG, "$it\nHttpException - Returning empty friends list.") }
             return emptyList()
         }
 
@@ -61,6 +65,11 @@ object Friends {
         return emptyList()
     }
 
+    /**
+     * Calls POST /friends/add in the SocialPlaces API.
+     * @see [it.unibo.socialplaces.api.FriendsApi.addFriend]
+     * @param friendUsername the username of the friend to add.
+     */
     suspend fun addFriend(friendUsername: String) {
         Log.v(TAG, "addFriend")
         val response = try {
@@ -76,10 +85,16 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request to $friendUsername successfully sent.")
         } else {
+            // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/11
             Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
+    /**
+     * Calls POST /friends/confirm in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.FriendsApi.confirmFriend
+     * @param otherUserUsername the username of the friend that sent the friendship request.
+     */
     suspend fun confirmFriend(otherUserUsername: String) {
         Log.v(TAG, "confirmFriend")
         val response = try {
@@ -95,10 +110,16 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
         } else {
+            // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/12
             Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
+    /**
+     * Calls POST /friends/deny in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.FriendsApi.denyFriend
+     * @param senderOfFriendshipRequest the username of the friend that sent the friendship request.
+     */
     suspend fun denyFriend(senderOfFriendshipRequest: String) {
         Log.v(TAG, "denyFriend")
         val response = try {
@@ -114,10 +135,16 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request coming from $senderOfFriendshipRequest successfully denied.")
         } else {
+            // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/13
             Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
+    /**
+     * Calls DELETE /friends/remove in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.FriendsApi.removeFriend
+     * @param friendUsername the username of the friend to remove.
+     */
     suspend fun removeFriend(friendUsername: String) {
         Log.v(TAG, "removeFriend")
         val response = try {
@@ -133,6 +160,7 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend with username $friendUsername successfully removed.")
         } else {
+            // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/14
             Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }

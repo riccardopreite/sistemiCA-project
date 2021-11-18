@@ -1,16 +1,19 @@
 package it.unibo.socialplaces.activity
 
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
-import it.unibo.socialplaces.api.RetrofitInstances
+import it.unibo.socialplaces.api.ApiConnectors
+import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
-import it.unibo.socialplaces.domain.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,15 +28,36 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
      * Handles the behavior of the application after the login.
      */
     private val loginActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-        finish()
+        if(it.resultCode == Auth.getLoginSuccessResultCode()) {
+            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+            finish()
+        } else {
+            // Login is required.
+            val snackbar = Snackbar.make(
+                findViewById(android.R.id.content),
+                R.string.login_is_required,
+                5000
+            ).apply {
+                setActionTextColor(Color.DKGRAY)
+                view.setBackgroundColor(Color.BLACK)
+
+                addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                        super.onDismissed(transientBottomBar, event)
+                        finish()
+                    }
+                })
+            }
+
+            snackbar.show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
 
-        RetrofitInstances.loadStore(resources.openRawResource(R.raw.mystore))
+        ApiConnectors.loadStore(resources.openRawResource(R.raw.mystore))
 
         val progressBar = findViewById<ProgressBar>(R.id.progress_bar)
         progressBar.visibility = View.VISIBLE
@@ -41,14 +65,8 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
         Auth.loadAuthenticationManager(this)
         CoroutineScope(Dispatchers.IO).launch {
             if(Auth.isUserAuthenticated()) {
-                val username = Auth.getUsername()
-                username?.let {
-                    Notification.setUserId(it)
-                    Recommendation.setUserId(it)
-                    Friends.setUserId(it)
-                    LiveEvents.setUserId(it)
-                    PointsOfInterest.setUserId(it)
-                }
+                Api.setUserId(Auth.getUsername())
+
                 CoroutineScope(Dispatchers.Main).launch {
                     progressBar.visibility = View.GONE
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))

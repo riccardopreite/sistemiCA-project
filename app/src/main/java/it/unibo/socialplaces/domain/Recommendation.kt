@@ -1,43 +1,44 @@
 package it.unibo.socialplaces.domain
 
 import android.util.Log
-import it.unibo.socialplaces.api.RetrofitInstances
-import it.unibo.socialplaces.model.notification.NotificationToken
-import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
-import it.unibo.socialplaces.model.pointofinterests.RemovePointOfInterest
+import it.unibo.socialplaces.api.ApiConnectors
+import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.model.recommendation.PlaceRequest
 import it.unibo.socialplaces.model.recommendation.ValidationRequest
+import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 
 object Recommendation {
-    private val TAG = Recommendation::class.qualifiedName
+    private val TAG = Recommendation::class.qualifiedName!!
 
     private val api by lazy {
-        RetrofitInstances.recommendationApi
+        ApiConnectors.recommendationApi
     }
+
+    private val handleApiError: (ResponseBody?) -> ApiError = ApiConnectors::handleApiError
 
     private lateinit var userId: String
 
+    /**
+     * Sets the default user (logged in user) for API calls.
+     * @param user the logged in user.
+     */
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
         userId = user
     }
 
+    /**
+     * Calls POST /recommendation/train in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.RecommendationApi.trainModel
+     * @param trainRequest the data to retrain the model in the SocialPlaces Context-Aware system.
+     */
     suspend fun trainModel(trainRequest: ValidationRequest) {
         Log.v(TAG, "trainModel")
-        if(!this::userId.isInitialized) {
-            // This occurs when the app has just been installed and
-            // this method is called from inside PushNotificationService.
-            // It will fail for sure for being then called once again
-            // inside LoginActivity, perhaps successfully.
-            Log.w(TAG, "Property userId was not yet initialized.")
-            return
-        }
+
         val response = try {
-            if(this::userId.isInitialized)
-                trainRequest.user = userId
-            api.trainModel(trainRequest)
+            api.trainModel(trainRequest.copy(user = userId))
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
             return
@@ -47,26 +48,23 @@ object Recommendation {
         }
 
         if(response.isSuccessful) {
-            Log.i(TAG, "Model trained succesfully")
+            Log.i(TAG, "Model trained successfully.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
+    /**
+     * Calls POST /recommendation/validity in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.RecommendationApi.validityPlace
+     * @param validityRequest the data of a location, a time in the day and week, a human activity,
+     * a place category to see if they match together.
+     */
     suspend fun validityPlace(validityRequest: ValidationRequest) {
-        Log.v(TAG, "validate place")
-        if(!this::userId.isInitialized) {
-            // This occurs when the app has just been installed and
-            // this method is called from inside PushNotificationService.
-            // It will fail for sure for being then called once again
-            // inside LoginActivity, perhaps successfully.
-            Log.w(TAG, "Property userId was not yet initialized.")
-            return
-        }
+        Log.v(TAG, "validityPlace")
+
         val response = try {
-            if(this::userId.isInitialized)
-                validityRequest.user = userId
-            api.validityPlace(validityRequest)
+            api.validityPlace(validityRequest.copy(user = userId))
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
             return
@@ -76,26 +74,22 @@ object Recommendation {
         }
 
         if(response.isSuccessful) {
-            Log.i(TAG, "Validity place succesfully")
+            Log.i(TAG, "Place validity request sent successfully.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
 
+    /**
+     * Calls POST /recommendation/places in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.RecommendationApi.recommendPlace
+     * @param placeRequest the data of a location, a time in the day and week, a human activity.
+     */
     suspend fun recommendPlace(placeRequest: PlaceRequest) {
-        Log.v(TAG, "recommend place")
-        if(!this::userId.isInitialized) {
-            // This occurs when the app has just been installed and
-            // this method is called from inside PushNotificationService.
-            // It will fail for sure for being then called once again
-            // inside LoginActivity, perhaps successfully.
-            Log.w(TAG, "Property userId was not yet initialized.")
-            return
-        }
+        Log.v(TAG, "recommendPlace")
+
         val response = try {
-            if(this::userId.isInitialized)
-                placeRequest.user = userId
-            api.recommendPlace(placeRequest)
+            api.recommendPlace(placeRequest.copy(user = userId))
         } catch (e: IOException) {
             e.message?.let { Log.e(TAG, it) }
             return
@@ -105,12 +99,10 @@ object Recommendation {
         }
 
         if(response.isSuccessful) {
-            Log.i(TAG, "Place recommendation succesfully")
+            Log.i(TAG, "Place recommendation request sent successfully.")
         } else {
-            Log.e(TAG, response.errorBody().toString())
+            Log.e(TAG, handleApiError(response.errorBody()).toString())
         }
     }
-
-
 }
 

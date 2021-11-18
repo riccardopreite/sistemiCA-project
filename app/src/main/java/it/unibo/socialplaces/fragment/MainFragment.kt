@@ -37,7 +37,6 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.squareup.picasso.Picasso
 import it.unibo.socialplaces.activity.list.FriendsListActivity
-import it.unibo.socialplaces.activity.list.PointsOfInterestListActivity
 import it.unibo.socialplaces.fragment.dialog.handler.FriendRequestDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -484,7 +483,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         Log.v(TAG, "onDestroy")
         super.onDestroy()
 
-        PointsOfInterest.disableCallback()
-        LiveEvents.disableCallback()
+        PointsOfInterest.disableCallbacks()
+        LiveEvents.disableCallbacks()
     }
 }

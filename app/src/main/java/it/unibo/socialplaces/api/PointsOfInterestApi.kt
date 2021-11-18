@@ -8,7 +8,7 @@ import org.json.JSONObject
 import retrofit2.Response
 import retrofit2.http.*
 
-interface PointOfInterestsApi {
+interface PointsOfInterestApi {
     @GET("/points-of-interest")
     suspend fun getPointsOfInterest(@Query("user") user: String, @Query("friend") friend: String = ""): Response<List<PointOfInterest>>
 

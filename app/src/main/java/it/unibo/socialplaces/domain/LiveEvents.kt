@@ -2,7 +2,7 @@ package it.unibo.socialplaces.domain
 
 import android.util.Log
 import it.unibo.socialplaces.api.ApiError
-import it.unibo.socialplaces.api.RetrofitInstances
+import it.unibo.socialplaces.api.ApiConnectors
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import okhttp3.ResponseBody
@@ -10,43 +10,66 @@ import retrofit2.HttpException
 import java.io.IOException
 
 object LiveEvents {
-    private val TAG = LiveEvents::class.qualifiedName
+    private val TAG = LiveEvents::class.qualifiedName!!
 
     private val api by lazy {
-        RetrofitInstances.liveEventsApi
+        ApiConnectors.liveEventsApi
     }
 
-    private val handleApiError: (ResponseBody?) -> ApiError = RetrofitInstances::handleApiError
+    private val handleApiError: (ResponseBody?) -> ApiError = ApiConnectors::handleApiError
 
     private lateinit var userId: String
 
     private val liveEvents: MutableList<LiveEvent> = emptyList<LiveEvent>().toMutableList()
 
     private lateinit var createMarker: (Double,Double,String,String,String,Boolean) -> Unit
-    private lateinit var updateList: () -> Unit
     private var validCreateMarkerCallback: Boolean = false
+    private lateinit var updateList: () -> Unit
     private var validUpdateListCallback: Boolean = false
 
+    /**
+     * Sets the default user (logged in user) for API calls.
+     * @param user the logged in user.
+     */
     fun setUserId(user: String) {
         Log.v(TAG, "setUserId")
         userId = user
     }
 
-    fun setCreateMarkerCallback(createMarker:(Double,Double,String,String,String,Boolean) -> Unit){
+    /**
+     * Sets a callback to be invoked every time [addLiveEvent] is called.
+     * This callback will stop being invoked once [disableCallbacks] is invoked.
+     */
+    fun setCreateMarkerCallback(createMarker: (Double,Double,String,String,String,Boolean) -> Unit){
         this.createMarker = createMarker
         validCreateMarkerCallback = true
     }
 
-    fun disableCallback() {
-        validCreateMarkerCallback = false
-        validUpdateListCallback = false
-    }
-
-    fun setUpdateLiveCallback(updatePoi:() -> Unit){
+    /**
+     * Sets a callback to be invoked every time [addLiveEvent] is called.
+     * This callback will stop being invoked once [disableCallbacks] is invoked.
+     */
+    fun setUpdateLiveCallback(updatePoi: () -> Unit){
         this.updateList = updatePoi
         validUpdateListCallback = true
     }
 
+    /**
+     * Disables the invocation of the callbacks set via [setCreateMarkerCallback] and
+     * [setUpdateLiveCallback].
+     */
+    fun disableCallbacks() {
+        validCreateMarkerCallback = false
+        validUpdateListCallback = false
+    }
+
+    /**
+     * Calls GET /live-events in the SocialPlaces API.
+     * @see [it.unibo.socialplaces.api.LiveEventsApi.getLiveEvents]
+     * @param forceSync when `true` actually calls the remote APIs, otherwise retrieves the cached data
+     * (which could be empty).
+     * @return the list of live events of the logged user and their friends.
+     */
     suspend fun getLiveEvents(forceSync: Boolean = false): List<LiveEvent> {
         Log.v(TAG, "getLiveEvents")
         if(!forceSync) {
@@ -56,23 +79,18 @@ object LiveEvents {
         val response = try {
             api.getLiveEvents(userId)
         } catch (e: IOException) {
-            e.message?.let {
-                Log.e(TAG, it)
-                Log.e(TAG, "Returning empty live events list.")
-            }
+            e.message?.let { Log.e(TAG, "$it\nReturning empty live events list.") }
             return emptyList()
         } catch (e: HttpException) {
-            e.message?.let {
-                Log.e(TAG, it)
-                Log.e(TAG, "Returning empty live events list.")
-            }
+            e.message?.let { Log.e(TAG, "$it\nReturning empty live events list.") }
             return emptyList()
         }
 
-        if(response.isSuccessful && response.body() != null) {
-            Log.i(TAG, "Found ${response.body()!!.size} live events.")
+        val body = response.body()
+        if(response.isSuccessful && body != null) {
+            Log.i(TAG, "Found ${body.size} live events.")
             liveEvents.clear()
-            liveEvents.addAll(response.body()!!)
+            liveEvents.addAll(body)
             return liveEvents
         } else {
             Log.e(TAG, handleApiError(response.errorBody()).toString())
@@ -81,6 +99,12 @@ object LiveEvents {
         return emptyList()
     }
 
+    /**
+     * Calls POST /live-events/add in the SocialPlaces API.
+     * @see [it.unibo.socialplaces.api.LiveEventsApi.addLiveEvent]
+     * @param addLiveEvent the data for the live event to add.
+     * @return the id of the added live event.
+     */
     suspend fun addLiveEvent(addLiveEvent: AddLiveEvent): String {
         Log.v(TAG, "addLiveEvent")
         val response = try {
@@ -97,9 +121,9 @@ object LiveEvents {
             return ""
         }
 
-        if(response.isSuccessful && response.body() != null) {
+        val addedLiveEvent = response.body()
+        if(response.isSuccessful && addedLiveEvent != null) {
             Log.i(TAG, "Live events successfully added.")
-            val addedLiveEvent = response.body()!!
             val currentLive = LiveEvent(
                 addedLiveEvent.id,
                 addLiveEvent.address,
@@ -132,6 +156,10 @@ object LiveEvents {
         return ""
     }
 
+    /**
+     * Adds a live event locally and sorts the list of live events.
+     * @param liveEvent new live event to add (locally).
+     */
     private fun addLiveEventLocally(liveEvent: LiveEvent) {
         Log.v(TAG, "addLiveEventLocally")
 

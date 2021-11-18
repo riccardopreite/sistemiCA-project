@@ -103,7 +103,7 @@
     <string name="location_service_started">Location service started</string>
     <string name="location_service_stopped">Location service stopped</string>
     <string name="location_service_description">Maptry Location Service for accessing the device location in real time.</string>
-    <string name="location_permission_denied">Permission to use location services denied. Closing app...</string>
+    <string name="location_permission_denied">Permission to use location services denied. Closing the app…</string>
     <string name="app_logo_description">App logo</string>
     <string name="empty_username">You must type the e-mail of the user you want to send the friendship request to.</string>
     <string name="no_request_to_oneself">You cannot send a user request to the same user you\'re logged in.</string>
@@ -114,7 +114,8 @@
     <string name="date_format">%1$d %2$s %3$d %4$d:%5$d</string>
     <string name="refresh_list_btn">Refreshes the current list.</string>
     <string name="denyFriend">Deny</string>
-    <string name="human_activity_permission_denied">Permission to use human activity recognition denied. Closing app...</string>
-    <string name="access_background_location_permission_denied">Permission to use background location denied. Closing app...</string>
+    <string name="human_activity_permission_denied">Permission to use human activity recognition denied. Closing the app…</string>
+    <string name="access_background_location_permission_denied">Permission to use background location denied. Closing the app…</string>
+    <string name="login_is_required">You must login in order to use SocialPlaces! Closing the app…</string>
     <string name="default_notification_channel_id">it.unibo.socialplaces.pushnotification</string>
 </resources>
