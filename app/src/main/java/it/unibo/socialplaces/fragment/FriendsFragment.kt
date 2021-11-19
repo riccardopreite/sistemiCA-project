@@ -1,5 +1,6 @@
 package it.unibo.socialplaces.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,34 +10,32 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.databinding.FragmentFriendsBinding
 import it.unibo.socialplaces.domain.Friends
 import it.unibo.socialplaces.fragment.dialog.friends.EliminateFriendDialogFragment
-import it.unibo.socialplaces.fragment.dialog.friends.FriendDialogFragment
 import it.unibo.socialplaces.fragment.dialog.friends.AddFriendDialogFragment
 import it.unibo.socialplaces.model.friends.Friend
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.ClassCastException
 
-class FriendsFragment : Fragment(R.layout.fragment_friends){
+class FriendsFragment : Fragment(R.layout.fragment_friends) {
+    // Listener
+    interface FriendsListener {
+        fun onFriendSelected(fragment: Fragment, friendName: String)
+    }
+
+    internal lateinit var listener: FriendsListener
 
     // UI
     private var _binding: FragmentFriendsBinding? = null
     private val binding get() = _binding!!
 
     // App state
-    private lateinit var friendsList: MutableList<Friend>
-    private var removedFriend: Friend? = null
-    private var friendPosition: Int? = null
-    private var selectedFriendName: String? = null
-    private var willDeleteFriend: Boolean? = null
+    private lateinit var friendsList: List<Friend>
 
     companion object {
         private val TAG: String = FriendsFragment::class.qualifiedName!!
 
         private const val ARG_FRIENDSLIST = "friendsList"
-        private const val ARG_REMOVEDFRIEND = "removedFriend"
-        private const val ARG_FRIENDPOSITION = "friendPosition"
-        private const val ARG_SELECTEDFRIENDNAME = "selectedFriendName"
-        private const val ARG_WILLDELETEFRIEND = "willDeleteFriend"
 
         @JvmStatic
         fun newInstance(friends: List<Friend>) =
@@ -52,17 +51,13 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
         super.onCreate(savedInstanceState)
         arguments?.let {
             val pArray = it.getParcelableArray(ARG_FRIENDSLIST)
-            pArray?.let { p ->
+            friendsList =  pArray?.let { p ->
                 Log.d(TAG, "Loading friendsList from savedInstanceState")
-                friendsList = MutableList(p.size) { i -> p[i] as Friend }
+                List(p.size) { i -> p[i] as Friend }
             } ?: run {
                 Log.e(TAG, "friendsList inside savedInstanceState was null. Loading an emptyList.")
-                friendsList = emptyList<Friend>().toMutableList()
+                emptyList()
             }
-            removedFriend = it.getParcelable(ARG_REMOVEDFRIEND)
-            friendPosition = it.getInt(ARG_FRIENDPOSITION)
-            selectedFriendName = it.getString(ARG_SELECTEDFRIENDNAME)
-            willDeleteFriend = it.getBoolean(ARG_WILLDELETEFRIEND)
         }
     }
 
@@ -75,8 +70,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
 
         binding.friendsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, friendsList.map { it.friendUsername })
 
-        binding.friendsListView.setOnItemLongClickListener { parent, v, position, id ->
-            val eliminateFriendDialog = EliminateFriendDialogFragment.newInstance(parent.getItemAtPosition(position) as String)
+        binding.friendsListView.setOnItemLongClickListener { parent, _, position, _ ->
+            val selectedFriendName = parent.getItemAtPosition(position) as String
+            val eliminateFriendDialog = EliminateFriendDialogFragment.newInstance(selectedFriendName)
 
             activity?.let {
                 eliminateFriendDialog.show(it.supportFragmentManager, "EliminateFriendDialogFragment")
@@ -85,11 +81,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
             return@setOnItemLongClickListener true
         }
 
-        binding.friendsListView.setOnItemClickListener { parent, v, position, id ->
-            val friendDialog = FriendDialogFragment.newInstance(parent.getItemAtPosition(position) as String)
-            activity?.let {
-                friendDialog.show(it.supportFragmentManager, "FriendDialogFragment")
-            }
+        binding.friendsListView.setOnItemClickListener { parent, _, position, _ ->
+            val selectedFriendName = parent.getItemAtPosition(position) as String
+            listener.onFriendSelected(this, selectedFriendName)
         }
 
         binding.addFriend.setOnClickListener {
@@ -99,10 +93,14 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
             }
         }
 
+        binding.closeFriendsFragment.setOnClickListener {
+            activity?.finish()
+        }
+
         binding.refreshFriends.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                friendsList.clear()
-                friendsList.addAll(Friends.getFriends(true))
+                friendsList = Friends.getFriends(true)
+
                 CoroutineScope(Dispatchers.Main).launch {
                     binding.friendsListView.adapter = ArrayAdapter(
                         view.context,
@@ -113,15 +111,22 @@ class FriendsFragment : Fragment(R.layout.fragment_friends){
             }
 
         }
-
-        binding.closeFriendsFragment.setOnClickListener {
-            activity?.finish()
-        }
     }
 
     override fun onDestroyView() {
         Log.v(TAG, "onDestroyView")
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onAttach(context: Context) {
+        Log.v(TAG, "onAttach")
+        super.onAttach(context)
+
+        try {
+            listener = context as FriendsListener
+        } catch(e: ClassCastException) {
+            throw ClassCastException("$context must implement FriendsListener")
+        }
     }
 }

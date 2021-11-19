@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.domain.Friends
 import it.unibo.socialplaces.domain.PointsOfInterest
@@ -25,6 +26,7 @@ import kotlinx.coroutines.launch
 
 class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
     AddFriendDialogFragment.AddFriendDialogListener,
+    FriendsFragment.FriendsListener,
     FriendDialogFragment.FriendDialogListener,
     FriendPoiDialogFragment.FriendPoiDialogListener,
     EliminateFriendDialogFragment.EliminateFriendDialogListener {
@@ -183,5 +185,11 @@ class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
             pushFragment(listFragment)
             CoroutineScope(Dispatchers.Main).launch { snackbar?.dismiss() }
         }
+    }
+
+    override fun onFriendSelected(fragment: Fragment, friendName: String) {
+        Log.v(TAG, "FriendsFragment.FriendsListener.onFriendSelected")
+        val friendDialogFragment = FriendDialogFragment.newInstance(friendName)
+        friendDialogFragment.show(supportFragmentManager, "FriendDialogFragment")
     }
 }
