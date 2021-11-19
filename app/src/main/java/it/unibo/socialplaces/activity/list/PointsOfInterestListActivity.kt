@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(),
     EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener,
-    PointsOfInterestFragment.PointsOfInterestDialogListener,
+    PointsOfInterestFragment.PointsOfInterestListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener {
     companion object {
         private val TAG: String = PointsOfInterestListActivity::class.qualifiedName!!
@@ -95,15 +95,17 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
     }
 
     /**
-     * @see PointsOfInterestFragment.PointsOfInterestDialogListener.onPoiSelected
+     * @see PointsOfInterestFragment.PointsOfInterestListener.onPoiSelected
      */
     override fun onPoiSelected(fragment: Fragment, poiName: String) {
-        Log.v(TAG, "PointsOfInterestFragment.PointsOfInterestDialogListener.onPoiSelected")
+        Log.v(TAG, "PointsOfInterestFragment.PointsOfInterestListener.onPoiSelected")
         CoroutineScope(Dispatchers.IO).launch {
             val pois = PointsOfInterest.getPointsOfInterest()
             val selectedPoi = pois.first { it.name == poiName } // It surely exists.
-            val poiDetailsDialogFragment = PoiDetailsDialogFragment.newInstance(selectedPoi)
-            poiDetailsDialogFragment.show(supportFragmentManager, "PoiDetailsDialogFragment")
+            CoroutineScope(Dispatchers.Main).launch {
+                val poiDetailsDialogFragment = PoiDetailsDialogFragment.newInstance(selectedPoi)
+                poiDetailsDialogFragment.show(supportFragmentManager, "PoiDetailsDialogFragment")
+            }
         }
     }
 

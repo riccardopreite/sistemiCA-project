@@ -19,18 +19,18 @@ import java.lang.ClassCastException
 
 class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) {
     // Listener
-    interface PointsOfInterestDialogListener {
+    interface PointsOfInterestListener {
         fun onPoiSelected(fragment: Fragment, poiName: String)
     }
 
-    internal lateinit var listener: PointsOfInterestDialogListener
+    internal lateinit var listener: PointsOfInterestListener
 
     // UI
     private var _binding: FragmentPointsOfInterestBinding? = null
     private val binding get() = _binding!!
 
     // App state
-    private lateinit var poisList: MutableList<PointOfInterest>
+    private lateinit var poisList: List<PointOfInterest> // TODO Sostituita con List da MutableList (tanto è comunque di tipo var)
 
     companion object {
         private val TAG: String = PointsOfInterestFragment::class.qualifiedName!!
@@ -51,12 +51,12 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
         super.onCreate(savedInstanceState)
         arguments?.let {
             val pArray = it.getParcelableArray(ARG_POISLIST)
-            pArray?.let { p ->
+            poisList = pArray?.let { p ->
                 Log.d(TAG, "Loading poisList from savedInstanceState")
-                poisList = MutableList(p.size) { i -> p[i] as PointOfInterest }
+                List(p.size) { i -> p[i] as PointOfInterest }
             } ?: run {
                 Log.e(TAG, "poisList inside savedInstanceState was null. Loading an emptyList.")
-                poisList = emptyList<PointOfInterest>().toMutableList()
+                emptyList()
             }
         }
     }
@@ -64,14 +64,16 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
+
         _binding = FragmentPointsOfInterestBinding.bind(view)
 
         binding.noPoisItems.visibility = if(poisList.isEmpty()) View.VISIBLE else View.INVISIBLE
 
         binding.poisListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, poisList.map { it.name })
 
-        binding.poisListView.setOnItemLongClickListener { parent, v, position, id ->
-            val eliminatePoiDialog = EliminatePointOfInterestDialogFragment.newInstance(parent.getItemAtPosition(position) as String)
+        binding.poisListView.setOnItemLongClickListener { parent, _, position, _ ->
+            val selectedPoiName = parent.getItemAtPosition(position) as String
+            val eliminatePoiDialog = EliminatePointOfInterestDialogFragment.newInstance(selectedPoiName)
 
             activity?.let {
                 eliminatePoiDialog.show(it.supportFragmentManager, "EliminatePointOfInterestDialogFragment")
@@ -80,7 +82,7 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
             return@setOnItemLongClickListener true
         }
 
-        binding.poisListView.setOnItemClickListener { parent, v, position, id ->
+        binding.poisListView.setOnItemClickListener { parent, _, position, _ ->
             val selectedPoiName = parent.getItemAtPosition(position) as String
             listener.onPoiSelected(this, selectedPoiName)
         }
@@ -88,10 +90,11 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
         binding.closePoisFragment.setOnClickListener {
             activity?.finish()
         }
+
         binding.refreshPoisListFragment.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                poisList.clear()
-                poisList.addAll(PointsOfInterest.getPointsOfInterest("",true))
+                poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
+
                 CoroutineScope(Dispatchers.Main).launch {
                     binding.poisListView.adapter = ArrayAdapter(
                         view.context,
@@ -114,9 +117,9 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
         super.onAttach(context)
 
         try {
-            listener = context as PointsOfInterestDialogListener
+            listener = context as PointsOfInterestListener
         } catch(e: ClassCastException) {
-            throw ClassCastException("$context must implement PointsOfInterestDialogListener")
+            throw ClassCastException("$context must implement PointsOfInterestListener")
         }
     }
 }
