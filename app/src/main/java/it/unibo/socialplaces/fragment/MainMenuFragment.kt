@@ -130,6 +130,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
      * Disables the binding between this fragment and the [LocationService].
      */
     private fun unbindLocationService() {
+        //TODO do not call twice
         requireContext().unbindService(connection)
     }
 

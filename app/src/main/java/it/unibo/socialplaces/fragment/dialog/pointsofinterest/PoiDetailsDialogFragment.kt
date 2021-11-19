@@ -102,8 +102,10 @@ class PoiDetailsDialogFragment : DialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         Log.v(TAG, "onDismiss")
         super.onDismiss(dialog)
+        if(this::onDismissCallback.isInitialized){
+            onDismissCallback()
+        }
 
-        onDismissCallback()
     }
 
 }

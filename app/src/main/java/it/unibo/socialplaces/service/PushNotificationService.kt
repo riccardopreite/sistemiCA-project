@@ -116,9 +116,11 @@ class PushNotificationService: FirebaseMessagingService() {
 
         val recommendationIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_place_recommendation)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("place", recommendedPlace) // PointOfInterest
             putExtra("notification", true)
         }
+
 
         builder.setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
         builder.setContentIntent(createPendingIntent(recommendationIntent))
@@ -151,6 +153,7 @@ class PushNotificationService: FirebaseMessagingService() {
         )
         val liveEventIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_new_live_event)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("live", liveEvent) // LiveEvent
             putExtra("notification", true)
         }
@@ -179,6 +182,7 @@ class PushNotificationService: FirebaseMessagingService() {
 
         val friendAcceptedIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_friend_request_accepted)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("friendUsername", friendUsername) // String
             putExtra("notification", true)
         }
@@ -210,6 +214,7 @@ class PushNotificationService: FirebaseMessagingService() {
 
         val notificationFriendRequestIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_new_friend_request)
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("friendUsername", friendUsername)
             putExtra("notification", true)
         }
@@ -243,6 +248,6 @@ class PushNotificationService: FirebaseMessagingService() {
         this,
         0,
         intent,
-        PendingIntent.FLAG_UPDATE_CURRENT
+        PendingIntent.FLAG_CANCEL_CURRENT
     )
 }
