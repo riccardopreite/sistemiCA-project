@@ -10,6 +10,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.android.gms.location.ActivityRecognitionClient
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.receiver.RecognizedActivityReceiver
 import it.unibo.socialplaces.receiver.RecommendationAlarm
 import it.unibo.socialplaces.service.RecognizedActivity
@@ -27,7 +28,6 @@ class PeriodicRecommendationWorker(context: Context, workerParameters: WorkerPar
 
     companion object {
         private val TAG: String = RecommendationAlarm::class.qualifiedName!!
-        private const val INTENT_ACTION: String = "activity_recognition"
     }
 
     /**
@@ -81,7 +81,10 @@ class PeriodicRecommendationWorker(context: Context, workerParameters: WorkerPar
 
         LocalBroadcastManager
             .getInstance(context)
-            .registerReceiver(recognizedActivityReceiver, IntentFilter(INTENT_ACTION))
+            .registerReceiver(
+                recognizedActivityReceiver,
+                IntentFilter(context.getString(R.string.recognized_ha))
+            )
     }
 
     private fun unregisterReceiver(context: Context){

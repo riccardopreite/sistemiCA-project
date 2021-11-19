@@ -13,10 +13,6 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
-import it.unibo.socialplaces.activity.handler.FriendRequestAcceptedActivity
-import it.unibo.socialplaces.activity.handler.LiveEventActivity
-import it.unibo.socialplaces.activity.handler.NewFriendRequestActivity
-import it.unibo.socialplaces.activity.handler.PlaceRecommendation
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
@@ -25,49 +21,54 @@ import kotlinx.datetime.Clock
 
 class PushNotificationService: FirebaseMessagingService() {
     companion object {
-        private val TAG = PushNotificationService::class.qualifiedName
-
-        // Actions received via notification data fields
-        private const val newFriendRequestAction = "new-friend-request"
-        private const val friendRequestAcceptedAction = "friend-request-accepted"
-        private const val newLiveEventAction = "new-live-event"
-        private const val placeRecommendationAction = "place-recommendation"
-        private const val modelRetrainedAction = "model-retrained"
-
-        // Actions set in action field in Intents for broadcasting
-        private const val acceptFriendshipRequestAction = "accept-friendship-request"
-        private const val denyFriendshipRequestAction = "deny-friendship-request"
+        private val TAG = PushNotificationService::class.qualifiedName!!
     }
 
+    /**
+     * All the possible keys of a notification of place recommendation.
+     * All of them must be present otherwise the notification is not pushed.
+     */
     private val placeRecommendationNotificationExpectedKeys = listOf("markId", "address", "type", "latitude", "longitude", "name", "phoneNumber", "visibility", "url")
-    private val liveEventNotificationExpectedKeys = listOf("id", "address", "latitude", "longitude", "name", "owner", "expirationDate")
-    private val friendAcceptedNotificationExpectedKeys = listOf("friendUsername")
 
-    private val defaultSoundUri: Uri = RingtoneManager.getDefaultUri(
-            RingtoneManager.TYPE_NOTIFICATION
-        )
+    /**
+     * All the possible keys of a notification of a new live event.
+     * All of them must be present otherwise the notification is not pushed.
+     */
+    private val liveEventNotificationExpectedKeys = listOf("id", "address", "latitude", "longitude", "name", "owner", "expirationDate")
+
+    /**
+     * All the possible keys of a notification of a friend request/accepted friend request notifications.
+     * All of them must be present otherwise the notification is not pushed.
+     */
+    private val friendNotificationExpectedKeys = listOf("friendUsername")
+
+    /**
+     * Sound for the notification.
+     */
+    private val defaultSoundUri: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
     @SuppressLint("UnspecifiedImmutableFlag")
     override fun onMessageReceived(message: RemoteMessage) {
         Log.v(TAG, "onMessageReceived")
         super.onMessageReceived(message)
+
         PushNotification.loadNotificationManager(this)
 
         val data = message.data
         val notificationId = Clock.System.now().epochSeconds.toInt()
 
         message.notification?.let {
+            val builder = baseNotificationBuilder(it.title!!, it.body!!)
             when(it.clickAction) {
-                newFriendRequestAction -> createFriendRequestNotification(it, notificationId, data)
-                friendRequestAcceptedAction -> createFriendAcceptedNotification(it, data)
-                newLiveEventAction -> createLiveEventNotification(it, data)
-                placeRecommendationAction -> createPlaceRecommendationNotification(it, data)
-                modelRetrainedAction -> createModelRetrainedNotification(it, notificationId)
+                getString(R.string.notification_new_friend_request) -> createFriendRequestNotification(builder, notificationId, data)
+                getString(R.string.notification_friend_request_accepted) -> createFriendAcceptedNotification(builder, data)
+                getString(R.string.notification_new_live_event) -> createLiveEventNotification(builder, data)
+                getString(R.string.notification_place_recommendation) -> createPlaceRecommendationNotification(builder, data)
+                getString(R.string.notification_model_retrained) -> createModelRetrainedNotification(builder)
                 else -> null
             }?.let { notification ->
                 Log.d(TAG, "Showing notification with id=$notificationId.")
                 PushNotification.displayNotification(notificationId, notification)
-
             }
         }
     }
@@ -79,29 +80,23 @@ class PushNotificationService: FirebaseMessagingService() {
     }
 
     /**
-     * Model retrained just show the new accuracy
+     * Generates a notification displaying the level of accuracy reached by the model thanks to the
+     * user contribution.
      */
-    private fun createModelRetrainedNotification(notificationMessage: RemoteMessage.Notification,id: Int): android.app.Notification {
+    private fun createModelRetrainedNotification(builder: NotificationCompat.Builder): android.app.Notification {
         Log.v(TAG, "createModelRetrainedNotification")
-        val baseBuilder = baseNotificationBuilder(
-            notificationMessage.title!!,
-            notificationMessage.body!!,
-            android.app.Notification.CATEGORY_STATUS
-        )
 
-        return baseBuilder.build()
+        builder.setCategory(android.app.Notification.CATEGORY_STATUS)
+
+        return builder.build()
     }
 
     /**
-     * It could be the same of live event
-     * Place recommendation should show the poi on the map (Maybe also route button to place?)
-     * In theory id is not necessary cause of Autocancel
+     * Generates a notification suggesting the user some place (point of interest to visit given
+     * its current location, time, day of week and human activity.
      */
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun createPlaceRecommendationNotification(
-        notificationMessage: RemoteMessage.Notification,
-        data: Map<String, String>
-    ): android.app.Notification? {
+    private fun createPlaceRecommendationNotification(builder: NotificationCompat.Builder, data: Map<String, String>): android.app.Notification? {
         Log.v(TAG, "createPlaceRecommendationNotification")
         if(!data.keys.containsAll(placeRecommendationNotificationExpectedKeys)) {
             return null
@@ -120,27 +115,15 @@ class PushNotificationService: FirebaseMessagingService() {
         )
 
         val recommendationIntent = Intent(this, MainActivity::class.java).apply {
-            action = "recommendation"
+            action = getString(R.string.activity_place_recommendation)
             putExtra("place", recommendedPlace) // PointOfInterest
             putExtra("notification", true)
         }
 
-        val recommendationPending = PendingIntent.getActivity(
-            this,
-            0,
-            recommendationIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        builder.setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
+        builder.setContentIntent(createPendingIntent(recommendationIntent))
 
-        val baseBuilder = baseNotificationBuilder(
-            notificationMessage.title!!,
-            notificationMessage.body!!,
-            android.app.Notification.CATEGORY_RECOMMENDATION
-        )
-
-        baseBuilder.setContentIntent(recommendationPending)
-
-        return baseBuilder.build()
+        return builder.build()
     }
     /**
      * It could be the same of recommendation
@@ -149,7 +132,7 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun createLiveEventNotification(
-        notificationMessage: RemoteMessage.Notification,
+        builder: NotificationCompat.Builder,
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createLiveEventNotification")
@@ -167,27 +150,15 @@ class PushNotificationService: FirebaseMessagingService() {
             data["expirationDate"]!!.toLong()
         )
         val liveEventIntent = Intent(this, MainActivity::class.java).apply {
-            action = "liveEvent"
+            action = getString(R.string.activity_new_live_event)
             putExtra("live", liveEvent) // LiveEvent
             putExtra("notification", true)
         }
 
-        val livePending = PendingIntent.getActivity(
-            this,
-            0,
-            liveEventIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        builder.setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
+        builder.setContentIntent(createPendingIntent(liveEventIntent))
 
-        val baseBuilder = baseNotificationBuilder(
-            notificationMessage.title!!,
-            notificationMessage.body!!,
-            android.app.Notification.CATEGORY_RECOMMENDATION
-        )
-
-        baseBuilder.setContentIntent(livePending)
-
-        return baseBuilder.build()
+        return builder.build()
     }
 
     /**
@@ -196,38 +167,26 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun createFriendAcceptedNotification(
-        notificationMessage: RemoteMessage.Notification,
+        builder: NotificationCompat.Builder,
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createFriendAcceptedNotification")
-        if(!data.keys.containsAll(friendAcceptedNotificationExpectedKeys)) {
+        if(!data.keys.containsAll(friendNotificationExpectedKeys)) {
             return null
         }
 
         val friendUsername = data["friendUsername"]!!
 
         val friendAcceptedIntent = Intent(this, MainActivity::class.java).apply {
-            action="friendRequestAccepted"
+            action = getString(R.string.activity_friend_request_accepted)
             putExtra("friendUsername", friendUsername) // String
             putExtra("notification", true)
         }
 
-        val friendPending = PendingIntent.getActivity(
-            this,
-            0,
-            friendAcceptedIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        builder.setCategory(android.app.Notification.CATEGORY_SOCIAL)
+        builder.setContentIntent(createPendingIntent(friendAcceptedIntent))
 
-        val baseBuilder = baseNotificationBuilder(
-            notificationMessage.title!!,
-            notificationMessage.body!!,
-            android.app.Notification.CATEGORY_SOCIAL
-        )
-
-        baseBuilder.setContentIntent(friendPending)
-
-        return baseBuilder.build()
+        return builder.build()
     }
 
     /**
@@ -236,12 +195,12 @@ class PushNotificationService: FirebaseMessagingService() {
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun createFriendRequestNotification(
-        notificationMessage: RemoteMessage.Notification,
+        builder: NotificationCompat.Builder,
         id: Int,
         data: Map<String, String>
     ): android.app.Notification? {
         Log.v(TAG, "createFriendRequestNotification")
-        if(!data.keys.containsAll(friendAcceptedNotificationExpectedKeys)) {
+        if(!data.keys.containsAll(friendNotificationExpectedKeys)) {
             return null
         }
 
@@ -249,39 +208,26 @@ class PushNotificationService: FirebaseMessagingService() {
 
         Log.d(TAG, "Creating notification with id=$id")
 
-
         val notificationFriendRequestIntent = Intent(this, MainActivity::class.java).apply {
-            action = "newFriendRequest"
+            action = getString(R.string.activity_new_friend_request)
             putExtra("friendUsername", friendUsername)
             putExtra("notification", true)
         }
 
-        val notificationFriendRequestPending = PendingIntent.getActivity(
-            this,
-            0,
-            notificationFriendRequestIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        builder.setCategory(android.app.Notification.CATEGORY_SOCIAL)
+        builder.setContentIntent(createPendingIntent(notificationFriendRequestIntent))
 
-        val baseBuilder = baseNotificationBuilder(
-            notificationMessage.title!!,
-            notificationMessage.body!!,
-            android.app.Notification.CATEGORY_SOCIAL
-        )
-        baseBuilder.setContentIntent(notificationFriendRequestPending)
-
-        return baseBuilder.build()
+        return builder.build()
     }
 
     /**
      * Returns a builder for notifications with some default configuration
-     * (such as title, body, category which are the method's arguments, priority, sound, etc.).
+     * (such as title, body which are the method's arguments, priority, sound, etc.).
      */
-    private fun baseNotificationBuilder(title: String, body: String, category: String): NotificationCompat.Builder {
+    private fun baseNotificationBuilder(title: String, body: String): NotificationCompat.Builder {
         return NotificationCompat.Builder(applicationContext, PushNotification.NOTIFICATION_CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(body)
-            .setCategory(category)
             .setSmallIcon(R.mipmap.ic_social)
             .setPriority(NotificationManager.IMPORTANCE_HIGH)
             .setAutoCancel(true)
@@ -289,4 +235,14 @@ class PushNotificationService: FirebaseMessagingService() {
             .setVisibility(VISIBILITY_PUBLIC)
     }
 
+    /**
+     * Returns a base [PendingIntent] for launching notifications.
+     */
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private fun createPendingIntent(intent: Intent): PendingIntent = PendingIntent.getActivity(
+        this,
+        0,
+        intent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
 }

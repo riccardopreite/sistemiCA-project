@@ -6,24 +6,42 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.location.Location
+import it.unibo.socialplaces.config.Location as LocationConfig
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
-import android.text.BoringLayout
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 
 class LocationService: Service() {
+    // Listener
     interface LocationListener {
         fun onLocationChanged(service: Service, location: Location)
     }
 
+    private var listener: LocationListener? = null
+
+    // Binder
     inner class LocationBinder: Binder() {
         fun getService(): LocationService = this@LocationService
     }
 
+    private val binder = LocationBinder()
+
+    // Location manager
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    // Notification
+    private val channel = NotificationChannel(
+        NOTIFICATION_CHANNEL_ID,
+        CHANNEL_NAME,
+        NotificationManager.IMPORTANCE_NONE
+    ).apply {
+        lightColor = Color.BLUE
+        lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+    }
 
     companion object {
         private val TAG = LocationService::class.qualifiedName
@@ -36,27 +54,25 @@ class LocationService: Service() {
         const val CHANNEL_NAME = "SocialPlaces: Background Location Retrieval Service"
     }
 
-    private val binder = LocationBinder()
-
-    private var listener: LocationListener? = null
-
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
+    // App state
+    /**
+     * If `true` then the current service is running, otherwise it is `false`.
+     */
     private var isRunning = false
 
-    private val locationRequest: LocationRequest = LocationRequest.create().apply {
-        interval = 5000
-        fastestInterval = 2000
-        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-    }
+    /**
+     * Last location that was set.
+     */
+    private lateinit var lastLocation: Location
 
     private val locationUpdateCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
-//            Log.v(TAG, "LocationCallback.onLocationResult $locationResult")
             lastLocation = locationResult.lastLocation
 //            Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
             listener?.onLocationChanged(this@LocationService, lastLocation)
-            val sharedPref = getSharedPreferences("sharePlaces",Context.MODE_PRIVATE)?: return
+            // Storing the location inside Android's Shared Preferences in order to
+            // access it in other background tasks.
+            val sharedPref = getSharedPreferences("sharePlaces", Context.MODE_PRIVATE)?: return
             with (sharedPref.edit()) {
                 putFloat("latitude", lastLocation.latitude.toFloat())
                 putFloat("longitude", lastLocation.longitude.toFloat())
@@ -65,49 +81,21 @@ class LocationService: Service() {
         }
     }
 
-    private val channel = NotificationChannel(
-        NOTIFICATION_CHANNEL_ID,
-        CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_NONE
-    ).apply {
-        lightColor = Color.BLUE
-        lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-    }
-
-    private lateinit var lastLocation: Location
-
+    /**
+     * Sets an instance to be called when the location updates.
+     */
     fun setListener(l: LocationListener) {
         listener = l
     }
 
-    private fun createLocationSettingsRequest(): LocationSettingsRequest {
-        Log.v(TAG, "createLocationSettingsRequest")
-        return LocationSettingsRequest
-            .Builder()
-            .addLocationRequest(locationRequest)
-            .build()
-    }
-
+    @SuppressLint("MissingPermission")
     private fun checkSettings(): Task<LocationSettingsResponse> {
         Log.v(TAG, "settings")
         val client: SettingsClient = LocationServices.getSettingsClient(this)
-        return client.checkLocationSettings(createLocationSettingsRequest())
-    }
-
-    /**
-     * Starts the location updates.
-     * Precondition: permission to use location services is given.
-     */
-    @SuppressLint("MissingPermission")
-    private fun startLocationUpdates() {
-        Log.v(TAG, "startLocationUpdates")
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-
-        val settings = checkSettings()
-        settings.apply {
+        return client.checkLocationSettings(LocationConfig.createLocationSettingsRequest()).apply {
             addOnSuccessListener {
                 fusedLocationProviderClient.requestLocationUpdates(
-                    locationRequest,
+                    LocationConfig.createLocationRequest(),
                     locationUpdateCallback,
                     Looper.getMainLooper()
                 )
@@ -115,11 +103,21 @@ class LocationService: Service() {
                 isRunning = true
             }
             addOnFailureListener {
-                Log.v(TAG, "Could not start the location service because")
+                Log.v(TAG, "$it\nCould not start the location service.")
                 isRunning = false
             }
         }
+    }
 
+    /**
+     * Starts the location updates.
+     * Precondition: permission to use location services is given.
+     */
+    private fun startLocationUpdates() {
+        Log.v(TAG, "startLocationUpdates")
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+        checkSettings()
     }
 
     /**
@@ -138,8 +136,11 @@ class LocationService: Service() {
      */
     fun isServiceRunning(): Boolean = isRunning
 
-    private fun createNotification(pendingIntent: PendingIntent): Notification {
-        Log.v(TAG, "createNotification")
+    /**
+     * Creates a notification to be always displayed when this [LocationService] is active.
+     */
+    private fun createOngoingForegroundNotification(pendingIntent: PendingIntent): Notification {
+        Log.v(TAG, "createOngoingForegroundNotification")
         val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
         return notificationBuilder
             .setOngoing(true)
@@ -151,14 +152,23 @@ class LocationService: Service() {
             .build()
     }
 
+    /**
+     * Creates the notification channel and publishes the notification created by [createOngoingForegroundNotification].
+     */
     private fun createNotificationChannel() {
         Log.v(TAG, "createNotificationChannel")
 
-        val resultIntent = Intent()
-        val pendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_IMMUTABLE)
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
-        val notification = createNotification(pendingIntent)
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = createOngoingForegroundNotification(pendingIntent)
+
         startForeground(NOTIFICATION_ID, notification)
     }
 
@@ -172,6 +182,7 @@ class LocationService: Service() {
                }
            }
         }
+
         return START_NOT_STICKY
     }
 

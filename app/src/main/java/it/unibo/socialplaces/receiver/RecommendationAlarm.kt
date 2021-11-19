@@ -9,13 +9,13 @@ import android.content.IntentFilter
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.ActivityRecognitionClient
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.service.RecognizedActivity
 import java.util.*
 
 class RecommendationAlarm : BroadcastReceiver() {
     companion object {
         private val TAG: String = RecommendationAlarm::class.qualifiedName!!
-        private const val INTENT_ACTION: String = "activity_recognition"
     }
 
     /**
@@ -75,7 +75,10 @@ class RecommendationAlarm : BroadcastReceiver() {
 
         LocalBroadcastManager
             .getInstance(context)
-            .registerReceiver(recognizedActivityReceiver, IntentFilter(INTENT_ACTION))
+            .registerReceiver(
+                recognizedActivityReceiver,
+                IntentFilter(context.getString(R.string.recognized_ha))
+            )
     }
 
     private fun unregisterReceiver(context: Context){

@@ -12,12 +12,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class RecognizedActivityReceiver(
-    val removeActivityUpdates: () -> Unit,
+class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
     val unregisterReceiver: (Context) -> Unit
 ) : BroadcastReceiver() {
-    private val TAG = RecognizedActivityReceiver::class.qualifiedName!!
+    companion object {
+        private val TAG = RecognizedActivityReceiver::class.qualifiedName!!
+    }
 
+    /**
+     * Map for converting calendar days to integers.
+     */
     private val dayDict = mapOf(
         Calendar.MONDAY to 0,
         Calendar.TUESDAY to 1,
@@ -30,8 +34,9 @@ class RecognizedActivityReceiver(
 
     override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "onReceive")
-        val humanActivity = intent.extras!!.get("type") as String
-        val confidence = intent.extras!!.get("confidence") as Int
+        // TODO Converted generic get() as Type with getType(). Check!
+        val humanActivity = intent.extras!!.getString("type", "")
+        val confidence = intent.extras!!.getInt("confidence", 0)
 
         if (humanActivity == "" || confidence < 75) {
             return
@@ -41,12 +46,13 @@ class RecognizedActivityReceiver(
             (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
         val weekDay = dayDict[Calendar.DAY_OF_WEEK]!!
 
+        // Accessing the last available location.
         val sharedPref = context.getSharedPreferences("sharePlaces",Context.MODE_PRIVATE)?: return
-        val latitude = sharedPref.getFloat("latitude",200.0F).toDouble()
-        val longitude = sharedPref.getFloat("longitude",200.0F).toDouble()
-        Log.v(TAG, "lat $latitude lon $longitude")
+        // Using 200.0F as default value since it is impossible for both latitude and longitude.
+        val latitude = sharedPref.getFloat("latitude", 200.0F).toDouble()
+        val longitude = sharedPref.getFloat("longitude", 200.0F).toDouble()
 
-        if(latitude == 200.0 || longitude == 200.0){
+        if(latitude >= 200 || longitude >= 200){
             return
         }
 
