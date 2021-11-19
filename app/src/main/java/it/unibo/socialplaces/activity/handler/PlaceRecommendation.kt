@@ -32,7 +32,7 @@ class PlaceRecommendation: AppCompatActivity() {
         Log.i(TAG,"Received recommendation for point of interest: $recommendedPlace.")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = getString(R.string.notification_place_recommendation)
+            action = getString(R.string.activity_place_recommendation)
             putExtra("place", recommendedPlace)
             putExtra("notification", true)
         }

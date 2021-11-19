@@ -21,7 +21,7 @@ class FriendRequestAcceptedActivity : AppCompatActivity() {
         Log.i(TAG, "You are now friends with $friendUsername!")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            action = getString(R.string.notification_friend_request_accepted)
+            action = getString(R.string.activity_friend_request_accepted)
             putExtra("friendUsername", friendUsername)
             putExtra("notification", true)
         }

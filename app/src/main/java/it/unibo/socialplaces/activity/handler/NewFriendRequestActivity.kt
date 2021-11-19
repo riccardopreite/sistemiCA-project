@@ -20,7 +20,7 @@ class NewFriendRequestActivity: AppCompatActivity(){
 
         Log.i(TAG,"Friend request from $friendUsername!")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
-            action = getString(R.string.notification_new_friend_request)
+            action = getString(R.string.activity_new_friend_request)
             putExtra("friendUsername", friendUsername)
             putExtra("notification", true)
         }
