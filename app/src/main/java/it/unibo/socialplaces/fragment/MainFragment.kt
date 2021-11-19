@@ -48,9 +48,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
     OnMapReadyCallback,
     GoogleMap.OnMapClickListener,
     GoogleMap.OnMarkerClickListener {
-    // UI
-    private var _binding: FragmentMainBinding? = null
-    private val binding get() = _binding!!
+    /**
+     * Maps the types of points of interest / live events to map marker colors.
+     */
     private val markerColors = mapOf(
         "restaurants" to BitmapDescriptorFactory.HUE_ORANGE,
         "leisure" to BitmapDescriptorFactory.HUE_GREEN,
@@ -58,22 +58,44 @@ class MainFragment : Fragment(R.layout.fragment_main),
         "live" to BitmapDescriptorFactory.HUE_YELLOW
     )
 
+    // UI
+    private var _binding: FragmentMainBinding? = null
+    private val binding get() = _binding!!
+
     // App state
-    private lateinit var poisList: MutableList<PointOfInterest>
-    private lateinit var liveEventsList: MutableList<LiveEvent>
+    private lateinit var poisList: List<PointOfInterest>
+    private lateinit var liveEventsList: List<LiveEvent>
+
+    /**
+     * Marker storage (all markers to be visualized in the Google Maps fragment).
+     */
     private val markers: MutableMap<String, Marker> = emptyMap<String, Marker>().toMutableMap()
 
     private var notificationPoi: PointOfInterest? = null
     private var notificationLive: LiveEvent? = null
-    private var friendUsername: String? = null
+    private var notificationFriendUsername: String? = null
+
+    /**
+     *  Flag controlling whether [notificationFriendUsername] should be used for displaying [FriendsListActivity]
+     *  or [FriendRequestDialogFragment].
+     */
     private var isFriendshipRequest: Boolean = false
     private lateinit var currentLatLng: LatLng
+
+    /**
+     * If `true` then the location on the map UI is not updated, othwerwise it is.
+     */
     private var isShowingDetails: Boolean = false
 
     // API
-    private val geocoder by lazy {
-        Geocoder(this.requireContext())
-    }
+    /**
+     * Geocoder to get marker addresses.
+     */
+    private val geocoder by lazy { Geocoder(this.requireContext()) }
+
+    /**
+     * The map UI in which to paint markers.
+     */
     private lateinit var map: GoogleMap
 
     companion object {
@@ -86,51 +108,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
         private const val ARG_NOTIFICATIONFRIEND = "notificationFriend"
         private const val ARG_NOTIFICATIONISFRIENDREQUEST = "notificationFriendRequest"
 
-        @JvmStatic
-        fun newInstance(
-            poisList: List<PointOfInterest>,
-            liveEventsList: List<LiveEvent>,
-            poi: PointOfInterest?
-        ) =
-            newInstance(poisList,liveEventsList).apply {
-                arguments?.apply {
-                    if (poi != null){
-                        putParcelable(ARG_NOTIFICATIONPOI,poi)
-                    }
-                }
-            }
-
-        @JvmStatic
-        fun newInstance(
-            poisList: List<PointOfInterest>,
-            liveEventsList: List<LiveEvent>,
-            live: LiveEvent?
-        ) =
-            newInstance(poisList,liveEventsList).apply {
-                arguments?.apply {
-                    if (live != null){
-                        putParcelable(ARG_NOTIFICATIONLIVE,live)
-                    }
-                }
-            }
-
-        @JvmStatic
-        fun newInstance(
-            poisList: List<PointOfInterest>,
-            liveEventsList: List<LiveEvent>,
-            friendUsername: String?,
-            isFriendshipRequest: Boolean
-        ) =
-            newInstance(poisList,liveEventsList).apply {
-                arguments?.apply {
-                    if (friendUsername != null){
-                        putString(ARG_NOTIFICATIONFRIEND,friendUsername)
-                    }
-                    putBoolean(ARG_NOTIFICATIONISFRIENDREQUEST,isFriendshipRequest)
-
-                }
-            }
-
+        /**
+         * Creates a new instance of [MainFragment] to be used in the default scenario.
+         */
         @JvmStatic
         fun newInstance(
             poisList: List<PointOfInterest>,
@@ -142,6 +122,56 @@ class MainFragment : Fragment(R.layout.fragment_main),
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
                 }
             }
+
+        /**
+         * Creates a new instance of [MainFragment] to be used when a place recommendation notification
+         * is published.
+         */
+        @JvmStatic
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>,
+            poi: PointOfInterest?
+        ) =
+            newInstance(poisList,liveEventsList).apply {
+                arguments?.apply {
+                    putParcelable(ARG_NOTIFICATIONPOI, poi)
+                }
+            }
+
+        /**
+         * Creates a new instance of [MainFragment] to be used when a new live event notification
+         * is published.
+         */
+        @JvmStatic
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>,
+            live: LiveEvent?
+        ) =
+            newInstance(poisList,liveEventsList).apply {
+                arguments?.apply {
+                    putParcelable(ARG_NOTIFICATIONLIVE, live)
+                }
+            }
+
+        /**
+         * Creates a new instance of [MainFragment] to be used when a new friend request/friend request
+         * accepted notification is published.
+         */
+        @JvmStatic
+        fun newInstance(
+            poisList: List<PointOfInterest>,
+            liveEventsList: List<LiveEvent>,
+            friendUsername: String?,
+            isFriendshipRequest: Boolean
+        ) =
+            newInstance(poisList, liveEventsList).apply {
+                arguments?.apply {
+                    putString(ARG_NOTIFICATIONFRIEND, friendUsername)
+                    putBoolean(ARG_NOTIFICATIONISFRIENDREQUEST, isFriendshipRequest)
+                }
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,26 +179,26 @@ class MainFragment : Fragment(R.layout.fragment_main),
         super.onCreate(savedInstanceState)
         arguments?.let {
             val pArrayPois = it.getParcelableArray(ARG_POISLIST)
-            pArrayPois?.let { p ->
+            poisList = pArrayPois?.let { p ->
                 Log.d(TAG, "Loading poisList from savedInstanceState")
-                poisList = MutableList(p.size) { i -> p[i] as PointOfInterest }
+                List(p.size) { i -> p[i] as PointOfInterest }
             } ?: run {
                 Log.e(TAG, "poisList inside savedInstanceState was null. Loading an emptyList.")
-                poisList = emptyList<PointOfInterest>().toMutableList()
+                emptyList()
             }
 
             val pArrayLive = it.getParcelableArray(ARG_LIVEEVENTSLIST)
-            pArrayLive?.let { p ->
+            liveEventsList = pArrayLive?.let { p ->
                 Log.d(TAG, "Loading liveEventsList from savedInstanceState")
-                liveEventsList = MutableList(p.size) { i -> p[i] as LiveEvent }
+                List(p.size) { i -> p[i] as LiveEvent }
             } ?: run {
                 Log.e(TAG, "liveEventsList inside savedInstanceState was null. Loading an emptyList.")
-                liveEventsList = emptyList<LiveEvent>().toMutableList()
+                emptyList()
             }
 
             notificationPoi = it.getParcelable(ARG_NOTIFICATIONPOI)
             notificationLive = it.getParcelable(ARG_NOTIFICATIONLIVE)
-            friendUsername = it.getString(ARG_NOTIFICATIONFRIEND)
+            notificationFriendUsername = it.getString(ARG_NOTIFICATIONFRIEND)
             isFriendshipRequest = it.getBoolean(ARG_NOTIFICATIONISFRIENDREQUEST)
         }
 
@@ -181,21 +211,23 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
         _binding = FragmentMainBinding.bind(view)
 
+        // Loading the Google Maps fragment.
         val supportMapFragment = childFragmentManager.findFragmentById(binding.googleMaps.id) as SupportMapFragment
         updateMapUI(supportMapFragment)
         supportMapFragment.getMapAsync(this)
+
+        // Loading the Places API search bar.
         val autoCompleteFragment = childFragmentManager.findFragmentById(R.id.places_search_bar) as AutocompleteSupportFragment
         autoCompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME))
 
         // Set up a PlaceSelectionListener to handle the response.
         autoCompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(p0: Place) {
-                // TODO: Get info about the selected place.
+                // TODO: Get location about the selected place and display it on the map.
                 Log.i(TAG, "Place: ${p0.name}, ${p0.id}")
             }
             override fun onError(status: Status) {
-                // TODO: Handle the error.
-                Log.i(TAG, "An error occurred: $status")
+                Log.e(TAG, "An error occurred: $status")
             }
         })
         autoCompleteFragment.view?.let {
@@ -239,14 +271,15 @@ class MainFragment : Fragment(R.layout.fragment_main),
     override fun onMapReady(googleMap: GoogleMap) {
         Log.v(TAG, "OnMapReadyCallback.onMapReady")
         map = googleMap
-        map.setOnMarkerClickListener(this)
-        map.setOnMapClickListener(this)
-        if (
-            ActivityCompat.checkSelfPermission(this.requireContext(),Manifest.permission.ACCESS_FINE_LOCATION)
-            ==
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            map.isMyLocationEnabled = true
+        map.apply {
+            setOnMarkerClickListener(this@MainFragment)
+            setOnMapClickListener(this@MainFragment)
+            isMyLocationEnabled = (
+                ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            )
         }
 
         poisList.forEach {
@@ -269,24 +302,22 @@ class MainFragment : Fragment(R.layout.fragment_main),
             notificationLive = null
         }
 
-        friendUsername?.let {
-            Log.v(TAG,"IS VISIBLE "+this.isVisible)
-            if(isFriendshipRequest){
-                //Crea dialog con dati richiesta amicizia
+        notificationFriendUsername?.let {
+            if(isFriendshipRequest) {
                 val friendRequestDialog = FriendRequestDialogFragment.newInstance(it)
-                Log.v(TAG, friendRequestDialog.toString())
-                activity?.let {a ->
+                activity?.let { a ->
                     friendRequestDialog.show(a.supportFragmentManager, "FriendRequestDialogFragment")
                 }
-            }
-            else{
+            } else {
                 startActivity(Intent(context, FriendsListActivity::class.java))
             }
-
         }
     }
 
-    private fun showNotifiedPoiOrLiveOnMap(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String, shouldCreateMarker: Boolean){
+    /**
+     * Displays a marker in the Google Maps UI.
+     */
+    private fun showNotifiedPoiOrLiveOnMap(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String, shouldCreateMarker: Boolean) {
         if(shouldCreateMarker) {
             createMarker(latitude, longitude, name, address, id, type)
         }
@@ -294,7 +325,6 @@ class MainFragment : Fragment(R.layout.fragment_main),
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude,longitude), 17F))
         markers[id]?.let { onMarkerClick(it) }
     }
-
 
     override fun onMapClick(positionOnMap: LatLng) {
         Log.v(TAG, "GoogleMap.OnMapClickListener.onMapClick")
@@ -306,8 +336,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         val createPoiDialog = address?.let {
-            Log.v(TAG,"Address found:")
-            println(it)
+            Log.i(TAG, "Address has been found, IN-CRE-DI-BLE!!! It is $address.")
             CreatePoiOrLiveDialogFragment.newInstance(
                 positionOnMap.latitude,
                 positionOnMap.longitude,
@@ -316,6 +345,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
                 it.url
             )
         } ?: run {
+            Log.i(TAG, "Address has NOT been found, not surprising...")
             CreatePoiOrLiveDialogFragment.newInstance(positionOnMap.latitude, positionOnMap.longitude)
         }
 
@@ -357,6 +387,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
         return false
     }
 
+    /**
+     * Callback to be invoked when the current location has been updated.
+     * @param location the new location of the user.
+     */
     fun onCurrentLocationUpdated(location: Location) {
         if(!this::map.isInitialized) {
             Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current position.")
@@ -374,6 +408,14 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
+    /**
+     * Approximate location check.
+     * First [pos0] and [pos1] are approximated to the 4th decimal digit and then compared.
+     *
+     * @param pos0 the first location
+     * @param pos1 the second location
+     * @return `true` if the approximated position are equal, `false` otherwise.
+     */
     private fun checkIfPositionsAreEqualApproximated(pos0: LatLng, pos1: LatLng): Boolean {
         val lat0 = "%.4f".format(pos0.latitude).toDouble()
         val lon0 = "%.4f".format(pos0.longitude).toDouble()
@@ -383,6 +425,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
         return lat0 == lat1 && lon0 == lon1
     }
 
+    /**
+     * Force tweak the Google Maps fragment UI.
+     */
     private fun updateMapUI(supportMapFragment: SupportMapFragment) {
         val locationButtonLayoutResource = Integer.parseInt("1")
         val locationButtonResource = Integer.parseInt("2")
@@ -397,6 +442,9 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
+    /**
+     * Displays a marker in the Google Maps fragment.
+     */
     private fun createMarker(latitude: Double, longitude: Double, name: String, address: String, id: String, type: String) {
         val color = markerColors[type.lowercase()] ?: BitmapDescriptorFactory.HUE_RED
 
@@ -435,6 +483,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
             updatePoiAndLive {
                 CoroutineScope(Dispatchers.Main).launch {
+                    // Default behavior
                     poisList.forEach {
                         createMarker(it.latitude, it.longitude, it.name, it.address, it.markId, it.type)
                     }
@@ -442,33 +491,38 @@ class MainFragment : Fragment(R.layout.fragment_main),
                         createMarker(it.latitude, it.longitude, it.name, it.address, it.id, "live")
                     }
 
+                    // If the MainFragment has been pushed for handling a place recommendation notification.
                     notificationPoi?.let {
                         val shouldCreateMarker = !poisList.contains(it)
                         showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,shouldCreateMarker)
                         notificationPoi = null
                     }
 
+                    // If the MainFragment has been pushed for handling a new live event notification.
                     notificationLive?.let {
                         val shouldCreateMarker = !liveEventsList.contains(it)
                         showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",shouldCreateMarker)
                         notificationLive = null
                     }
 
-                    friendUsername?.let {
-                        friendUsername = null
+                    // If the MainFragment has been pushed for handling an new friend request/accepted friend request notification.
+                    notificationFriendUsername?.let {
+                        notificationFriendUsername = null
                     }
                 }
             }
         }
     }
 
+    /**
+     * Retrieves the cached live events and points of interest.
+     * After having done that, they get saved in the bundle and later [thenCallback] is invoked.
+     * @param thenCallback function to be invoked after the data from the cache is retrieved.
+     */
     private fun updatePoiAndLive(thenCallback: () -> Unit = {}) {
         CoroutineScope(Dispatchers.IO).launch {
-            poisList.clear()
-            liveEventsList.clear()
-
-            liveEventsList.addAll(LiveEvents.getLiveEvents())
-            poisList.addAll(PointsOfInterest.getPointsOfInterest())
+            liveEventsList = LiveEvents.getLiveEvents()
+            poisList = PointsOfInterest.getPointsOfInterest()
 
             arguments?.apply {
                 putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
