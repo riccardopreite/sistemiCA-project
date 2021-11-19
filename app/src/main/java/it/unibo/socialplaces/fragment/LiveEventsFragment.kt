@@ -1,5 +1,6 @@
 package it.unibo.socialplaces.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,20 +9,27 @@ import android.widget.ArrayAdapter
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.databinding.FragmentLiveEventsBinding
 import it.unibo.socialplaces.domain.LiveEvents
-import it.unibo.socialplaces.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import java.lang.ClassCastException
 
 class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
+    // Listener
+    interface LiveEventsListener {
+        fun onLiveEventSelected(fragment: Fragment, leName: String)
+    }
+
+    internal lateinit var listener: LiveEventsListener
+
     // UI
     private var _binding: FragmentLiveEventsBinding? = null
     private val binding get() = _binding!!
 
     // App state
-    private lateinit var liveEventsList: MutableList<LiveEvent>
+    private lateinit var liveEventsList: List<LiveEvent>
 
     companion object {
         private val TAG: String = LiveEventsFragment::class.qualifiedName!!
@@ -40,14 +48,15 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
+
         arguments?.let {
             val pArray = it.getParcelableArray(ARG_LIVEEVENTSLIST)
-            pArray?.let { p ->
+            liveEventsList = pArray?.let { p ->
                 Log.d(TAG, "Loading liveEventsList from savedInstanceState")
-                liveEventsList = MutableList(p.size) { i -> p[i] as LiveEvent }
+                List(p.size) { i -> p[i] as LiveEvent }
             } ?: run {
                 Log.e(TAG, "liveEventsList inside savedInstanceState was null. Loading an emptyList.")
-                liveEventsList = emptyList<LiveEvent>().toMutableList()
+                emptyList()
             }
         }
     }
@@ -55,6 +64,7 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
+
         _binding = FragmentLiveEventsBinding.bind(view)
 
         binding.noLiveeventsItems.visibility = if(liveEventsList.isEmpty()) View.VISIBLE else View.INVISIBLE
@@ -63,29 +73,41 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
 
         binding.liveeventsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
 
-        binding.liveeventsListView.setOnItemClickListener { parent, v, position, id ->
+        binding.liveeventsListView.setOnItemClickListener { parent, _, position, _ ->
             val selectedLiveEventName = parent.getItemAtPosition(position) as String
-            val liveEvent = liveEventsList.first { it.name == selectedLiveEventName }
-            val markDialog = LiveEventDetailsDialogFragment.newInstance(liveEvent)
-            activity?.let {
-                markDialog.show(it.supportFragmentManager, "LiveEventDetailsDialogFragment")
-            }
+            listener.onLiveEventSelected(this, selectedLiveEventName)
         }
 
         binding.closeLiveeventsFragment.setOnClickListener {
             activity?.finish()
         }
 
-        binding.refreshLiveeventsListFragment.setOnClickListener{
+        binding.refreshLiveeventsListFragment.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                liveEventsList.clear()
-                liveEventsList.addAll(LiveEvents.getLiveEvents(true))
+                liveEventsList = LiveEvents.getLiveEvents(true)
+
                 CoroutineScope(Dispatchers.Main).launch {
-                    binding.liveeventsListView.adapter = ArrayAdapter(view.context, android.R.layout.simple_list_item_1, liveEventsList.map { it.name })
+                    binding.liveeventsListView.adapter = ArrayAdapter(
+                        view.context,
+                        android.R.layout.simple_list_item_1,
+                        liveEventsList.map { it.name }
+                    )
                 }
             }
 
         }
+    }
+
+    /**
+     * Checks whether [liveEventsList] has only live events which are still available.
+     * Updates the bundle [arguments].
+     */
+    private fun keepOnlyValidLiveEvents() {
+        Log.v(TAG, "keepOnlyValidLiveEvents")
+        val currentSeconds = Clock.System.now().epochSeconds // Seconds from Unix Epoch (UTC)
+        liveEventsList = liveEventsList.filter { it.expirationDate > currentSeconds }
+
+        arguments?.putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
     }
 
     override fun onDestroyView() {
@@ -94,13 +116,14 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
         _binding = null
     }
 
-    private fun keepOnlyValidLiveEvents() {
-        Log.v(TAG, "keepOnlyValidLiveEvents")
-        val currentSeconds = Clock.System.now().epochSeconds // Seconds from Unix Epoch (UTC)
-        val validLiveEvents = liveEventsList.filter { it.expirationDate > currentSeconds }
-        liveEventsList.clear()
-        liveEventsList.addAll(validLiveEvents)
+    override fun onAttach(context: Context) {
+        Log.v(TAG, "onAttach")
+        super.onAttach(context)
 
-        arguments?.putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
+        try {
+            listener = context as LiveEventsListener
+        } catch(e: ClassCastException) {
+            throw ClassCastException("$context must implement LiveEventsListener")
+        }
     }
 }
