@@ -56,14 +56,15 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.v(TAG, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
+
         _binding = FragmentMainMenuBinding.bind(view)
+
         binding.menuNavView.setNavigationItemSelectedListener(this)
 
         /**
          * Launching the service bounding here so [connection] has access to [binding].
          */
-        val bindIntent = Intent(requireContext(), LocationService::class.java)
-        requireContext().bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
+        bindLocationService()
 
         val navBar = binding.menuNavView.getHeaderView(0)
 
@@ -73,14 +74,9 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         val close = navBar.findViewById<ImageView>(R.id.close)
         val locationServiceSwitch = binding.menuNavView.menu.findItem(R.id.location_service_switch).actionView as SwitchCompat
 
-        val userIconUri = Auth.getUserProfileIcon()
-        if(userIconUri != null){
-            // Loading the user icon inside ImageView icon.
-            val picasso = Picasso.get()
-            picasso.load(userIconUri).into(icon)
-            user.text = Auth.getUserFullName()
-            email.text = Auth.getUserEmailAddress()
-        }
+        Auth.getUserProfileIcon()?.let { Picasso.get().load(it).into(icon) }
+        Auth.getUserFullName()?.let { user.text = it }
+        Auth.getUserEmailAddress()?.let { email.text = it }
 
         close.setOnClickListener {
             activity?.supportFragmentManager?.popBackStack()
@@ -119,20 +115,42 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         Log.v(TAG, "onDestroyView")
         super.onDestroyView()
         _binding = null
+        unbindLocationService()
+    }
+
+    /**
+     * Enables the binding between this fragment and the [LocationService].
+     */
+    private fun bindLocationService() {
+        val bindIntent = Intent(requireContext(), LocationService::class.java)
+        requireContext().bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
+    }
+
+    /**
+     * Disables the binding between this fragment and the [LocationService].
+     */
+    private fun unbindLocationService() {
         requireContext().unbindService(connection)
     }
 
+    /**
+     * Starts the location service [LocationService] and binds this fragment to it (therefore initializes
+     * [locationService]).
+     */
     private fun startLocationService() {
         Log.v(MainActivity.TAG, "startLocationService")
         val startIntent = Intent(requireContext(), LocationService::class.java).apply {
             action = LocationService.START_LOCATION_SERVICE
         }
         requireContext().startService(startIntent)
-        val bindIntent = Intent(requireContext(), LocationService::class.java)
-        requireContext().bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
+        bindLocationService()
         Toast.makeText(requireContext(), R.string.location_service_started, Toast.LENGTH_SHORT).show()
     }
 
+    /**
+     * Stops the location service [LocationService] and unbinds this fragment from it (therefore initializes
+     * [locationService]).
+     */
     private fun stopLocationService() {
         Log.v(TAG, "stopLocationService")
         val stopIntent = Intent(requireContext(), LocationService::class.java).apply {
@@ -140,6 +158,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         }
         // startService is correct because of the implementation of LocationService.onStartCommand()
         requireContext().startService(stopIntent)
-        Toast.makeText(requireContext(), R.string.location_service_stopped, Toast.LENGTH_LONG).show()
+        unbindLocationService()
+        Toast.makeText(requireContext(), R.string.location_service_stopped, Toast.LENGTH_SHORT).show()
     }
 }
