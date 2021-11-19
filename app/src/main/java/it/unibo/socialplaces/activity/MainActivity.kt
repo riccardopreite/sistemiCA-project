@@ -217,22 +217,22 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>): MainFragment {
         val mainFragment = if(launchedWithNotificationHandler) {
             when (intent.action) {
-                getString(R.string.notification_place_recommendation) -> {
+                getString(R.string.activity_place_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
                     val poi: PointOfInterest = intent.getParcelableExtra("place")!!
                     MainFragment.newInstance(poisList, leList, poi)
                 }
-                getString(R.string.notification_new_live_event) -> {
+                getString(R.string.activity_new_live_event) -> {
                     Log.i(TAG, "Handling a notification with a new Live Event creation.")
                     val live: LiveEvent = intent.getParcelableExtra("liveEvent")!!
                     MainFragment.newInstance(poisList, leList, live)
                 }
-                getString(R.string.notification_friend_request_accepted) -> {
+                getString(R.string.activity_friend_request_accepted) -> {
                     Log.i(TAG, "Handling a notification with a friend request accepted.")
                     val friend = intent.getStringExtra("friendUsername")!!
                     MainFragment.newInstance(poisList, leList, friend,false)
                 }
-                getString(R.string.notification_new_friend_request) -> {
+                getString(R.string.activity_new_friend_request) -> {
                     Log.i(TAG, "Handling a notification with a new friend request.")
                     val friend = intent.getStringExtra("friendUsername")!!
                     MainFragment.newInstance(poisList, leList, friend,true)
