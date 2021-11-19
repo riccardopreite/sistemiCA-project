@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 
 
-class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) {
+class PointsOfInterestListFragment : Fragment(R.layout.fragment_points_of_interest) {
     // Listener
     interface PointsOfInterestListener {
         fun onPoiSelected(fragment: Fragment, poiName: String)
@@ -33,13 +33,13 @@ class PointsOfInterestFragment : Fragment(R.layout.fragment_points_of_interest) 
     private lateinit var poisList: List<PointOfInterest> // TODO Sostituita con List da MutableList (tanto è comunque di tipo var)
 
     companion object {
-        private val TAG: String = PointsOfInterestFragment::class.qualifiedName!!
+        private val TAG: String = PointsOfInterestListFragment::class.qualifiedName!!
 
         private const val ARG_POISLIST = "poisList"
 
         @JvmStatic
         fun newInstance(pois: List<PointOfInterest>) =
-            PointsOfInterestFragment().apply {
+            PointsOfInterestListFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_POISLIST, pois.toTypedArray())
                 }

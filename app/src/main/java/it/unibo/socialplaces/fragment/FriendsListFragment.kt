@@ -17,13 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ClassCastException
 
-class FriendsFragment : Fragment(R.layout.fragment_friends) {
+class FriendsListFragment : Fragment(R.layout.fragment_friends) {
     // Listener
-    interface FriendsListener {
+    interface FriendsListListener {
         fun onFriendSelected(fragment: Fragment, friendName: String)
     }
 
-    internal lateinit var listener: FriendsListener
+    internal lateinit var listener: FriendsListListener
 
     // UI
     private var _binding: FragmentFriendsBinding? = null
@@ -33,13 +33,13 @@ class FriendsFragment : Fragment(R.layout.fragment_friends) {
     private lateinit var friendsList: List<Friend>
 
     companion object {
-        private val TAG: String = FriendsFragment::class.qualifiedName!!
+        private val TAG: String = FriendsListFragment::class.qualifiedName!!
 
         private const val ARG_FRIENDSLIST = "friendsList"
 
         @JvmStatic
         fun newInstance(friends: List<Friend>) =
-            FriendsFragment().apply {
+            FriendsListFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_FRIENDSLIST, friends.toTypedArray())
                 }
@@ -124,9 +124,9 @@ class FriendsFragment : Fragment(R.layout.fragment_friends) {
         super.onAttach(context)
 
         try {
-            listener = context as FriendsListener
+            listener = context as FriendsListListener
         } catch(e: ClassCastException) {
-            throw ClassCastException("$context must implement FriendsListener")
+            throw ClassCastException("$context must implement FriendsListListener")
         }
     }
 }

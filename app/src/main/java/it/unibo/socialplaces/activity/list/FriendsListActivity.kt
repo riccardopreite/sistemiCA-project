@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.domain.Friends
 import it.unibo.socialplaces.domain.PointsOfInterest
-import it.unibo.socialplaces.fragment.FriendsFragment
+import it.unibo.socialplaces.fragment.FriendsListFragment
 import it.unibo.socialplaces.fragment.dialog.friends.AddFriendDialogFragment
 import it.unibo.socialplaces.fragment.dialog.friends.EliminateFriendDialogFragment
 import it.unibo.socialplaces.fragment.dialog.friends.FriendDialogFragment
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
     AddFriendDialogFragment.AddFriendDialogListener,
-    FriendsFragment.FriendsListener,
+    FriendsListFragment.FriendsListListener,
     FriendDialogFragment.FriendDialogListener,
     FriendPoiDialogFragment.FriendPoiDialogListener,
     EliminateFriendDialogFragment.EliminateFriendDialogListener {
@@ -181,14 +181,17 @@ class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
 
         CoroutineScope(Dispatchers.IO).launch {
             val friendList = Friends.getFriends(forceSync = true)
-            val listFragment = FriendsFragment.newInstance(friendList)
+            val listFragment = FriendsListFragment.newInstance(friendList)
             pushFragment(listFragment)
             CoroutineScope(Dispatchers.Main).launch { snackbar?.dismiss() }
         }
     }
 
+    /**
+     * @see FriendsListFragment.FriendsListListener.onFriendSelected
+     */
     override fun onFriendSelected(fragment: Fragment, friendName: String) {
-        Log.v(TAG, "FriendsFragment.FriendsListener.onFriendSelected")
+        Log.v(TAG, "FriendsListFragment.FriendsListListener.onFriendSelected")
         val friendDialogFragment = FriendDialogFragment.newInstance(friendName)
         friendDialogFragment.show(supportFragmentManager, "FriendDialogFragment")
     }

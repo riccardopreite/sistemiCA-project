@@ -9,7 +9,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.domain.LiveEvents
-import it.unibo.socialplaces.fragment.LiveEventsFragment
+import it.unibo.socialplaces.fragment.LiveEventsListFragment
 import it.unibo.socialplaces.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class LiveEventsListActivity: it.unibo.socialplaces.activity.ListActivity(),
     LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener,
-    LiveEventsFragment.LiveEventsListener {
+    LiveEventsListFragment.LiveEventsListener {
 
     companion object {
         private val TAG: String = LiveEventsListActivity::class.qualifiedName!!
@@ -28,16 +28,16 @@ class LiveEventsListActivity: it.unibo.socialplaces.activity.ListActivity(),
         super.onCreate(savedInstanceState)
         CoroutineScope(Dispatchers.IO).launch {
             val liveEventsList = LiveEvents.getLiveEvents(true)
-            val liveEventsFragment = LiveEventsFragment.newInstance(liveEventsList)
+            val liveEventsFragment = LiveEventsListFragment.newInstance(liveEventsList)
             pushFragment(liveEventsFragment)
         }
     }
 
     /**
-     * @see LiveEventsFragment.LiveEventsListener.onLiveEventSelected
+     * @see LiveEventsListFragment.LiveEventsListener.onLiveEventSelected
      */
     override fun onLiveEventSelected(fragment: Fragment, leName: String) {
-        Log.v(TAG, "LiveEventsFragment.LiveEventsListener.onLiveEventSelected")
+        Log.v(TAG, "LiveEventsListFragment.LiveEventsListener.onLiveEventSelected")
         CoroutineScope(Dispatchers.IO).launch {
             val liveEvents = LiveEvents.getLiveEvents()
             val selectedLive = liveEvents.first { it.name == leName } // It surely exists.

@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import java.lang.ClassCastException
 
-class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
+class LiveEventsListFragment : Fragment(R.layout.fragment_live_events) {
     // Listener
     interface LiveEventsListener {
         fun onLiveEventSelected(fragment: Fragment, leName: String)
@@ -32,13 +32,13 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
     private lateinit var liveEventsList: List<LiveEvent>
 
     companion object {
-        private val TAG: String = LiveEventsFragment::class.qualifiedName!!
+        private val TAG: String = LiveEventsListFragment::class.qualifiedName!!
 
         private const val ARG_LIVEEVENTSLIST = "liveEventsList"
 
         @JvmStatic
         fun newInstance(liveEvents: List<LiveEvent>) =
-            LiveEventsFragment().apply {
+            LiveEventsListFragment().apply {
                 arguments = Bundle().apply {
                     putParcelableArray(ARG_LIVEEVENTSLIST, liveEvents.toTypedArray())
                 }
@@ -94,7 +94,6 @@ class LiveEventsFragment : Fragment(R.layout.fragment_live_events) {
                     )
                 }
             }
-
         }
     }
 

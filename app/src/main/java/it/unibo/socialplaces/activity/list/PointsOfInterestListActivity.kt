@@ -9,7 +9,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.domain.PointsOfInterest
-import it.unibo.socialplaces.fragment.PointsOfInterestFragment
+import it.unibo.socialplaces.fragment.PointsOfInterestListFragment
 import it.unibo.socialplaces.fragment.dialog.pointsofinterest.EliminatePointOfInterestDialogFragment
 import it.unibo.socialplaces.fragment.dialog.pointsofinterest.PoiDetailsDialogFragment
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 
 class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(),
     EliminatePointOfInterestDialogFragment.EliminatePointOfInterestDialogListener,
-    PointsOfInterestFragment.PointsOfInterestListener,
+    PointsOfInterestListFragment.PointsOfInterestListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener {
     companion object {
         private val TAG: String = PointsOfInterestListActivity::class.qualifiedName!!
@@ -95,10 +95,10 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
     }
 
     /**
-     * @see PointsOfInterestFragment.PointsOfInterestListener.onPoiSelected
+     * @see PointsOfInterestListFragment.PointsOfInterestListener.onPoiSelected
      */
     override fun onPoiSelected(fragment: Fragment, poiName: String) {
-        Log.v(TAG, "PointsOfInterestFragment.PointsOfInterestListener.onPoiSelected")
+        Log.v(TAG, "PointsOfInterestListFragment.PointsOfInterestListener.onPoiSelected")
         CoroutineScope(Dispatchers.IO).launch {
             val pois = PointsOfInterest.getPointsOfInterest()
             val selectedPoi = pois.first { it.name == poiName } // It surely exists.
@@ -138,13 +138,13 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
     }
 
     /**
-     * Retrieves the list of points of interest and pushes the [PointsOfInterestFragment].
+     * Retrieves the list of points of interest and pushes the [PointsOfInterestListFragment].
      */
     private fun updatePoisList() {
         Log.v(TAG,"updatePoisList")
         CoroutineScope(Dispatchers.IO).launch {
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
-            val poisFragment = PointsOfInterestFragment.newInstance(poisList)
+            val poisFragment = PointsOfInterestListFragment.newInstance(poisList)
             pushFragment(poisFragment)
         }
     }

@@ -7,7 +7,7 @@
     android:background="#FAF6F6"
     android:fitsSystemWindows="true"
     android:tag="LiveEventsFragment"
-    tools:context="fragment.LiveEventsFragment">
+    tools:context="fragment.LiveEventsListFragment">
 
     <ImageView
         android:id="@+id/close_liveevents_fragment"
