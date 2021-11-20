@@ -15,6 +15,7 @@ import java.lang.ClassCastException
 import java.lang.IllegalStateException
 
 class AddFriendDialogFragment: DialogFragment() {
+    // Listener
     interface AddFriendDialogListener {
         fun sendFriendshipRequest(dialog: DialogFragment, username: String)
     }
@@ -40,12 +41,13 @@ class AddFriendDialogFragment: DialogFragment() {
                     Toast.makeText(context, R.string.empty_username, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
-                if(userEmail.split("@")[0] == Auth.getUsername()) {
+                val friendUsername = userEmail.split("@")[0]
+                if(friendUsername == Auth.getUsername()) {
                     Toast.makeText(context, R.string.no_request_to_oneself, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
-                listener.sendFriendshipRequest(this, userEmail.split("@")[0])
+                listener.sendFriendshipRequest(this, friendUsername)
             }
 
             builder.setView(dialogView)

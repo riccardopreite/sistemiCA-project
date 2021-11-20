@@ -53,8 +53,8 @@ class FriendDialogFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         Log.v(TAG, "onCreateDialog")
-        return activity?.let {
-            val builder = AlertDialog.Builder(it)
+        return activity?.let { activity ->
+            val builder = AlertDialog.Builder(activity)
             val inflater = requireActivity().layoutInflater
             val dialogView = inflater.inflate(R.layout.dialog_friend, null)
             val friendNameTv = dialogView.findViewById<TextView>(R.id.show_friend_name)
@@ -73,7 +73,7 @@ class FriendDialogFragment: DialogFragment() {
 
                 CoroutineScope(Dispatchers.Main).launch {
                     poisSpinner.adapter = ArrayAdapter(
-                        it,
+                        activity,
                         R.layout.support_simple_spinner_dropdown_item,
                         poiNamesList
                     )

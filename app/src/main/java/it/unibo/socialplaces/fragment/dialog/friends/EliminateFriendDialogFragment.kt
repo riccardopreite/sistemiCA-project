@@ -52,34 +52,34 @@ class EliminateFriendDialogFragment: DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         Log.v(TAG, "onCreateDialog")
-        return activity?.let {
-            val builder = AlertDialog.Builder(it)
+        return activity?.let { activity ->
+            val builder = AlertDialog.Builder(activity)
             val inflater = requireActivity().layoutInflater
             val dialogView = inflater.inflate(R.layout.dialog_eliminate_item, null)
             val deleteBtn = dialogView.findViewById<Button>(R.id.delete_item)
 
-            deleteBtn.setOnClickListener { v ->
-                friendUsername?.let { friend ->
-                    listener.onDeleteButtonPressed(this, friend)
+            deleteBtn.setOnClickListener { _ ->
+                friendUsername?.let {
+                    listener.onDeleteButtonPressed(this, it)
 
                     val snackbar = Snackbar.make(
-                        it.findViewById(android.R.id.content),
+                        activity.findViewById(android.R.id.content),
                         R.string.removed_friend,
                         5000
-                    ).setAction(R.string.cancel) {
+                    ).setAction(R.string.cancel) { view ->
                         listener.onCancelDeletionButtonPressed(this@EliminateFriendDialogFragment)
-                        Toast.makeText(it.context, R.string.canceled_removal, Toast.LENGTH_LONG)
-                            .show()
-                    }
-                    snackbar.setActionTextColor(Color.DKGRAY)
-                    snackbar.view.setBackgroundColor(Color.BLACK)
+                        Toast.makeText(view.context, R.string.canceled_removal, Toast.LENGTH_LONG).show()
+                    }.apply {
+                        setActionTextColor(Color.DKGRAY)
+                        view.setBackgroundColor(Color.BLACK)
 
-                    snackbar.addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                        override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                            super.onDismissed(transientBottomBar, event)
-                            listener.onDeletionConfirmation(this@EliminateFriendDialogFragment)
-                        }
-                    })
+                        addCallback(object : BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                            override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                                super.onDismissed(transientBottomBar, event)
+                                listener.onDeletionConfirmation(this@EliminateFriendDialogFragment)
+                            }
+                        })
+                    }
 
                     snackbar.show()
                 }
