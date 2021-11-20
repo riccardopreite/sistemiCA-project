@@ -227,7 +227,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 getString(R.string.activity_place_validity_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
                     val poi: PointOfInterest = intent.getParcelableExtra("place")!!
-                    MainFragment.newInstance(poisList, leList, poi)
+                    MainFragment.newInstance(poisList, leList, poi, getString(R.string.activity_place_validity_recommendation))
+                }
+                getString(R.string.activity_place_validity_recommendation) -> {
+                    Log.i(TAG, "Handling a notification with a validity Point of Interest recommendation.")
+                    val poi: PointOfInterest = intent.getParcelableExtra("place")!!
+                    MainFragment.newInstance(poisList, leList, poi, getString(R.string.activity_place_validity_recommendation))
                 }
                 getString(R.string.activity_new_live_event) -> {
                     Log.i(TAG, "Handling a notification with a new Live Event creation.")

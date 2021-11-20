@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import it.unibo.socialplaces.R
-import it.unibo.socialplaces.config.Auth
 import it.unibo.socialplaces.domain.Recommendation
 import it.unibo.socialplaces.model.recommendation.PlaceRequest
 import it.unibo.socialplaces.model.recommendation.ValidationRequest
