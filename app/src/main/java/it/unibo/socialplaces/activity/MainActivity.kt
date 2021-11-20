@@ -170,7 +170,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 val poisList = PointsOfInterest.getPointsOfInterest()
                 val leList = LiveEvents.getLiveEvents()
 
-                val mainFragment = buildMainFragment(poisList, leList)
+                val mainFragment = buildMainFragment(poisList, leList,launchedWithNotificationHandler)
+                launchedWithNotificationHandler = false
                 CoroutineScope(Dispatchers.Main).launch {
                     supportFragmentManager.beginTransaction().apply {
                         replace(R.id.main_fragment, mainFragment)
@@ -189,15 +190,20 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      */
     private fun fetchPoisAndLiveEvents() {
         Log.v(TAG, "fetchPoisAndLiveEvents")
+        if (!launchedWithNotificationHandler) {
+            launchedWithNotificationHandler = intent.getBooleanExtra("notification",false)
+            intent.removeExtra("notification")
+        }
+
+        val handlingNotificationInFetching = launchedWithNotificationHandler
+        launchedWithNotificationHandler = false
+
         CoroutineScope(Dispatchers.IO).launch {
-            if (!launchedWithNotificationHandler) {
-                launchedWithNotificationHandler = intent.getBooleanExtra("notification",false)
-                intent.removeExtra("notification")
-            }
+
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
             val leList = LiveEvents.getLiveEvents(forceSync = true)
 
-            val mainFragment = buildMainFragment(poisList, leList)
+            val mainFragment = buildMainFragment(poisList, leList,handlingNotificationInFetching)
             CoroutineScope(Dispatchers.Main).launch {
                 supportFragmentManager.beginTransaction().apply {
                     replace(R.id.main_fragment, mainFragment)
@@ -205,6 +211,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                     commit()
                 }
             }
+
         }
     }
 
@@ -214,8 +221,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      * Initializes [onLocationUpdated] and then sets [launchedWithNotificationHandler] to `false`.
      * @return [MainFragment] instance
      */
-    private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>): MainFragment {
-        val mainFragment = if(launchedWithNotificationHandler) {
+    private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>,handlingNotificationInFetching: Boolean): MainFragment {
+        val mainFragment = if(handlingNotificationInFetching) {
             when (intent.action) {
                 getString(R.string.activity_place_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
@@ -248,7 +255,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
 
         onLocationUpdated = mainFragment::onCurrentLocationUpdated
-        launchedWithNotificationHandler = false
 
         return mainFragment
     }

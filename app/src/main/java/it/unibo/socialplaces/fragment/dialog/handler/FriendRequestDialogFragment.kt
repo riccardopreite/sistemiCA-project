@@ -2,6 +2,7 @@ package it.unibo.socialplaces.fragment.dialog.handler
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
@@ -13,7 +14,7 @@ import java.lang.IllegalStateException
 
 class FriendRequestDialogFragment: DialogFragment() {
     private var friendUsername: String = ""
-
+    private var isRequestAccepted: Boolean = false
     companion object {
         private const val FRIENDUSERNAME = "friendUsername"
 
@@ -45,18 +46,12 @@ class FriendRequestDialogFragment: DialogFragment() {
             builder.setMessage("$friendUsername sent you a frienship request.")
 
             builder.setPositiveButton("Accept") { dialog, _ ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    Friends.confirmFriend(friendUsername)
-                    Log.i(TAG, "Friend request accepted!")
-                    dialog.dismiss()
-                }
+                isRequestAccepted = true
+                dialog.dismiss()
             }
             builder.setNegativeButton("Deny") { dialog, _ ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    Friends.denyFriend(friendUsername)
-                    Log.i(TAG, "Friend request accepted!")
-                    dialog.dismiss()
-                }
+                isRequestAccepted = false
+                dialog.dismiss()
             }
             isCancelable = false
             val dialog = builder.create()
@@ -65,6 +60,20 @@ class FriendRequestDialogFragment: DialogFragment() {
             dialog.setCanceledOnTouchOutside(false)
             return dialog
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (isRequestAccepted) {
+                Friends.confirmFriend(friendUsername)
+                Log.i(TAG, "Friend request accepted!")
+            } else {
+                Friends.denyFriend(friendUsername)
+                Log.i(TAG, "Friend request denied!")
+            }
+        }
+
     }
 
 
