@@ -45,7 +45,7 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
         }
 
         // Accessing the last available location.
-        val sharedPrefLocation = context.getSharedPreferences("sharePlacesLocation",Context.MODE_PRIVATE)?: return
+        val sharedPrefLocation = context.getSharedPreferences(context.getString(R.string.location_preference),Context.MODE_PRIVATE)?: return
         // Using 200.0F as default value since it is impossible for both latitude and longitude.
         val latitude = sharedPrefLocation.getFloat("latitude", 200.0F).toDouble()
         val longitude = sharedPrefLocation.getFloat("longitude", 200.0F).toDouble()
@@ -62,8 +62,8 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
 
         val sharePreferenceFile =
             when(action){
-                context.getString(R.string.alarm_recommendation) -> "sharePlacesRecommendation"
-                context.getString(R.string.geofence_recommendation) -> "sharePlacesGeofence"
+                context.getString(R.string.alarm_recommendation) -> context.getString(R.string.recommendation_preference)
+                context.getString(R.string.geofence_recommendation) -> context.getString(R.string.validity_preference)
                 else -> ""
             }
         if(sharePreferenceFile == ""){
@@ -76,7 +76,6 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
         with (sharedPrefAlarmOrGeofence.edit()) {
             putFloat("latitude", latitude.toFloat())
             putFloat("longitude", longitude.toFloat())
-            putString("user", Auth.getUsername()!!)
             putString("humanActivity", humanActivity)
             putInt("secondsInDay", secondsInDay)
             putInt("weekDay", weekDay)

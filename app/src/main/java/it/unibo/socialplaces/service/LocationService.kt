@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import it.unibo.socialplaces.R
 
 class LocationService: Service() {
     // Listener
@@ -72,7 +73,7 @@ class LocationService: Service() {
             listener?.onLocationChanged(this@LocationService, lastLocation)
             // Storing the location inside Android's Shared Preferences in order to
             // access it in other background tasks.
-            val sharedPrefLocation = getSharedPreferences("sharePlacesLocation", Context.MODE_PRIVATE)?: return
+            val sharedPrefLocation = getSharedPreferences(getString(R.string.location_preference), Context.MODE_PRIVATE)?: return
             with (sharedPrefLocation.edit()) {
                 putFloat("latitude", lastLocation.latitude.toFloat())
                 putFloat("longitude", lastLocation.longitude.toFloat())

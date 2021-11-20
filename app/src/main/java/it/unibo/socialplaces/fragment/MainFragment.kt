@@ -76,6 +76,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
     private var notificationPoi: PointOfInterest? = null
     private var notificationLive: LiveEvent? = null
     private var notificationFriendUsername: String? = null
+    private var recommendationType: String? = null
 
     /**
      *  Flag controlling whether [notificationFriendUsername] should be used for displaying [FriendsListActivity]
@@ -109,6 +110,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         private const val ARG_NOTIFICATIONLIVE = "notificationLive"
         private const val ARG_NOTIFICATIONFRIEND = "notificationFriend"
         private const val ARG_NOTIFICATIONISFRIENDREQUEST = "notificationFriendRequest"
+        private const val ARG_RECOMMENDATIONTYPE = "recommendationType"
 
         /**
          * Creates a new instance of [MainFragment] to be used in the default scenario.
@@ -133,11 +135,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
         fun newInstance(
             poisList: List<PointOfInterest>,
             liveEventsList: List<LiveEvent>,
-            poi: PointOfInterest?
+            poi: PointOfInterest?,
+            recommendationType : String
         ) =
             newInstance(poisList,liveEventsList).apply {
                 arguments?.apply {
                     putParcelable(ARG_NOTIFICATIONPOI, poi)
+                    putString(ARG_RECOMMENDATIONTYPE, recommendationType)
                 }
             }
 
@@ -202,6 +206,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
             notificationLive = it.getParcelable(ARG_NOTIFICATIONLIVE)
             notificationFriendUsername = it.getString(ARG_NOTIFICATIONFRIEND)
             isFriendshipRequest = it.getBoolean(ARG_NOTIFICATIONISFRIENDREQUEST)
+            recommendationType = it.getString(ARG_RECOMMENDATIONTYPE)
         }
 
         Places.initialize(requireContext(), getString(R.string.places_api))
@@ -367,39 +372,49 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
             val foundPoi = poisList.filter { it.markId == markerId }
             if(foundPoi.isNotEmpty()) {
-                val sharedPref = context?.getSharedPreferences("sharePlaces", Context.MODE_PRIVATE)
-
-                sharedPref?.let { shared ->
-                    val latitude = shared.getFloat("latitude", 200.0F).toDouble()
-                    val longitude = shared.getFloat("longitude", 200.0F).toDouble()
-                    val user = shared.getString("user", "")
-                    val humanActivity = shared.getString("humanActivity", "")
-                    val secondsInDay = shared.getInt("secondsInDay", 0)
-                    val weekDay = shared.getInt("weekDay",0)
-                    val placeCategory = foundPoi[0].type
-
-                    val validationRequest = ValidationRequest(
-                        user = user!!,
-                        latitude=latitude,
-                        longitude = longitude,
-                        human_activity = humanActivity!!,
-                        seconds_in_day = secondsInDay,
-                        week_day = weekDay,
-                        place_category = placeCategory
-                    )
-                    Log.v(TAG, "VALIDATION REQUEST\n $validationRequest")
-                    val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0],validationRequest)
-                    poiDetailFragment.setOnDismissCallback { isShowingDetails = false }
-
-                    activity?.let {
-                        poiDetailFragment.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
+                val recommendationFile =
+                    when(recommendationType){
+                        getString(R.string.activity_place_validity_recommendation) -> getString(R.string.recommendation_preference)
+                        getString(R.string.activity_place_place_recommendation) -> getString(R.string.recommendation_preference)
+                        else -> ""
                     }
+                val sharedPrefRecommendation =
+                    context?.getSharedPreferences(recommendationFile, Context.MODE_PRIVATE)
+
+                val validationRequest =
+                    if (sharedPrefRecommendation != null) {
+                        val latitude = sharedPrefRecommendation.getFloat("latitude", 200.0F).toDouble()
+                        val longitude = sharedPrefRecommendation.getFloat("longitude", 200.0F).toDouble()
+                        val humanActivity = sharedPrefRecommendation.getString("humanActivity", "")
+                        val secondsInDay = sharedPrefRecommendation.getInt("secondsInDay", 0)
+                        val weekDay = sharedPrefRecommendation.getInt("weekDay", 0)
+                        val placeCategory = foundPoi[0].type
+
+                        with(sharedPrefRecommendation.edit()) {
+                            clear()
+                            apply()
+                        }
+                        if (latitude >= 200 || longitude >= 200) { null }
+                        else {
+                            ValidationRequest(
+                                latitude = latitude,
+                                longitude = longitude,
+                                human_activity = humanActivity!!,
+                                seconds_in_day = secondsInDay,
+                                week_day = weekDay,
+                                place_category = placeCategory
+                            )
+                        }
+                    }
+                    else { null }
+
+                val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0], validationRequest)
+
+                poiDetailFragment.setOnDismissCallback { isShowingDetails = false }
+
+                activity?.let {
+                    poiDetailFragment.show(it.supportFragmentManager,"PoiDetailsDialogFragment")
                 }
-
-
-
-
-
             }
 
             val foundLiveEvent = liveEventsList.filter { it.id == markerId }

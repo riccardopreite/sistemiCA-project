@@ -224,7 +224,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>,handlingNotificationInFetching: Boolean): MainFragment {
         val mainFragment = if(handlingNotificationInFetching) {
             when (intent.action) {
-                getString(R.string.activity_place_recommendation) -> {
+                getString(R.string.activity_place_validity_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
                     val poi: PointOfInterest = intent.getParcelableExtra("place")!!
                     MainFragment.newInstance(poisList, leList, poi)
