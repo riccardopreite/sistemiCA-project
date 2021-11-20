@@ -18,21 +18,8 @@ import java.lang.IllegalStateException
 import java.time.format.TextStyle
 
 class LiveEventDetailsDialogFragment : DialogFragment() {
-    // Listener
-    interface LiveEventDetailsDialogListener {
-        fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent)
-        fun onRouteButtonPressed(dialog: DialogFragment, address: String)
-    }
-
-    internal lateinit var listener: LiveEventDetailsDialogListener
-
-    private lateinit var onDismissCallback: () -> Unit
-
-    // App state
-    private lateinit var liveEvent: LiveEvent
-
     companion object {
-        private val TAG = LiveEventDetailsDialogFragment::class.qualifiedName
+        private val TAG = LiveEventDetailsDialogFragment::class.qualifiedName!!
 
         private const val ARG_LIVEEVENT = "liveEvent"
 
@@ -45,7 +32,27 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
             }
     }
 
-    fun setOnDismissCallback(onDismissCallback:() -> Unit) {
+    // Listener
+    interface LiveEventDetailsDialogListener {
+        fun onShareButtonPressed(dialog: DialogFragment, liveEvent: LiveEvent)
+        fun onRouteButtonPressed(dialog: DialogFragment, address: String)
+    }
+
+    internal lateinit var listener: LiveEventDetailsDialogListener
+
+    // App state
+    private lateinit var liveEvent: LiveEvent
+
+    /**
+     * Callback to be invoked after the dialog has been closed.
+     */
+    private lateinit var onDismissCallback: () -> Unit
+
+    /**
+     * Sets a callback to be invoked when the dialog gets dismissed.
+     * @param onDismissCallback the callback to invoke.
+     */
+    fun setOnDismissCallback(onDismissCallback: () -> Unit) {
         this.onDismissCallback = onDismissCallback
     }
 
@@ -102,6 +109,7 @@ class LiveEventDetailsDialogFragment : DialogFragment() {
     }
 
     override fun onDismiss(dialog: DialogInterface) {
+        Log.v(TAG, "onDismiss")
         super.onDismiss(dialog)
         if(this::onDismissCallback.isInitialized){
             onDismissCallback()

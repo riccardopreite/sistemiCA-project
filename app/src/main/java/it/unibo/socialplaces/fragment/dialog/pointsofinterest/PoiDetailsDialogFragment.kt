@@ -16,20 +16,6 @@ import android.content.DialogInterface
 
 
 class PoiDetailsDialogFragment : DialogFragment() {
-    // Listener
-    interface PoiDetailsDialogListener {
-        fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest)
-        fun onRouteButtonPressed(dialog: DialogFragment, address: String)
-    }
-
-    internal lateinit var listener: PoiDetailsDialogListener
-
-
-    private lateinit var onDismissCallback: () -> Unit
-
-    // App state
-    private lateinit var poi: PointOfInterest
-
     companion object {
         private val TAG = PoiDetailsDialogFragment::class.qualifiedName
 
@@ -44,7 +30,26 @@ class PoiDetailsDialogFragment : DialogFragment() {
 
             }
     }
+    // Listener
+    interface PoiDetailsDialogListener {
+        fun onShareButtonPressed(dialog: DialogFragment, poi: PointOfInterest)
+        fun onRouteButtonPressed(dialog: DialogFragment, address: String)
+    }
 
+    internal lateinit var listener: PoiDetailsDialogListener
+
+    // App state
+    private lateinit var poi: PointOfInterest
+
+    /**
+     * Callback to be invoked after the dialog has been closed.
+     */
+    private lateinit var onDismissCallback: () -> Unit
+
+    /**
+     * Sets a callback to be invoked when the dialog gets dismissed.
+     * @param onDismissCallback the callback to invoke.
+     */
     fun setOnDismissCallback(onDismissCallback:() -> Unit) {
         this.onDismissCallback = onDismissCallback
     }
@@ -107,5 +112,4 @@ class PoiDetailsDialogFragment : DialogFragment() {
         }
 
     }
-
 }

@@ -40,7 +40,7 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
     private var phoneNumber: String ?= null
 
     companion object {
-        private val TAG = CreatePoiOrLiveDialogFragment::class.qualifiedName
+        private val TAG = CreatePoiOrLiveDialogFragment::class.qualifiedName!!
 
         private const val ARG_LATITUDE = "latitude"
         private const val ARG_LONGITUDE = "longitude"
@@ -194,6 +194,12 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 
+    /**
+     * Displays a red line under one of the EditTexts of the poi/live event when an error
+     * occurs.
+     * @param editText the field that gets the error displayed.
+     * @param displayedMessage the messaget to display.
+     */
     private fun displayInsertedDataError(editText: EditText, displayedMessage: String) {
         CoroutineScope(Dispatchers.Main).launch {
             editText.background.mutate().apply {

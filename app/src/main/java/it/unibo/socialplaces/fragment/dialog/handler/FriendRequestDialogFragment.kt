@@ -13,27 +13,31 @@ import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 
 class FriendRequestDialogFragment: DialogFragment() {
-    private var friendUsername: String = ""
+    private lateinit var friendUsername: String
     private var isRequestAccepted: Boolean = false
+
     companion object {
-        private const val FRIENDUSERNAME = "friendUsername"
+        private val TAG: String = FriendRequestDialogFragment::class.qualifiedName!!
+
+        private const val ARG_FRIENDUSERNAME = "friendUsername"
+        private const val ARG_REQUESTACCEPTED = "isRequestAccepted"
 
         @JvmStatic
-        fun newInstance(friendUsername:String) =
+        fun newInstance(friendUsername: String) =
             FriendRequestDialogFragment().apply {
                 arguments = Bundle().apply {
-                    putString(FRIENDUSERNAME, friendUsername)
+                    putString(ARG_FRIENDUSERNAME, friendUsername)
+                    putBoolean(ARG_REQUESTACCEPTED, false)
                 }
             }
-
-        private val TAG: String = FriendRequestDialogFragment::class.qualifiedName!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
         arguments?.let {
-            friendUsername = it.getString(FRIENDUSERNAME)!!
+            friendUsername = it.getString(ARG_FRIENDUSERNAME, "")
+            isRequestAccepted = it.getBoolean(ARG_REQUESTACCEPTED, false)
         }
     }
 
@@ -55,14 +59,30 @@ class FriendRequestDialogFragment: DialogFragment() {
             }
             isCancelable = false
             val dialog = builder.create()
-
-
             dialog.setCanceledOnTouchOutside(false)
+
             return dialog
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        Log.v(TAG, "onSaveInstanceState")
+        super.onSaveInstanceState(outState)
+        outState.putString(ARG_FRIENDUSERNAME, friendUsername)
+        outState.putBoolean(ARG_REQUESTACCEPTED, isRequestAccepted)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        Log.v(TAG, "onViewStateRestored")
+        super.onViewStateRestored(savedInstanceState)
+        savedInstanceState?.let {
+            friendUsername = it.getString(ARG_FRIENDUSERNAME, "")
+            isRequestAccepted = it.getBoolean(ARG_REQUESTACCEPTED, false)
+        }
+    }
+
     override fun onDismiss(dialog: DialogInterface) {
+        Log.v(TAG, "onDismiss")
         super.onDismiss(dialog)
         CoroutineScope(Dispatchers.IO).launch {
             if (isRequestAccepted) {
@@ -73,8 +93,5 @@ class FriendRequestDialogFragment: DialogFragment() {
                 Log.i(TAG, "Friend request denied!")
             }
         }
-
     }
-
-
 }
