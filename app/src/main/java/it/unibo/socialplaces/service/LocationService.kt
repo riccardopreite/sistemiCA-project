@@ -72,8 +72,8 @@ class LocationService: Service() {
             listener?.onLocationChanged(this@LocationService, lastLocation)
             // Storing the location inside Android's Shared Preferences in order to
             // access it in other background tasks.
-            val sharedPref = getSharedPreferences("sharePlaces", Context.MODE_PRIVATE)?: return
-            with (sharedPref.edit()) {
+            val sharedPrefLocation = getSharedPreferences("sharePlacesLocation", Context.MODE_PRIVATE)?: return
+            with (sharedPrefLocation.edit()) {
                 putFloat("latitude", lastLocation.latitude.toFloat())
                 putFloat("longitude", lastLocation.longitude.toFloat())
                 apply()

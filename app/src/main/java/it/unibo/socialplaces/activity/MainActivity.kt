@@ -488,8 +488,9 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, RecommendationAlarm::class.java)
+        alarmIntent.action = getString(R.string.alarm_recommendation)
 
-        val recommendationIntent = PendingIntent.getBroadcast(
+        val recommendationBroadcast = PendingIntent.getBroadcast(
             this,
             0,
             alarmIntent,
@@ -501,7 +502,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             Clock.System.now().toEpochMilliseconds() + 10, // Only while developing
 //            AlarmManager.INTERVAL_HOUR * 3,
             AlarmManager.INTERVAL_HOUR * 3,
-            recommendationIntent
+            recommendationBroadcast
         )
     }
 

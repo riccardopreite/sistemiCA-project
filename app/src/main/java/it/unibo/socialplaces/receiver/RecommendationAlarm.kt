@@ -11,7 +11,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.ActivityRecognitionClient
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.service.RecognizedActivity
-import java.util.*
 
 class RecommendationAlarm : BroadcastReceiver() {
     companion object {
@@ -34,7 +33,7 @@ class RecommendationAlarm : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "Alarm just fired")
 
-        initARClientAndIntents(context.applicationContext)
+        initARClientAndIntents(context.applicationContext, intent.action!!)
         registerReceiver(context.applicationContext)
 
         setActivityUpdates()
@@ -46,12 +45,16 @@ class RecommendationAlarm : BroadcastReceiver() {
      */
 
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun initARClientAndIntents(context: Context) {
+    private fun initARClientAndIntents(context: Context, action: String) {
         if(!this::recommendPendingIntent.isInitialized) {
+
+            val activityRecognitionIntent = Intent(context, RecognizedActivity::class.java)
+            activityRecognitionIntent.action = action
+
             recommendPendingIntent = PendingIntent.getService(
                 context,
                 1,
-                Intent(context, RecognizedActivity::class.java),
+                activityRecognitionIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
         }

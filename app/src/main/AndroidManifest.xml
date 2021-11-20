@@ -32,6 +32,9 @@
         <receiver android:name=".receiver.RecommendationAlarm"
             android:enabled="true" />
 
+        <receiver android:name=".receiver.GeofenceBroadcastReceiver"
+            android:enabled="true" />
+
         <!-- Services -->
         <service
             android:name=".service.RecognizedActivity"

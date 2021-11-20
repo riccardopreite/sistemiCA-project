@@ -1,7 +1,7 @@
 package it.unibo.socialplaces.model.recommendation
 
 data class PlaceRequest (
-    val user: String,
+    val user: String = "",
     val latitude: Double,
     val longitude: Double,
     val human_activity: String,
