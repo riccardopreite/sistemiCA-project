@@ -1,10 +1,10 @@
 package it.unibo.socialplaces.model.recommendation
 
 data class PlaceRequest (
-    var user: String = "",
-    var latitude: Double =0.0,
-    var longitude: Double = 0.0,
-    var human_activity: String = "",
-    var seconds_in_day: Int = 0,
-    var week_day: Int = 0
+    val user: String,
+    val latitude: Double,
+    val longitude: Double,
+    val human_activity: String,
+    val seconds_in_day: Int,
+    val week_day: Int
 )

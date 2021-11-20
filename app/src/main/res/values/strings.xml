@@ -8,6 +8,11 @@
         <item>Live event</item>
     </string-array>
 
+    <string name="recommendation_check_yes">Yes</string>
+    <string name="recommendation_check_restaurants">Restaurants</string>
+    <string name="recommendation_check_leisure">Leisure</string>
+    <string name="recommendation_check_sport">Sport</string>
+
     <string name="name">Name:</string>
     <string name="address">Address</string>
     <string name="login">Login</string>
@@ -118,4 +123,5 @@
     <string name="access_background_location_permission_denied">Permission to use background location denied. Closing the app…</string>
     <string name="login_is_required">You must login in order to use SocialPlaces! Closing the app…</string>
     <string name="default_notification_channel_id">it.unibo.socialplaces.pushnotification</string>
+    <string name="recommendation_check_label">Does the recommendation suit your needs? If no, please select a better category.</string>
 </resources>
