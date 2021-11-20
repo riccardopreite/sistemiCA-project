@@ -64,7 +64,15 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
             secondsInDay,
             weekDay
         )
-
+        with (sharedPref.edit()) {
+            putFloat("latitude", latitude.toFloat())
+            putFloat("longitude", longitude.toFloat())
+            putString("user", Auth.getUsername()!!)
+            putString("humanActivity", humanActivity)
+            putInt("secondsInDay", secondsInDay)
+            putInt("weekDay", weekDay)
+            apply()
+        }
         CoroutineScope(Dispatchers.IO).launch {
             Recommendation.recommendPlace(placeRequest)
             removeActivityUpdates()

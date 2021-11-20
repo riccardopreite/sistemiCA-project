@@ -2,6 +2,7 @@ package it.unibo.socialplaces.fragment
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
@@ -38,6 +39,7 @@ import com.google.android.libraries.places.widget.listener.PlaceSelectionListene
 import com.squareup.picasso.Picasso
 import it.unibo.socialplaces.activity.list.FriendsListActivity
 import it.unibo.socialplaces.fragment.dialog.handler.FriendRequestDialogFragment
+import it.unibo.socialplaces.model.recommendation.ValidationRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -365,12 +367,39 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
             val foundPoi = poisList.filter { it.markId == markerId }
             if(foundPoi.isNotEmpty()) {
-                val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0])
-                poiDetailFragment.setOnDismissCallback { isShowingDetails = false }
+                val sharedPref = context?.getSharedPreferences("sharePlaces", Context.MODE_PRIVATE)
 
-                activity?.let {
-                    poiDetailFragment.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
+                sharedPref?.let { shared ->
+                    val latitude = shared.getFloat("latitude", 200.0F).toDouble()
+                    val longitude = shared.getFloat("longitude", 200.0F).toDouble()
+                    val user = shared.getString("user", "")
+                    val humanActivity = shared.getString("humanActivity", "")
+                    val secondsInDay = shared.getInt("secondsInDay", 0)
+                    val weekDay = shared.getInt("weekDay",0)
+                    val placeCategory = foundPoi[0].type
+
+                    val validationRequest = ValidationRequest(
+                        user = user!!,
+                        latitude=latitude,
+                        longitude = longitude,
+                        human_activity = humanActivity!!,
+                        seconds_in_day = secondsInDay,
+                        week_day = weekDay,
+                        place_category = placeCategory
+                    )
+                    Log.v(TAG, "VALIDATION REQUEST\n $validationRequest")
+                    val poiDetailFragment = PoiDetailsDialogFragment.newInstance(foundPoi[0],validationRequest)
+                    poiDetailFragment.setOnDismissCallback { isShowingDetails = false }
+
+                    activity?.let {
+                        poiDetailFragment.show(it.supportFragmentManager, "PoiDetailsDialogFragment")
+                    }
                 }
+
+
+
+
+
             }
 
             val foundLiveEvent = liveEventsList.filter { it.id == markerId }
