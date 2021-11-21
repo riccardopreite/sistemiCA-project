@@ -184,6 +184,13 @@ object PointsOfInterest {
             return
         }
 
+        /*
+        Is Necessary?
+        if(validUpdateListCallback) {
+            updateList()
+        }
+        */
+        
         if(response.isSuccessful) {
             Log.i(TAG, "Point of interest successfully removed.")
         } else {

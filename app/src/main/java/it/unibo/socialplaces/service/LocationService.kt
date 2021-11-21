@@ -13,6 +13,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.PointOfInterest
 import com.google.android.gms.tasks.Task
 import it.unibo.socialplaces.R
 
@@ -20,9 +21,14 @@ class LocationService: Service() {
     // Listener
     interface LocationListener {
         fun onLocationChanged(service: Service, location: Location)
+
+    }
+    interface GeofenceListener{
+        fun onGeofenceClientCreated(geofencingClient: GeofencingClient)
     }
 
     private var listener: LocationListener? = null
+    private var geofenceListener: GeofenceListener? = null
 
     // Binder
     inner class LocationBinder: Binder() {
@@ -33,6 +39,10 @@ class LocationService: Service() {
 
     // Location manager
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    // Geofence manager
+    private lateinit var geofencingClient: GeofencingClient
+
 
     // Notification
     private val channel = NotificationChannel(
@@ -88,10 +98,22 @@ class LocationService: Service() {
     fun setListener(l: LocationListener) {
         listener = l
     }
+    /**
+     * Sets an instance to be called when the geofenceClient is created
+     */
+    fun setGeofenceListener(l: GeofenceListener) {
+        Log.v(TAG,"Setting geofence client Listener")
+        geofenceListener = l
+        //Initialize geofencing Client
+        geofencingClient = LocationServices.getGeofencingClient(this)
+
+        geofenceListener?.onGeofenceClientCreated(geofencingClient)
+    }
 
     @SuppressLint("MissingPermission")
     private fun checkSettings(): Task<LocationSettingsResponse> {
         Log.v(TAG, "settings")
+
         val client: SettingsClient = LocationServices.getSettingsClient(this)
         return client.checkLocationSettings(LocationConfig.createLocationSettingsRequest()).apply {
             addOnSuccessListener {

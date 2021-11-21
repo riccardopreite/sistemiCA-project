@@ -20,6 +20,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     }
     @SuppressLint("UnspecifiedImmutableFlag")
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.v(TAG,"Triggered geofence")
         if(intent == null){
             return
         }
@@ -33,9 +34,10 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val geofenceTransition = geofencingEvent.geofenceTransition
 
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
+            Log.v(TAG,"Triggered geofence enter")
 
             val triggeredGeofence = geofencingEvent.triggeringGeofences[0]
-
+            Log.v(TAG,triggeredGeofence.toString())
             CoroutineScope(Dispatchers.IO).launch {
                 val poisList = PointsOfInterest.getPointsOfInterest()
                 val pois = poisList.filter { poi -> poi.markId ==  triggeredGeofence.requestId}
@@ -46,9 +48,10 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                 val geofenceRecommendationIntent = Intent(context, RecommendationAlarm::class.java)
                 geofenceRecommendationIntent.action = context?.getString(R.string.geofence_recommendation)
+                geofenceRecommendationIntent.putExtra("place_category",poi.type)
 
                 context?.sendBroadcast(geofenceRecommendationIntent)
-
+                //TODO remove broadcast when end
                 Log.i(TAG, "Entered in " + poi.name + " geofence")
             }
 

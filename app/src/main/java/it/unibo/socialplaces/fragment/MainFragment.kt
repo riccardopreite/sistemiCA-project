@@ -330,6 +330,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
 
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude,longitude), 17F))
+        Log.v(TAG,"ID IS $id")
         markers[id]?.let { onMarkerClick(it) }
     }
 
@@ -374,10 +375,11 @@ class MainFragment : Fragment(R.layout.fragment_main),
             if(foundPoi.isNotEmpty()) {
                 val recommendationFile =
                     when(recommendationType){
-                        getString(R.string.activity_place_validity_recommendation) -> getString(R.string.recommendation_preference)
+                        getString(R.string.activity_place_validity_recommendation) -> getString(R.string.validity_preference)
                         getString(R.string.activity_place_place_recommendation) -> getString(R.string.recommendation_preference)
                         else -> ""
                     }
+
                 val sharedPrefRecommendation =
                     context?.getSharedPreferences(recommendationFile, Context.MODE_PRIVATE)
 
@@ -396,6 +398,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
                         }
                         if (latitude >= 200 || longitude >= 200) { null }
                         else {
+                            Log.v(TAG,"Creating validation request")
                             ValidationRequest(
                                 latitude = latitude,
                                 longitude = longitude,

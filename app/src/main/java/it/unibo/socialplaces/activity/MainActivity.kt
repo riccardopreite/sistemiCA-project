@@ -23,6 +23,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.GeofencingRequest
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
@@ -40,14 +43,17 @@ import it.unibo.socialplaces.model.liveevents.LiveEvent
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterestPoi
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
+import it.unibo.socialplaces.receiver.GeofenceBroadcastReceiver
 import it.unibo.socialplaces.service.LocationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
+@SuppressLint("UnspecifiedImmutableFlag")
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     LocationService.LocationListener,
+    LocationService.GeofenceListener,
     CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
     LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
@@ -62,6 +68,17 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      */
     private lateinit var locationService: LocationService
 
+
+    // Geofence manager
+    private lateinit var geofencingClient: GeofencingClient
+
+    // Pending Intent to handle geofence trigger
+    private val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
+        intent.action = getString(R.string.geofence_recommendation)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
     /**
      * Object for connecting with a handler to the active instance of [LocationService].
      * When connecting to the current instance, a reference to this activity is given to it
@@ -73,6 +90,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             val binder = service as LocationService.LocationBinder
             locationService = binder.getService()
             locationService.setListener(this@MainActivity)
+            locationService.setGeofenceListener(this@MainActivity)
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -154,6 +172,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         unbindService(connection)
     }
 
+
     override fun onResume() {
         Log.v(TAG, "onResume")
         super.onResume()
@@ -162,7 +181,9 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             launchedWithNotificationHandler = intent.getBooleanExtra("notification",false)
             intent.removeExtra("notification")
         }
-
+        CoroutineScope(Dispatchers.IO).launch {
+            updateGeofence(PointsOfInterest.getPointsOfInterest())
+        }
         Log.i(TAG, "${if(launchedWithNotificationHandler) "Launched" else "NOT launched"} by a notification.")
         if(launchedWithNotificationHandler) {
             Log.d(TAG, "Notification found, hence the MainFragment is pushed.")
@@ -201,6 +222,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         CoroutineScope(Dispatchers.IO).launch {
 
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
+            updateGeofence(poisList)
             val leList = LiveEvents.getLiveEvents(forceSync = true)
 
             val mainFragment = buildMainFragment(poisList, leList,handlingNotificationInFetching)
@@ -224,10 +246,10 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     private fun buildMainFragment(poisList: List<PointOfInterest>, leList: List<LiveEvent>,handlingNotificationInFetching: Boolean): MainFragment {
         val mainFragment = if(handlingNotificationInFetching) {
             when (intent.action) {
-                getString(R.string.activity_place_validity_recommendation) -> {
+                getString(R.string.activity_place_place_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
                     val poi: PointOfInterest = intent.getParcelableExtra("place")!!
-                    MainFragment.newInstance(poisList, leList, poi, getString(R.string.activity_place_validity_recommendation))
+                    MainFragment.newInstance(poisList, leList, poi, getString(R.string.activity_place_place_recommendation))
                 }
                 getString(R.string.activity_place_validity_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a validity Point of Interest recommendation.")
@@ -519,6 +541,19 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             onLocationUpdated(location)
         }
     }
+    /**
+     * @see LocationService.GeofenceListener.onGeofenceClientCreated
+     */
+    override fun onGeofenceClientCreated(geofencingClient: GeofencingClient){
+        Log.v(TAG,"Connected geofenceClient")
+        this.geofencingClient = geofencingClient
+        CoroutineScope(Dispatchers.IO).launch {
+            val poisList = PointsOfInterest.getPointsOfInterest()
+            updateGeofence(poisList)
+        }
+
+    }
+
 
     /**
      * @see CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener.onAddLiveEvent
@@ -539,9 +574,66 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     override fun onAddPointOfInterest(dialog: DialogFragment, addPointOfInterestPoi: AddPointOfInterestPoi) {
         Log.v(TAG, "CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
+
             PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
+            updateGeofence(PointsOfInterest.getPointsOfInterest())
+
             CoroutineScope(Dispatchers.Main).launch {
                 dialog.dismiss()
+            }
+        }
+    }
+
+    private fun buildGeofence(poi: PointOfInterest): GeofencingRequest {
+        val geofence = Geofence.Builder()
+            .setRequestId(poi.markId)
+            .setCircularRegion(
+                poi.latitude,
+                poi.longitude,
+                resources.getInteger(R.integer.GEOFENCE_RADIUS_IN_METERS).toFloat()
+            )
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .build()
+
+        return GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(geofence)
+            .build()
+
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun addGeofenceListener(geofence: GeofencingRequest){
+        
+        geofencingClient.removeGeofences(geofencePendingIntent).run {
+            addOnCompleteListener {
+                geofencingClient.addGeofences(geofence, geofencePendingIntent).run {
+                    addOnSuccessListener {
+                        Log.v(TAG, "Added geofence with id: ${geofence.geofences[0].requestId}")
+                    }
+                    addOnFailureListener {
+                        if ((it.message != null)) {
+                            Log.e(TAG, it.message!!)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createGeofence(poi: PointOfInterest){
+        val geofence = buildGeofence(poi)
+        Log.v(TAG,"Geofence created $geofence ")
+        addGeofenceListener(geofence)
+    }
+
+    private fun updateGeofence(poisList: List<PointOfInterest>){
+        Log.v(TAG,"Updating geofence ${this::geofencingClient.isInitialized}")
+        //Create geofence
+        if(this::geofencingClient.isInitialized){
+            for(poi in poisList){
+                createGeofence(poi)
             }
         }
     }

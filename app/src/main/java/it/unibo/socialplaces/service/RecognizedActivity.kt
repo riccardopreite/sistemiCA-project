@@ -31,10 +31,14 @@ class RecognizedActivity : IntentService(TAG) {
 
         val detectedActivity = recognizedActivities.mostProbableActivity
         Log.d(TAG,"Detected human activity: ${detectedActivity.type} (confidence = ${detectedActivity.confidence}).")
+        Log.d(TAG,"Action: ${receivedIntent.action}.")
 
         val sendHaIntent = Intent(getString(R.string.recognized_ha)).apply {
             putExtra("type", acceptedActivities[detectedActivity.type])
             putExtra("confidence", detectedActivity.confidence)
+            putExtra("apiType", receivedIntent.action)
+            val placeCategory = receivedIntent.getStringExtra("place_category") ?: ""
+            putExtra("place_category", placeCategory)
         }
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(sendHaIntent)

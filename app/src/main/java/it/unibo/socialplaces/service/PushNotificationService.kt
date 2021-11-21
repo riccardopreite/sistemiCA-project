@@ -63,7 +63,8 @@ class PushNotificationService: FirebaseMessagingService() {
                 getString(R.string.notification_new_friend_request) -> createFriendRequestNotification(builder, notificationId, data)
                 getString(R.string.notification_friend_request_accepted) -> createFriendAcceptedNotification(builder, data)
                 getString(R.string.notification_new_live_event) -> createLiveEventNotification(builder, data)
-                getString(R.string.notification_place_recommendation) -> createPlaceRecommendationNotification(builder, data)
+                getString(R.string.notification_place_recommendation) -> createPlaceRecommendationNotification(builder, data,getString(R.string.activity_place_place_recommendation) )
+                getString(R.string.notification_validity_recommendation) -> createPlaceRecommendationNotification(builder, data,getString(R.string.activity_place_validity_recommendation) )
                 getString(R.string.notification_model_retrained) -> createModelRetrainedNotification(builder)
                 else -> null
             }?.let { notification ->
@@ -96,8 +97,12 @@ class PushNotificationService: FirebaseMessagingService() {
      * its current location, time, day of week and human activity.
      */
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun createPlaceRecommendationNotification(builder: NotificationCompat.Builder, data: Map<String, String>): android.app.Notification? {
-        Log.v(TAG, "createPlaceRecommendationNotification")
+    private fun createPlaceRecommendationNotification(
+        builder: NotificationCompat.Builder,
+        data: Map<String, String>,
+        actionName: String
+    ): android.app.Notification? {
+        Log.v(TAG, "createPlaceRecommendationNotification $actionName")
         if(!data.keys.containsAll(placeRecommendationNotificationExpectedKeys)) {
             return null
         }
@@ -115,7 +120,7 @@ class PushNotificationService: FirebaseMessagingService() {
         )
 
         val recommendationIntent = Intent(this, MainActivity::class.java).apply {
-            action = getString(R.string.activity_place_recommendation)
+            action = actionName
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("place", recommendedPlace) // PointOfInterest
             putExtra("notification", true)

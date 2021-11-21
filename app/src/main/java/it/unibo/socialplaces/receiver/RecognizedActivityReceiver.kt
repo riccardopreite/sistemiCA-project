@@ -50,6 +50,7 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
         val longitude = sharedPrefLocation.getFloat("longitude", 200.0F).toDouble()
 
         if(latitude >= 200 || longitude >= 200){
+            Log.e(TAG,"Location error")
             return
         }
 
@@ -57,10 +58,10 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
             (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
         val weekDay = dayDict[Calendar.DAY_OF_WEEK]!!
 
-        val action = intent.action!!
+        val apiType = intent.extras!!.getString("apiType")!!
 
         val sharePreferenceFile =
-            when(action){
+            when(apiType){
                 context.getString(R.string.alarm_recommendation) -> context.getString(R.string.recommendation_preference)
                 context.getString(R.string.geofence_recommendation) -> context.getString(R.string.validity_preference)
                 else -> ""
@@ -82,7 +83,7 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            when(action){
+            when(apiType){
                 context.getString(R.string.alarm_recommendation) -> {
 
                     val placeRequest = PlaceRequest(
@@ -92,12 +93,14 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
                         seconds_in_day = secondsInDay,
                         week_day = weekDay,
                     )
+                    Log.v(TAG,"Recommendation api")
                     Recommendation.recommendPlace(placeRequest)
 
                 }
                 context.getString(R.string.geofence_recommendation) -> {
 
                     val placeCategory = intent.getStringExtra("place_category") ?: ""
+                    Log.v(TAG,"Place category is: $placeCategory")
                     if(placeCategory == ""){
                         return@launch
                     }
@@ -110,6 +113,8 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
                         week_day = weekDay,
                         place_category = placeCategory
                     )
+                    Log.v(TAG,"Validation api")
+
                     Recommendation.validityPlace(validityRequest)
                 }
             }
