@@ -143,6 +143,10 @@ class LocationService: Service() {
         checkSettings()
     }
 
+    private fun startGeofencingUpdates() {
+
+    }
+
     /**
      * Stops the location updates.
      * Precondition: the use of location is active.

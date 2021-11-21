@@ -31,29 +31,28 @@ class RecommendationAlarm : BroadcastReceiver() {
      * Method called every time the AlarmManager fire this event
      */
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "Alarm just fired")
+        Log.d(TAG, "onReceive")
         val placeCategory = intent.getStringExtra("place_category") ?: ""
-        initARClientAndIntents(context.applicationContext, intent.action!!,placeCategory)
+
+        initARClientAndIntents(context.applicationContext, intent.action!!, placeCategory)
         registerReceiver(context.applicationContext)
 
         setActivityUpdates()
     }
 
     /**
-     *
      * Method to init Class field and set them
      */
-
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun initARClientAndIntents(context: Context, action: String,category: String) {
+    private fun initARClientAndIntents(context: Context, action: String, category: String) {
         if(!this::recommendPendingIntent.isInitialized) {
-
-            val activityRecognitionIntent = Intent(context, RecognizedActivity::class.java)
-            activityRecognitionIntent.action = action
-            activityRecognitionIntent.putExtra("place_category",category)
+            val activityRecognitionIntent = Intent(context, RecognizedActivity::class.java).apply {
+                this.action = action
+                putExtra("place_category", category)
+            }
             recommendPendingIntent = PendingIntent.getService(
                 context,
-                1,
+                0,
                 activityRecognitionIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT
             )

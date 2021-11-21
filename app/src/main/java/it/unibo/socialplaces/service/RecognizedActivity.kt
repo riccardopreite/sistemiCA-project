@@ -10,7 +10,7 @@ import it.unibo.socialplaces.R
 
 class RecognizedActivity : IntentService(TAG) {
     companion object {
-        private val TAG = RecognizedActivity::class.qualifiedName
+        private val TAG = RecognizedActivity::class.qualifiedName!!
     }
 
     /** Maps Android activities of HAR to SocialPlaces activities. */
@@ -31,12 +31,12 @@ class RecognizedActivity : IntentService(TAG) {
 
         val detectedActivity = recognizedActivities.mostProbableActivity
         Log.d(TAG,"Detected human activity: ${detectedActivity.type} (confidence = ${detectedActivity.confidence}).")
-        Log.d(TAG,"Action: ${receivedIntent.action}.")
+        Log.d(TAG,"Recommendation (intent.action): ${receivedIntent.action}.")
 
         val sendHaIntent = Intent(getString(R.string.recognized_ha)).apply {
-            putExtra("type", acceptedActivities[detectedActivity.type])
+            putExtra("human_activity_type", acceptedActivities[detectedActivity.type])
             putExtra("confidence", detectedActivity.confidence)
-            putExtra("apiType", receivedIntent.action)
+            putExtra("recommendation", receivedIntent.action)
             val placeCategory = receivedIntent.getStringExtra("place_category") ?: ""
             putExtra("place_category", placeCategory)
         }

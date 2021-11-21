@@ -18,12 +18,14 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     companion object {
         private val TAG = GeofenceBroadcastReceiver::class.qualifiedName!!
     }
+
     @SuppressLint("UnspecifiedImmutableFlag")
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.v(TAG,"Triggered geofence")
-        if(intent == null){
+        Log.v(TAG, "onReceive")
+        if(intent == null) {
             return
         }
+
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
         if (geofencingEvent.hasError()) {
             val errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.errorCode)
@@ -34,25 +36,23 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val geofenceTransition = geofencingEvent.geofenceTransition
 
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            Log.v(TAG,"Triggered geofence enter")
-
             val triggeredGeofence = geofencingEvent.triggeringGeofences[0]
-            Log.v(TAG,triggeredGeofence.toString())
+            Log.d(TAG, "GEOFENCE TRANSITION ENTER TO PointOfInterest with markId=${triggeredGeofence.requestId}")
+
             CoroutineScope(Dispatchers.IO).launch {
                 val poisList = PointsOfInterest.getPointsOfInterest()
-                val pois = poisList.filter { poi -> poi.markId ==  triggeredGeofence.requestId}
-                if (pois.isEmpty()){
+                val pois = poisList.filter { poi -> poi.markId ==  triggeredGeofence.requestId }
+                if (pois.isEmpty()) {
                     return@launch
                 }
                 val poi = pois[0]
-
-                val geofenceRecommendationIntent = Intent(context, RecommendationAlarm::class.java)
-                geofenceRecommendationIntent.action = context?.getString(R.string.geofence_recommendation)
-                geofenceRecommendationIntent.putExtra("place_category",poi.type)
+                val geofenceRecommendationIntent = Intent(context, RecommendationAlarm::class.java).apply {
+                    action = context?.getString(R.string.geofence_recommendation)
+                    putExtra("place_category", poi.type)
+                }
 
                 context?.sendBroadcast(geofenceRecommendationIntent)
-                //TODO remove broadcast when end
-                Log.i(TAG, "Entered in " + poi.name + " geofence")
+                Log.i(TAG, "Entered in the geofence of: " + poi.name)
             }
 
 

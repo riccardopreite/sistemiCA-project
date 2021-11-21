@@ -63,8 +63,8 @@ class PushNotificationService: FirebaseMessagingService() {
                 getString(R.string.notification_new_friend_request) -> createFriendRequestNotification(builder, notificationId, data)
                 getString(R.string.notification_friend_request_accepted) -> createFriendAcceptedNotification(builder, data)
                 getString(R.string.notification_new_live_event) -> createLiveEventNotification(builder, data)
-                getString(R.string.notification_place_recommendation) -> createPlaceRecommendationNotification(builder, data,getString(R.string.activity_place_place_recommendation) )
-                getString(R.string.notification_validity_recommendation) -> createPlaceRecommendationNotification(builder, data,getString(R.string.activity_place_validity_recommendation) )
+                getString(R.string.notification_place_recommendation) -> createPlaceRecommendationNotification(builder, data, getString(R.string.activity_place_place_recommendation))
+                getString(R.string.notification_validity_recommendation) -> createPlaceRecommendationNotification(builder, data, getString(R.string.activity_place_validity_recommendation))
                 getString(R.string.notification_model_retrained) -> createModelRetrainedNotification(builder)
                 else -> null
             }?.let { notification ->

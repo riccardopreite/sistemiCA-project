@@ -13,7 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
+class RecognizedActivityReceiver(
+    val removeActivityUpdates: () -> Unit,
     val unregisterReceiver: (Context) -> Unit
 ) : BroadcastReceiver() {
     companion object {
@@ -36,7 +37,7 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
     override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "onReceive")
 
-        val humanActivity = intent.extras!!.getString("type", "")
+        val humanActivity = intent.extras!!.getString("human_activity_type", "")
         val confidence = intent.extras!!.getInt("confidence", 0)
 
         if (humanActivity == "" || confidence < 75) {
@@ -44,13 +45,13 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
         }
 
         // Accessing the last available location.
-        val sharedPrefLocation = context.getSharedPreferences(context.getString(R.string.location_preference),Context.MODE_PRIVATE)?: return
+        val sharedPrefLocation = context.getSharedPreferences(context.getString(R.string.location_preference), Context.MODE_PRIVATE)?: return
         // Using 200.0F as default value since it is impossible for both latitude and longitude.
         val latitude = sharedPrefLocation.getFloat("latitude", 200.0F).toDouble()
         val longitude = sharedPrefLocation.getFloat("longitude", 200.0F).toDouble()
 
-        if(latitude >= 200 || longitude >= 200){
-            Log.e(TAG,"Location error")
+        if(latitude == 200.0 || longitude == 200.0){
+            Log.e(TAG,"Error retrieving the location from Shared Preferences!")
             return
         }
 
@@ -58,20 +59,19 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
             (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
         val weekDay = dayDict[Calendar.DAY_OF_WEEK]!!
 
-        val apiType = intent.extras!!.getString("apiType")!!
+        val recommendation = intent.extras!!.getString("recommendation")!!
 
-        val sharePreferenceFile =
-            when(apiType){
-                context.getString(R.string.alarm_recommendation) -> context.getString(R.string.recommendation_preference)
-                context.getString(R.string.geofence_recommendation) -> context.getString(R.string.validity_preference)
-                else -> ""
-            }
-        if(sharePreferenceFile == ""){
+        val sharePreferenceFile = when(recommendation) {
+            context.getString(R.string.alarm_recommendation) -> context.getString(R.string.recommendation_preference)
+            context.getString(R.string.geofence_recommendation) -> context.getString(R.string.validity_preference)
+            else -> ""
+        }
+
+        if(sharePreferenceFile == "") {
             return
         }
 
-
-        val sharedPrefAlarmOrGeofence = context.getSharedPreferences(sharePreferenceFile,Context.MODE_PRIVATE)?: return
+        val sharedPrefAlarmOrGeofence = context.getSharedPreferences(sharePreferenceFile, Context.MODE_PRIVATE)?: return
 
         with (sharedPrefAlarmOrGeofence.edit()) {
             putFloat("latitude", latitude.toFloat())
@@ -83,9 +83,9 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            when(apiType){
+            when(recommendation) {
                 context.getString(R.string.alarm_recommendation) -> {
-
+                    Log.d(TAG,"Asking for place recommendation...")
                     val placeRequest = PlaceRequest(
                         latitude = latitude,
                         longitude = longitude,
@@ -93,18 +93,14 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
                         seconds_in_day = secondsInDay,
                         week_day = weekDay,
                     )
-                    Log.v(TAG,"Recommendation api")
                     Recommendation.recommendPlace(placeRequest)
-
                 }
                 context.getString(R.string.geofence_recommendation) -> {
-
+                    Log.d(TAG,"Asking for place recommendation of a specific category...")
                     val placeCategory = intent.getStringExtra("place_category") ?: ""
-                    Log.v(TAG,"Place category is: $placeCategory")
-                    if(placeCategory == ""){
+                    if(placeCategory == "") {
                         return@launch
                     }
-
                     val validityRequest = ValidationRequest(
                         latitude = latitude,
                         longitude = longitude,
@@ -113,8 +109,6 @@ class RecognizedActivityReceiver(val removeActivityUpdates: () -> Unit,
                         week_day = weekDay,
                         place_category = placeCategory
                     )
-                    Log.v(TAG,"Validation api")
-
                     Recommendation.validityPlace(validityRequest)
                 }
             }
