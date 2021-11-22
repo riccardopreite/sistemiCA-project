@@ -374,8 +374,8 @@ class MainFragment : Fragment(R.layout.fragment_main),
             if(foundPoi.isNotEmpty()) {
                 val recommendationFile =
                     when(recommendationType) {
-                        getString(R.string.activity_place_validity_recommendation) -> getString(R.string.validity_preference)
-                        getString(R.string.activity_place_place_recommendation) -> getString(R.string.recommendation_preference)
+                        getString(R.string.activity_place_validity_recommendation) -> getString(R.string.sharedpreferences_validity_recommendation)
+                        getString(R.string.activity_place_place_recommendation) -> getString(R.string.sharedpreferences_place_recommendation)
                         else -> ""
                     }
 

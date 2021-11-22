@@ -45,7 +45,7 @@ class RecognizedActivityReceiver(
         }
 
         // Accessing the last available location.
-        val sharedPrefLocation = context.getSharedPreferences(context.getString(R.string.location_preference), Context.MODE_PRIVATE)?: return
+        val sharedPrefLocation = context.getSharedPreferences(context.getString(R.string.sharedpreferences_location_updates), Context.MODE_PRIVATE)?: return
         // Using 200.0F as default value since it is impossible for both latitude and longitude.
         val latitude = sharedPrefLocation.getFloat("latitude", 200.0F).toDouble()
         val longitude = sharedPrefLocation.getFloat("longitude", 200.0F).toDouble()
@@ -62,8 +62,8 @@ class RecognizedActivityReceiver(
         val recommendation = intent.extras!!.getString("recommendation")!!
 
         val sharePreferenceFile = when(recommendation) {
-            context.getString(R.string.alarm_recommendation) -> context.getString(R.string.recommendation_preference)
-            context.getString(R.string.geofence_recommendation) -> context.getString(R.string.validity_preference)
+            context.getString(R.string.recommendation_periodic_alarm) -> context.getString(R.string.sharedpreferences_place_recommendation)
+            context.getString(R.string.recommendation_geofence_enter) -> context.getString(R.string.sharedpreferences_validity_recommendation)
             else -> ""
         }
 
@@ -84,7 +84,7 @@ class RecognizedActivityReceiver(
 
         CoroutineScope(Dispatchers.IO).launch {
             when(recommendation) {
-                context.getString(R.string.alarm_recommendation) -> {
+                context.getString(R.string.recommendation_periodic_alarm) -> {
                     Log.d(TAG,"Asking for place recommendation...")
                     val placeRequest = PlaceRequest(
                         latitude = latitude,
@@ -95,7 +95,7 @@ class RecognizedActivityReceiver(
                     )
                     Recommendation.recommendPlace(placeRequest)
                 }
-                context.getString(R.string.geofence_recommendation) -> {
+                context.getString(R.string.recommendation_geofence_enter) -> {
                     Log.d(TAG,"Asking for place recommendation of a specific category...")
                     val placeCategory = intent.getStringExtra("place_category") ?: ""
                     if(placeCategory == "") {

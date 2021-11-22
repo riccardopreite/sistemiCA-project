@@ -13,7 +13,6 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.PointOfInterest
 import com.google.android.gms.tasks.Task
 import it.unibo.socialplaces.R
 
@@ -21,13 +20,14 @@ class LocationService: Service() {
     // Listener
     interface LocationListener {
         fun onLocationChanged(service: Service, location: Location)
-
     }
-    interface GeofenceListener{
+
+    private var locationListener: LocationListener? = null
+
+    interface GeofenceListener {
         fun onGeofenceClientCreated(geofencingClient: GeofencingClient)
     }
 
-    private var listener: LocationListener? = null
     private var geofenceListener: GeofenceListener? = null
 
     // Binder
@@ -43,8 +43,7 @@ class LocationService: Service() {
     // Geofence manager
     private lateinit var geofencingClient: GeofencingClient
 
-
-    // Notification
+    // Notification channel
     private val channel = NotificationChannel(
         NOTIFICATION_CHANNEL_ID,
         CHANNEL_NAME,
@@ -56,9 +55,6 @@ class LocationService: Service() {
 
     companion object {
         private val TAG = LocationService::class.qualifiedName
-
-        const val START_LOCATION_SERVICE = "startLocationService"
-        const val STOP_LOCATION_SERVICE = "stopLocationService"
 
         const val NOTIFICATION_ID = 2
         const val NOTIFICATION_CHANNEL_ID = "it.unibo.location"
@@ -80,10 +76,10 @@ class LocationService: Service() {
         override fun onLocationResult(locationResult: LocationResult) {
             lastLocation = locationResult.lastLocation
 //            Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
-            listener?.onLocationChanged(this@LocationService, lastLocation)
+            locationListener?.onLocationChanged(this@LocationService, lastLocation)
             // Storing the location inside Android's Shared Preferences in order to
             // access it in other background tasks.
-            val sharedPrefLocation = getSharedPreferences(getString(R.string.location_preference), Context.MODE_PRIVATE)?: return
+            val sharedPrefLocation = getSharedPreferences(getString(R.string.sharedpreferences_location_updates), Context.MODE_PRIVATE)?: return
             with (sharedPrefLocation.edit()) {
                 putFloat("latitude", lastLocation.latitude.toFloat())
                 putFloat("longitude", lastLocation.longitude.toFloat())
@@ -95,14 +91,14 @@ class LocationService: Service() {
     /**
      * Sets an instance to be called when the location updates.
      */
-    fun setListener(l: LocationListener) {
-        listener = l
+    fun setLocationListener(l: LocationListener) {
+        locationListener = l
     }
+
     /**
-     * Sets an instance to be called when the geofenceClient is created
+     * Sets an instance to be called when the geofenceClient is created.
      */
     fun setGeofenceListener(l: GeofenceListener) {
-        Log.v(TAG,"Setting geofence client Listener")
         geofenceListener = l
         //Initialize geofencing Client
         geofencingClient = LocationServices.getGeofencingClient(this)
@@ -111,8 +107,8 @@ class LocationService: Service() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun checkSettings(): Task<LocationSettingsResponse> {
-        Log.v(TAG, "settings")
+    private fun checkLocationSettings(): Task<LocationSettingsResponse> {
+        Log.v(TAG, "checkLocationSettings")
 
         val client: SettingsClient = LocationServices.getSettingsClient(this)
         return client.checkLocationSettings(LocationConfig.createLocationSettingsRequest()).apply {
@@ -140,7 +136,7 @@ class LocationService: Service() {
         Log.v(TAG, "startLocationUpdates")
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        checkSettings()
+        checkLocationSettings()
     }
 
     private fun startGeofencingUpdates() {
@@ -200,13 +196,11 @@ class LocationService: Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.let {
-           it.action?.let { action ->
-               when (action) {
-                   START_LOCATION_SERVICE -> startLocationUpdates()
-                   STOP_LOCATION_SERVICE -> stopLocationUpdates()
-                   else -> Unit
-               }
+        intent?.action?.let { action ->
+           when (action) {
+               getString(R.string.background_location_start) -> startLocationUpdates()
+               getString(R.string.background_location_stop) -> stopLocationUpdates()
+               else -> Unit
            }
         }
 

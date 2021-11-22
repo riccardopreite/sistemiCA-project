@@ -141,7 +141,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     private fun startLocationService() {
         Log.v(MainActivity.TAG, "startLocationService")
         val startIntent = Intent(requireContext(), LocationService::class.java).apply {
-            action = LocationService.START_LOCATION_SERVICE
+            action = getString(R.string.background_location_start)
         }
         requireContext().startService(startIntent)
         bindLocationService()
@@ -155,7 +155,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     private fun stopLocationService() {
         Log.v(TAG, "stopLocationService")
         val stopIntent = Intent(requireContext(), LocationService::class.java).apply {
-            action = LocationService.STOP_LOCATION_SERVICE
+            action = getString(R.string.background_location_stop)
         }
         // startService is correct because of the implementation of LocationService.onStartCommand()
         requireContext().startService(stopIntent)

@@ -75,7 +75,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     // Pending Intent to handle geofence trigger
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        intent.action = getString(R.string.geofence_recommendation)
+        intent.action = getString(R.string.recommendation_geofence_enter)
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
@@ -89,7 +89,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             Log.d(TAG, "LocationService connected to MainActivity.")
             val binder = service as LocationService.LocationBinder
             locationService = binder.getService()
-            locationService.setListener(this@MainActivity)
+            locationService.setLocationListener(this@MainActivity)
             locationService.setGeofenceListener(this@MainActivity)
         }
 
@@ -515,7 +515,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = Intent(this, RecommendationAlarm::class.java)
-        alarmIntent.action = getString(R.string.alarm_recommendation)
+        alarmIntent.action = getString(R.string.recommendation_periodic_alarm)
 
         val recommendationBroadcast = PendingIntent.getBroadcast(
             this,
