@@ -1,6 +1,5 @@
 package it.unibo.socialplaces.api
 
-import it.unibo.socialplaces.model.notification.NotificationToken
 import it.unibo.socialplaces.model.recommendation.PlaceRequest
 import it.unibo.socialplaces.model.recommendation.ValidationRequest
 import retrofit2.Response

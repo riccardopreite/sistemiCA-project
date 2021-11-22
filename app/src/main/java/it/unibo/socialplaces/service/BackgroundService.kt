@@ -16,7 +16,7 @@ import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import it.unibo.socialplaces.R
 
-class LocationService: Service() {
+class BackgroundService: Service() {
     // Listener
     interface LocationListener {
         fun onLocationChanged(service: Service, location: Location)
@@ -32,7 +32,7 @@ class LocationService: Service() {
 
     // Binder
     inner class LocationBinder: Binder() {
-        fun getService(): LocationService = this@LocationService
+        fun getService(): BackgroundService = this@BackgroundService
     }
 
     private val binder = LocationBinder()
@@ -54,11 +54,11 @@ class LocationService: Service() {
     }
 
     companion object {
-        private val TAG = LocationService::class.qualifiedName
+        private val TAG = BackgroundService::class.qualifiedName
 
         const val NOTIFICATION_ID = 2
-        const val NOTIFICATION_CHANNEL_ID = "it.unibo.location"
-        const val CHANNEL_NAME = "SocialPlaces: Background Location Retrieval Service"
+        const val NOTIFICATION_CHANNEL_ID = "it.unibo.socialplaces.location"
+        const val CHANNEL_NAME = "SocialPlaces: Background Service"
     }
 
     // App state
@@ -76,7 +76,7 @@ class LocationService: Service() {
         override fun onLocationResult(locationResult: LocationResult) {
             lastLocation = locationResult.lastLocation
 //            Log.d(TAG, "Current location: (${lastLocation.latitude}, ${lastLocation.longitude})")
-            locationListener?.onLocationChanged(this@LocationService, lastLocation)
+            locationListener?.onLocationChanged(this@BackgroundService, lastLocation)
             // Storing the location inside Android's Shared Preferences in order to
             // access it in other background tasks.
             val sharedPrefLocation = getSharedPreferences(getString(R.string.sharedpreferences_location_updates), Context.MODE_PRIVATE)?: return
@@ -160,7 +160,7 @@ class LocationService: Service() {
     fun isServiceRunning(): Boolean = isRunning
 
     /**
-     * Creates a notification to be always displayed when this [LocationService] is active.
+     * Creates a notification to be always displayed when this [BackgroundService] is active.
      */
     private fun createOngoingForegroundNotification(pendingIntent: PendingIntent): Notification {
         Log.v(TAG, "createOngoingForegroundNotification")

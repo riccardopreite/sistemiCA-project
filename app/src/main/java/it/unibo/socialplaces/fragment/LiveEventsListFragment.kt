@@ -99,7 +99,7 @@ class LiveEventsListFragment : Fragment(R.layout.fragment_live_events) {
 
     /**
      * Checks whether [liveEventsList] has only live events which are still available.
-     * Updates the bundle [arguments].
+     * Updates the bundle **arguments**.
      */
     private fun keepOnlyValidLiveEvents() {
         Log.v(TAG, "keepOnlyValidLiveEvents")

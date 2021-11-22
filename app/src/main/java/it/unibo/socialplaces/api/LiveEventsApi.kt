@@ -3,7 +3,6 @@ package it.unibo.socialplaces.api
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.AddedLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
-import org.json.JSONObject
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

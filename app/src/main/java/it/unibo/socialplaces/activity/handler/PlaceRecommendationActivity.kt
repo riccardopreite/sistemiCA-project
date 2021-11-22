@@ -8,9 +8,9 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 
-class PlaceRecommendation: AppCompatActivity() {
+class PlaceRecommendationActivity: AppCompatActivity() {
     companion object {
-        private val TAG: String = PlaceRecommendation::class.qualifiedName!!
+        private val TAG: String = PlaceRecommendationActivity::class.qualifiedName!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

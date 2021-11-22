@@ -23,7 +23,7 @@ import it.unibo.socialplaces.databinding.FragmentMainMenuBinding
 import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.Picasso
 import it.unibo.socialplaces.activity.MainActivity
-import it.unibo.socialplaces.service.LocationService
+import it.unibo.socialplaces.service.BackgroundService
 
 class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     NavigationView.OnNavigationItemSelectedListener {
@@ -32,20 +32,20 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     private val binding get() = _binding!!
 
     // App state
-    private var locationService: LocationService? = null
+    private var backgroundService: BackgroundService? = null
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            Log.d(TAG, "LocationService connected to MainMenuFragment.")
-            val binder = service as LocationService.LocationBinder
-            locationService = binder.getService()
+            Log.d(TAG, "BackgroundService connected to MainMenuFragment.")
+            val binder = service as BackgroundService.LocationBinder
+            backgroundService = binder.getService()
 
             val locationServiceSwitch = binding.menuNavView.menu.findItem(R.id.location_service_switch).actionView as SwitchCompat
-            locationServiceSwitch.isChecked = locationService?.isServiceRunning() == true
+            locationServiceSwitch.isChecked = backgroundService?.isServiceRunning() == true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            Log.d(TAG, "LocationService disconnected from MainMenuFragment.")
-            locationService = null
+            Log.d(TAG, "BackgroundService disconnected from MainMenuFragment.")
+            backgroundService = null
         }
     }
 
@@ -83,7 +83,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         }
 
         locationServiceSwitch.setOnClickListener {
-            locationService?.let {
+            backgroundService?.let {
                 if(it.isServiceRunning()) {
                     stopLocationService()
                     locationServiceSwitch.isChecked = false
@@ -119,15 +119,15 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     }
 
     /**
-     * Enables the binding between this fragment and the [LocationService].
+     * Enables the binding between this fragment and the [BackgroundService].
      */
     private fun bindLocationService() {
-        val bindIntent = Intent(requireContext(), LocationService::class.java)
+        val bindIntent = Intent(requireContext(), BackgroundService::class.java)
         requireContext().bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
     }
 
     /**
-     * Disables the binding between this fragment and the [LocationService].
+     * Disables the binding between this fragment and the [BackgroundService].
      */
     private fun unbindLocationService() {
         //TODO do not call twice
@@ -135,12 +135,12 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     }
 
     /**
-     * Starts the location service [LocationService] and binds this fragment to it (therefore initializes
-     * [locationService]).
+     * Starts the location service [BackgroundService] and binds this fragment to it (therefore initializes
+     * [backgroundService]).
      */
     private fun startLocationService() {
         Log.v(MainActivity.TAG, "startLocationService")
-        val startIntent = Intent(requireContext(), LocationService::class.java).apply {
+        val startIntent = Intent(requireContext(), BackgroundService::class.java).apply {
             action = getString(R.string.background_location_start)
         }
         requireContext().startService(startIntent)
@@ -149,15 +149,15 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     }
 
     /**
-     * Stops the location service [LocationService] and unbinds this fragment from it (therefore initializes
-     * [locationService]).
+     * Stops the location service [BackgroundService] and unbinds this fragment from it (therefore initializes
+     * [backgroundService]).
      */
     private fun stopLocationService() {
         Log.v(TAG, "stopLocationService")
-        val stopIntent = Intent(requireContext(), LocationService::class.java).apply {
+        val stopIntent = Intent(requireContext(), BackgroundService::class.java).apply {
             action = getString(R.string.background_location_stop)
         }
-        // startService is correct because of the implementation of LocationService.onStartCommand()
+        // startService is correct because of the implementation of BackgroundService.onStartCommand()
         requireContext().startService(stopIntent)
         unbindLocationService()
         Toast.makeText(requireContext(), R.string.location_service_stopped, Toast.LENGTH_SHORT).show()

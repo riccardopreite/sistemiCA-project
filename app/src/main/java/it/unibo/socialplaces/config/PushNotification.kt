@@ -24,7 +24,7 @@ object PushNotification {
         get() = manager!!
         set(value) {
             if(manager == null) {
-                manager = value;
+                manager = value
             }
         }
 
@@ -61,6 +61,7 @@ object PushNotification {
         notificationManager.notify(id, notification)
     }
 
+    /*
     /**
      * Cancel a previously set notification with identifier = [id].
      */
@@ -77,6 +78,7 @@ object PushNotification {
         Log.d(TAG, "Received id: $id")
         return notificationManager.activeNotifications.any { it.id == id }
     }
+     */
 
     /**
      * Returns the channel for publishing notifications after FCM receives one.

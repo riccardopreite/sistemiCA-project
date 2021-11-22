@@ -51,7 +51,7 @@
         </service>
 
         <service
-            android:name=".service.LocationService"
+            android:name=".service.BackgroundService"
             android:description="@string/location_service_description"
             android:enabled="true"
             android:exported="false"
@@ -197,7 +197,7 @@
         </activity>
 
         <activity
-            android:name=".activity.handler.PlaceRecommendation"
+            android:name=".activity.handler.PlaceRecommendationActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="Place recommended"
             android:parentActivityName=".activity.MainActivity"

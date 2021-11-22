@@ -44,16 +44,15 @@ import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterestPoi
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import it.unibo.socialplaces.receiver.GeofenceBroadcastReceiver
-import it.unibo.socialplaces.service.LocationService
+import it.unibo.socialplaces.service.BackgroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
-@SuppressLint("UnspecifiedImmutableFlag")
 class MainActivity: AppCompatActivity(R.layout.activity_main),
-    LocationService.LocationListener,
-    LocationService.GeofenceListener,
+    BackgroundService.LocationListener,
+    BackgroundService.GeofenceListener,
     CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
     LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
@@ -63,10 +62,10 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     // App state
     /**
-     * Reference to the active [LocationService] which periodically retrieves the current
+     * Reference to the active [BackgroundService] which periodically retrieves the current
      * location from the GPS.
      */
-    private lateinit var locationService: LocationService
+    private lateinit var backgroundService: BackgroundService
 
 
     // Geofence manager
@@ -80,21 +79,21 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     /**
-     * Object for connecting with a handler to the active instance of [LocationService].
+     * Object for connecting with a handler to the active instance of [BackgroundService].
      * When connecting to the current instance, a reference to this activity is given to it
      * in order to get the method [onLocationChanged] called when the location is updated.
      */
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            Log.d(TAG, "LocationService connected to MainActivity.")
-            val binder = service as LocationService.LocationBinder
-            locationService = binder.getService()
-            locationService.setLocationListener(this@MainActivity)
-            locationService.setGeofenceListener(this@MainActivity)
+            Log.d(TAG, "BackgroundService connected to MainActivity.")
+            val binder = service as BackgroundService.LocationBinder
+            backgroundService = binder.getService()
+            backgroundService.setLocationListener(this@MainActivity)
+            backgroundService.setGeofenceListener(this@MainActivity)
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            Log.d(TAG, "LocationService disconnected from MainActivity.")
+            Log.d(TAG, "BackgroundService disconnected from MainActivity.")
         }
     }
 
@@ -105,7 +104,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      * @see it.unibo.socialplaces.activity.handler.FriendRequestAcceptedActivity
      * @see it.unibo.socialplaces.activity.handler.LiveEventActivity
      * @see it.unibo.socialplaces.activity.handler.NewFriendRequestActivity
-     * @see it.unibo.socialplaces.activity.handler.PlaceRecommendation
+     * @see it.unibo.socialplaces.activity.handler.PlaceRecommendationActivity
      */
     private var launchedWithNotificationHandler: Boolean = false
 
@@ -143,7 +142,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     /**
-     * Callback for updating the map shown in [MapFragment].
+     * Callback for updating the map shown in [MainFragment].
      */
     lateinit var onLocationUpdated: (Location) -> Unit
 
@@ -239,7 +238,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     /**
      * Creates an instance of [MainFragment] taking in consideration the value of
-     * [launchedWithNotificationHandler] and [intent.action].
+     * [launchedWithNotificationHandler] and **intent.action**.
      * Initializes [onLocationUpdated] and then sets [launchedWithNotificationHandler] to `false`.
      * @return [MainFragment] instance
      */
@@ -489,18 +488,18 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     /**
-     * Starts an instance of [LocationService] and binds the current activity to it so [locationService]
+     * Starts an instance of [BackgroundService] and binds the current activity to it so [backgroundService]
      * can refer to it.
      */
     private fun startLocationService() {
         Log.v(TAG, "startLocationService")
 
-        val startIntent = Intent(this, LocationService::class.java).apply {
-            action = LocationService.START_LOCATION_SERVICE
+        val startIntent = Intent(this, BackgroundService::class.java).apply {
+            action = getString(R.string.background_location_start)
         }
         startService(startIntent)
 
-        val bindIntent = Intent(this, LocationService::class.java)
+        val bindIntent = Intent(this, BackgroundService::class.java)
         bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
 
         Toast.makeText(this, R.string.location_service_started, Toast.LENGTH_SHORT).show()
@@ -534,7 +533,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     /**
-     * @see LocationService.LocationListener.onLocationChanged
+     * @see BackgroundService.LocationListener.onLocationChanged
      */
     override fun onLocationChanged(service: Service, location: Location) {
         if(this::onLocationUpdated.isInitialized) {
@@ -542,7 +541,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
     }
     /**
-     * @see LocationService.GeofenceListener.onGeofenceClientCreated
+     * @see BackgroundService.GeofenceListener.onGeofenceClientCreated
      */
     override fun onGeofenceClientCreated(geofencingClient: GeofencingClient){
         Log.v(TAG,"Connected geofenceClient")
