@@ -166,6 +166,9 @@ class BackgroundService: Service() {
             Log.e(TAG, "Could not remove geofences ($toRemoveIds).\n$it")
         }.addOnCompleteListener {
             Log.i(TAG, "Adding the new geofences ($toAddIds)")
+            if(toAddIds.isEmpty()){
+                return@addOnCompleteListener
+            }
             geofenceIds.addAll(toAddIds)
             val geofencesObjects = geofences.filter { toAddIds.contains(it.first) }.map {
                 Geofence.Builder()
