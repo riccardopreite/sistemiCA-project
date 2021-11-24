@@ -15,7 +15,6 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import it.unibo.socialplaces.R
-import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.receiver.GeofenceBroadcastReceiver
 
 @SuppressLint("UnspecifiedImmutableFlag")
@@ -26,12 +25,6 @@ class BackgroundService: Service() {
     }
 
     private var locationListener: LocationListener? = null
-
-    interface GeofenceListener {
-        fun onGeofenceClientCreated(geofencingClient: GeofencingClient)
-    }
-
-    private var geofenceListener: GeofenceListener? = null
 
     // Binder
     inner class LocationBinder: Binder() {
@@ -46,7 +39,7 @@ class BackgroundService: Service() {
     // Geofence manager
     private lateinit var geofencingClient: GeofencingClient
 
-    // Pending Intent to handle geofence trigger
+    // Pending Intent to handle geofence triggers
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
         intent.action = getString(R.string.recommendation_geofence_enter)
@@ -64,7 +57,7 @@ class BackgroundService: Service() {
     }
 
     companion object {
-        private val TAG = BackgroundService::class.qualifiedName
+        private val TAG = BackgroundService::class.qualifiedName!!
 
         const val NOTIFICATION_ID = 2
         const val NOTIFICATION_CHANNEL_ID = "it.unibo.socialplaces.location"
@@ -76,6 +69,8 @@ class BackgroundService: Service() {
      * If `true` then the current service is running, otherwise it is `false`.
      */
     private var isRunning = false
+
+    private val geofenceIds: MutableList<String> = emptyList<String>().toMutableList()
 
     /**
      * Last location that was set.
@@ -103,13 +98,6 @@ class BackgroundService: Service() {
      */
     fun setLocationListener(l: LocationListener) {
         locationListener = l
-    }
-
-    /**
-     * Sets an instance to be called when the geofenceClient is created.
-     */
-    fun setGeofenceListener(l: GeofenceListener) {
-        geofenceListener = l
     }
 
     @SuppressLint("MissingPermission")
@@ -157,7 +145,64 @@ class BackgroundService: Service() {
         isRunning = false
     }
 
+    /**
+     * Adds new geofences given the data from [geofences].
+     * The geofences not available in [geofences] but still working will be canceled.
+     * @param geofences a list of triples (geofenceId, latitude, longitude)
+     */
+    @SuppressLint("MissingPermission")
+    fun updateGeofences(geofences: List<Triple<String, Double, Double>>) {
+        val geofencesSet = geofences.map { it.first }.toSet() // Ex. {0,1,2}
+        val geofenceIdsSet = geofenceIds.toSet() // Ex. {1,2,3}
+        val toRemoveIds = geofenceIdsSet.minus(geofencesSet) // {1,2,3} \ {0,1,2} = {3}
+        val toAddIds = geofencesSet.minus(geofenceIdsSet) // {0,1,2} \ {1,2,3} = {0}
+        /* Hence we remove [toRemoveSet] from [geofenceIds] and later add [toAddSet]. */
+        geofenceIds.removeAll(toRemoveIds)
+
+        // Removing the no more available geofences and then adding the new ones.
+        geofencingClient.removeGeofences(toRemoveIds.toList()).addOnSuccessListener {
+            Log.i(TAG, "Removed all the geofences that were not available anymore ($toRemoveIds).")
+        }.addOnFailureListener {
+            Log.e(TAG, "Could not remove geofences ($toRemoveIds).\n$it")
+        }.addOnCompleteListener {
+            Log.i(TAG, "Adding the new geofences ($toAddIds)")
+            geofenceIds.addAll(toAddIds)
+            val geofencesObjects = geofences.filter { toAddIds.contains(it.first) }.map {
+                Geofence.Builder()
+                    .setRequestId(it.first)
+                    .setCircularRegion(
+                        it.second,
+                        it.third,
+                        resources.getInteger(R.integer.GEOFENCE_RADIUS_IN_METERS).toFloat()
+                    )
+                    .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .build()
+            }
+
+            val geofencingRequest = GeofencingRequest.Builder()
+                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                .addGeofences(geofencesObjects)
+                .build()
+
+            geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
+                addOnSuccessListener {
+                    Log.v(TAG, "Added geofences with ids=${geofencingRequest.geofences.map{ it.requestId }}.")
+                }
+                addOnFailureListener {
+                    it.message?.let { exc -> Log.e(TAG, exc) }
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     fun addGeofence(geofenceId: String, latitude: Double, longitude: Double) {
+        if(geofenceIds.contains(geofenceId)) {
+            return
+        }
+        geofenceIds.add(geofenceId)
+
         val geofence = Geofence.Builder()
             .setRequestId(geofenceId)
             .setCircularRegion(
@@ -169,24 +214,17 @@ class BackgroundService: Service() {
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
 
-        addGeofenceToGeofenceList(GeofencingRequest.Builder()
+        val geofencingRequest = GeofencingRequest.Builder()
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             .addGeofence(geofence)
-            .build())
-    }
+            .build()
 
-    @SuppressLint("MissingPermission")
-    private fun addGeofenceToGeofenceList(geofencingRequest: GeofencingRequest) {
-        geofencingClient.removeGeofences(geofencePendingIntent).run {
-            addOnCompleteListener {
-                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
-                    addOnSuccessListener {
-                        Log.v(TAG, "Added geofence with id: ${geofencingRequest.geofences[0].requestId}.")
-                    }
-                    addOnFailureListener {
-                        it.message?.let { exc -> Log.e(TAG, exc) }
-                    }
-                }
+        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
+            addOnSuccessListener {
+                Log.v(TAG, "Added geofence with id: ${geofencingRequest.geofences[0].requestId}.")
+            }
+            addOnFailureListener {
+                it.message?.let { exc -> Log.e(TAG, exc) }
             }
         }
     }

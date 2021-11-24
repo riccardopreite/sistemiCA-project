@@ -52,7 +52,6 @@ import kotlinx.datetime.Clock
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     BackgroundService.LocationListener,
-    BackgroundService.GeofenceListener,
     CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener,
     PoiDetailsDialogFragment.PoiDetailsDialogListener,
     LiveEventDetailsDialogFragment.LiveEventDetailsDialogListener {
@@ -65,18 +64,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      * Reference to the active [BackgroundService] which periodically retrieves the current
      * location from the GPS.
      */
-    private lateinit var backgroundService: BackgroundService
-
-
-    // Geofence manager
-    private lateinit var geofencingClient: GeofencingClient
-
-    // Pending Intent to handle geofence trigger
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
-        intent.action = getString(R.string.recommendation_geofence_enter)
-        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
+    private var backgroundService: BackgroundService? = null
 
     /**
      * Object for connecting with a handler to the active instance of [BackgroundService].
@@ -88,12 +76,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             Log.d(TAG, "BackgroundService connected to MainActivity.")
             val binder = service as BackgroundService.LocationBinder
             backgroundService = binder.getService()
-            backgroundService.setLocationListener(this@MainActivity)
-            backgroundService.setGeofenceListener(this@MainActivity)
+            backgroundService?.setLocationListener(this@MainActivity)
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             Log.d(TAG, "BackgroundService disconnected from MainActivity.")
+            backgroundService = null
         }
     }
 
@@ -171,7 +159,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         unbindService(connection)
     }
 
-
     override fun onResume() {
         Log.v(TAG, "onResume")
         super.onResume()
@@ -181,7 +168,10 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             intent.removeExtra("notification")
         }
         CoroutineScope(Dispatchers.IO).launch {
-            updateGeofence(PointsOfInterest.getPointsOfInterest())
+            backgroundService?.updateGeofences(
+                PointsOfInterest.getPointsOfInterest()
+                    .map { poi -> Triple(poi.markId, poi.latitude, poi.longitude)}
+            )
         }
         Log.i(TAG, "${if(launchedWithNotificationHandler) "Launched" else "NOT launched"} by a notification.")
         if(launchedWithNotificationHandler) {
@@ -221,7 +211,6 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         CoroutineScope(Dispatchers.IO).launch {
 
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
-            updateGeofence(poisList)
             val leList = LiveEvents.getLiveEvents(forceSync = true)
 
             val mainFragment = buildMainFragment(poisList, leList,handlingNotificationInFetching)
@@ -233,6 +222,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 }
             }
 
+            poisList.forEach { poi -> backgroundService?.addGeofence(poi.markId, poi.latitude, poi.longitude) }
         }
     }
 
@@ -536,23 +526,10 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      * @see BackgroundService.LocationListener.onLocationChanged
      */
     override fun onLocationChanged(service: Service, location: Location) {
-        if(this::onLocationUpdated.isInitialized) {
+        if (this::onLocationUpdated.isInitialized) {
             onLocationUpdated(location)
         }
     }
-    /**
-     * @see BackgroundService.GeofenceListener.onGeofenceClientCreated
-     */
-    override fun onGeofenceClientCreated(geofencingClient: GeofencingClient){
-        Log.v(TAG,"Connected geofenceClient")
-        this.geofencingClient = geofencingClient
-        CoroutineScope(Dispatchers.IO).launch {
-            val poisList = PointsOfInterest.getPointsOfInterest()
-            updateGeofence(poisList)
-        }
-
-    }
-
 
     /**
      * @see CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener.onAddLiveEvent
@@ -574,40 +551,11 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         Log.v(TAG, "CreatePoiOrLiveDialogFragment.CreatePoiOrLiveDialogListener.onAddPointOfInterest")
         CoroutineScope(Dispatchers.IO).launch {
 
-            PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
-            updateGeofence(PointsOfInterest.getPointsOfInterest())
+            val poiId = PointsOfInterest.addPointOfInterest(AddPointOfInterest(addPointOfInterestPoi))
+            backgroundService?.addGeofence(poiId, addPointOfInterestPoi.latitude, addPointOfInterestPoi.longitude)
 
             CoroutineScope(Dispatchers.Main).launch {
                 dialog.dismiss()
-            }
-        }
-    }
-
-    private fun buildGeofence(poi: PointOfInterest): GeofencingRequest {
-        val geofence = Geofence.Builder()
-            .setRequestId(poi.markId)
-            .setCircularRegion(
-                poi.latitude,
-                poi.longitude,
-                resources.getInteger(R.integer.GEOFENCE_RADIUS_IN_METERS).toFloat()
-            )
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .build()
-
-        return GeofencingRequest.Builder()
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-            .addGeofence(geofence)
-            .build()
-
-    }
-
-    private fun updateGeofence(poisList: List<PointOfInterest>){
-        Log.v(TAG,"Updating geofence ${this::geofencingClient.isInitialized}")
-        //Create geofence
-        if(this::geofencingClient.isInitialized){
-            for(poi in poisList){
-                backgroundService.addGeofence(poi.markId, poi.latitude, poi.longitude)
             }
         }
     }
