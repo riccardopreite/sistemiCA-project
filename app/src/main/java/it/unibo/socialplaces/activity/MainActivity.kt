@@ -602,37 +602,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
     }
 
-    @SuppressLint("MissingPermission")
-    private fun addGeofenceListener(geofence: GeofencingRequest){
-        
-        geofencingClient.removeGeofences(geofencePendingIntent).run {
-            addOnCompleteListener {
-                geofencingClient.addGeofences(geofence, geofencePendingIntent).run {
-                    addOnSuccessListener {
-                        Log.v(TAG, "Added geofence with id: ${geofence.geofences[0].requestId}")
-                    }
-                    addOnFailureListener {
-                        if ((it.message != null)) {
-                            Log.e(TAG, it.message!!)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun createGeofence(poi: PointOfInterest){
-        val geofence = buildGeofence(poi)
-        Log.v(TAG,"Geofence created $geofence ")
-        addGeofenceListener(geofence)
-    }
-
     private fun updateGeofence(poisList: List<PointOfInterest>){
         Log.v(TAG,"Updating geofence ${this::geofencingClient.isInitialized}")
         //Create geofence
         if(this::geofencingClient.isInitialized){
             for(poi in poisList){
-                createGeofence(poi)
+                backgroundService.addGeofence(poi.markId, poi.latitude, poi.longitude)
             }
         }
     }

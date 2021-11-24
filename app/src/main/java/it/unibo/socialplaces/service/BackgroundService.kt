@@ -15,7 +15,10 @@ import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import it.unibo.socialplaces.R
+import it.unibo.socialplaces.activity.MainActivity
+import it.unibo.socialplaces.receiver.GeofenceBroadcastReceiver
 
+@SuppressLint("UnspecifiedImmutableFlag")
 class BackgroundService: Service() {
     // Listener
     interface LocationListener {
@@ -42,6 +45,13 @@ class BackgroundService: Service() {
 
     // Geofence manager
     private lateinit var geofencingClient: GeofencingClient
+
+    // Pending Intent to handle geofence trigger
+    private val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
+        intent.action = getString(R.string.recommendation_geofence_enter)
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
 
     // Notification channel
     private val channel = NotificationChannel(
@@ -100,10 +110,6 @@ class BackgroundService: Service() {
      */
     fun setGeofenceListener(l: GeofenceListener) {
         geofenceListener = l
-        //Initialize geofencing Client
-        geofencingClient = LocationServices.getGeofencingClient(this)
-
-        geofenceListener?.onGeofenceClientCreated(geofencingClient)
     }
 
     @SuppressLint("MissingPermission")
@@ -135,12 +141,9 @@ class BackgroundService: Service() {
     private fun startLocationUpdates() {
         Log.v(TAG, "startLocationUpdates")
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        geofencingClient = LocationServices.getGeofencingClient(this)
 
         checkLocationSettings()
-    }
-
-    private fun startGeofencingUpdates() {
-
     }
 
     /**
@@ -152,6 +155,40 @@ class BackgroundService: Service() {
         stopForeground(true)
         stopSelf()
         isRunning = false
+    }
+
+    fun addGeofence(geofenceId: String, latitude: Double, longitude: Double) {
+        val geofence = Geofence.Builder()
+            .setRequestId(geofenceId)
+            .setCircularRegion(
+                latitude,
+                longitude,
+                resources.getInteger(R.integer.GEOFENCE_RADIUS_IN_METERS).toFloat()
+            )
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .build()
+
+        addGeofenceToGeofenceList(GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(geofence)
+            .build())
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun addGeofenceToGeofenceList(geofencingRequest: GeofencingRequest) {
+        geofencingClient.removeGeofences(geofencePendingIntent).run {
+            addOnCompleteListener {
+                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
+                    addOnSuccessListener {
+                        Log.v(TAG, "Added geofence with id: ${geofencingRequest.geofences[0].requestId}.")
+                    }
+                    addOnFailureListener {
+                        it.message?.let { exc -> Log.e(TAG, exc) }
+                    }
+                }
+            }
+        }
     }
 
     /**
