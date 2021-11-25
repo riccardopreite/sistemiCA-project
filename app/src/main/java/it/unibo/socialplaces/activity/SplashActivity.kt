@@ -14,6 +14,8 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.api.ApiConnectors
 import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
+import it.unibo.socialplaces.domain.Notification
+import it.unibo.socialplaces.security.RSA
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,8 +31,13 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
      */
     private val loginActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == Auth.getLoginSuccessResultCode()) {
-            startActivity(Intent(this@SplashActivity, MainActivity::class.java))
-            finish()
+            CoroutineScope(Dispatchers.IO).launch {
+                Notification.addPublicKey(RSA.devicePublicKey)
+                CoroutineScope(Dispatchers.Main).launch {
+                    startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                    finish()
+                }
+            }
         } else {
             // Login is required.
             val snackbar = Snackbar.make(
@@ -58,6 +65,10 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
         super.onCreate(savedInstanceState)
 
         ApiConnectors.loadStore(resources.openRawResource(R.raw.mystore))
+        RSA.loadServerPublicKey(this)
+        if(!RSA.loadDeviceKeys()) {
+            RSA.generateDeviceKeys()
+        }
 
         val progressBar = findViewById<ProgressBar>(R.id.progress_bar)
         progressBar.visibility = View.VISIBLE
@@ -66,6 +77,10 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
         CoroutineScope(Dispatchers.IO).launch {
             if(Auth.isUserAuthenticated()) {
                 Api.setUserId(Auth.getUsername())
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    Notification.addPublicKey(RSA.devicePublicKey)
+                }
 
                 CoroutineScope(Dispatchers.Main).launch {
                     progressBar.visibility = View.GONE

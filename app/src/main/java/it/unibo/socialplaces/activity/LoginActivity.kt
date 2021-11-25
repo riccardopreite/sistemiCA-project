@@ -4,10 +4,12 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
+import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
 import it.unibo.socialplaces.exception.NotAuthenticatedException
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.domain.*
+import it.unibo.socialplaces.security.RSA
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,11 +32,7 @@ class LoginActivity: AppCompatActivity() {
                     setResult(Auth.getLoginSuccessResultCode())
                     val username = Auth.getUsername()
                     username?.let {
-                        Notification.setUserId(it)
-                        Recommendation.setUserId(it)
-                        Friends.setUserId(it)
-                        LiveEvents.setUserId(it)
-                        PointsOfInterest.setUserId(it)
+                        Api.setUserId(Auth.getUsername())
 
                         // Loading the notification manager (doing it now since we
                         // are sure every field for the user in the database is set.

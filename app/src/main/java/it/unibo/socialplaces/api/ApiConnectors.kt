@@ -1,22 +1,30 @@
 package it.unibo.socialplaces.api
 
+import android.content.Context
+import android.util.Base64
+import it.unibo.socialplaces.R
 import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
+import it.unibo.socialplaces.security.RSA
 import okhttp3.ResponseBody
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import okio.Buffer
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.InputStream
-import java.security.KeyStore
-import java.security.SecureRandom
+import java.security.*
 import javax.net.ssl.*
 
 object ApiConnectors {
     // SSL certificate configuration
     private val trustStore: KeyStore = KeyStore.getInstance("BKS")
     private const val keyPair = "SistemiContextAware2021@*"
+    private lateinit var apiPublicKey: String
 
     fun loadStore(rawStore: InputStream) {
         trustStore.load(rawStore, keyPair.toCharArray())
@@ -54,17 +62,59 @@ object ApiConnectors {
     }
 
     /**
+     * OkHttp secure client to be used inside a Retrofit builder.
+     * @see secureRetrofitBuilder
+     */
+    private val secureClient: OkHttpClient by lazy {
+        val mediaType = "text/plain; charset=utf-8".toMediaTypeOrNull()
+
+        OkHttpClient.Builder()
+            .sslSocketFactory(sslContext.socketFactory, trustManager)
+            .hostnameVerifier(hostnameVerifier)
+            .addInterceptor(Interceptor { chain ->
+                val request = chain.request()
+                val oldBody = request.body
+                val buffer = Buffer()
+                oldBody?.writeTo(buffer)
+                val strOldBody = buffer.readUtf8()
+                val strNewBody: String = RSA.encrypt(strOldBody)
+                val body: RequestBody = strNewBody.toRequestBody(mediaType)
+
+                val newRequest = request
+                    .newBuilder()
+                    .header("Content-Type", body.contentType().toString())
+                    .header("Content-Length", body.contentLength().toString())
+                    .method(request.method, body)
+                    .addHeader("Authorization", "Bearer " + Auth.getToken())
+                    .build()
+
+                chain.proceed(newRequest)
+            }).build()
+    }
+
+    /**
      * Retrofit base client builder for all the interfaces in the package "api".
      * @see friendsApi
      * @see liveEventsApi
      * @see notificationApi
      * @see pointsOfInterestApi
-     * @see recommendationApi
      */
     private val retrofitBuilder: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
             .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    /**
+     * Retrofit base client builder for all the interfaces in the package "api".
+     * @see recommendationApi
+     */
+    private val secureRetrofitBuilder: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
+            .client(secureClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -108,7 +158,7 @@ object ApiConnectors {
      * @see RecommendationApi
      */
     val recommendationApi: RecommendationApi by lazy {
-        retrofitBuilder.create(RecommendationApi::class.java)
+        secureRetrofitBuilder.create(RecommendationApi::class.java)
     }
 
     /**
