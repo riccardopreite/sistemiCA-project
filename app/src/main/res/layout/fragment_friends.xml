@@ -39,12 +39,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="24dp"
         android:contentDescription="@string/addfriend"
         android:focusable="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/friends_list_view"
+        app:layout_constraintEnd_toStartOf="@+id/refreshFriends"
         app:srcCompat="@drawable/ic_addfriend" />
 
     <TextView
