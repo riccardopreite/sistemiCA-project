@@ -23,9 +23,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
-import com.google.android.gms.location.Geofence
-import com.google.android.gms.location.GeofencingClient
-import com.google.android.gms.location.GeofencingRequest
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
@@ -43,7 +40,6 @@ import it.unibo.socialplaces.model.liveevents.LiveEvent
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterestPoi
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
-import it.unibo.socialplaces.receiver.GeofenceBroadcastReceiver
 import it.unibo.socialplaces.service.BackgroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

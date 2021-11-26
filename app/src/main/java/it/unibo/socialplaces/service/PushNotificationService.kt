@@ -11,11 +11,13 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.google.gson.Gson
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
+import it.unibo.socialplaces.security.RSA
 import kotlinx.datetime.Clock
 
 
@@ -28,7 +30,7 @@ class PushNotificationService: FirebaseMessagingService() {
      * All the possible keys of a notification of place recommendation.
      * All of them must be present otherwise the notification is not pushed.
      */
-    private val placeRecommendationNotificationExpectedKeys = listOf("markId", "address", "type", "latitude", "longitude", "name", "phoneNumber", "visibility", "url")
+    private val placeRecommendationNotificationExpectedKeys = listOf("encrypted")
 
     /**
      * All the possible keys of a notification of a new live event.
@@ -107,17 +109,8 @@ class PushNotificationService: FirebaseMessagingService() {
             return null
         }
 
-        val recommendedPlace = PointOfInterest(
-            data["markId"]!!,
-            data["address"]!!,
-            data["type"]!!,
-            data["latitude"]!!.toDouble(),
-            data["longitude"]!!.toDouble(),
-            data["name"]!!,
-            data["phoneNumber"]!!,
-            data["visibility"]!!,
-            data["url"]!!,
-        )
+        val jsonString = RSA.decrypt(data["encrypted"]!!)
+        val recommendedPlace = Gson().fromJson(jsonString, PointOfInterest::class.java)
 
         val recommendationIntent = Intent(this, MainActivity::class.java).apply {
             action = actionName

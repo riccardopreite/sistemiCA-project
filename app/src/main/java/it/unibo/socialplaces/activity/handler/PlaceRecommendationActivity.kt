@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
+import it.unibo.socialplaces.security.RSA
 
 class PlaceRecommendationActivity: AppCompatActivity() {
     companion object {
@@ -17,17 +19,9 @@ class PlaceRecommendationActivity: AppCompatActivity() {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
 
-        val recommendedPlace = PointOfInterest(
-            intent.getStringExtra("markId")!!,
-            intent.getStringExtra("address")!!,
-            intent.getStringExtra("type")!!,
-            intent.getStringExtra("latitude")!!.toDouble(),
-            intent.getStringExtra("longitude")!!.toDouble(),
-            intent.getStringExtra("name")!!,
-            intent.getStringExtra("phoneNumber")!!,
-            intent.getStringExtra("visibility")!!,
-            intent.getStringExtra("url")!!
-        )
+        val encryptedMessage = intent.getStringExtra("encrypted")!!
+        val jsonString = RSA.decrypt(encryptedMessage)
+        val recommendedPlace = Gson().fromJson(jsonString, PointOfInterest::class.java)
 
         Log.i(TAG,"Received recommendation for point of interest: $recommendedPlace.")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {

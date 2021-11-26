@@ -2,6 +2,7 @@ package it.unibo.socialplaces.api
 
 import android.content.Context
 import android.util.Base64
+import android.util.Log
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
@@ -21,10 +22,11 @@ import java.security.*
 import javax.net.ssl.*
 
 object ApiConnectors {
+    private val TAG = ApiConnectors::class.qualifiedName!!
+
     // SSL certificate configuration
     private val trustStore: KeyStore = KeyStore.getInstance("BKS")
     private const val keyPair = "SistemiContextAware2021@*"
-    private lateinit var apiPublicKey: String
 
     fun loadStore(rawStore: InputStream) {
         trustStore.load(rawStore, keyPair.toCharArray())
