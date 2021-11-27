@@ -113,6 +113,7 @@
     <string name="empty_username">You must type the e-mail of the user you want to send the friendship request to.</string>
     <string name="no_request_to_oneself">You cannot send a user request to the same user you\'re logged in.</string>
     <string name="friend_request_sent">Friend request sent.</string>
+    <string name="friend_removal_confirmed">Friend removed successfully.</string>
     <string name="share_place">Hey! I think you would be interested in visiting %1$s in %2$s\nhttps://maps.google.com/?q=%3$f,%4$f</string>
     <string name="share_place_intent">You\'re sharing %1$s.</string>
     <string name="loading_friends">Loading your friends list.</string>

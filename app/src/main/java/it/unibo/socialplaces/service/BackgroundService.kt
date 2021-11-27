@@ -163,7 +163,11 @@ class BackgroundService: Service() {
         geofencingClient.removeGeofences(toRemoveIds.toList()).addOnSuccessListener {
             Log.i(TAG, "Removed all the geofences that were not available anymore ($toRemoveIds).")
         }.addOnFailureListener {
-            Log.e(TAG, "Could not remove geofences ($toRemoveIds).\n$it")
+            if(toRemoveIds.toList().isEmpty()) {
+                Log.i(TAG, "No geofences were removed, all available geofences are kept.")
+            } else {
+                Log.e(TAG, "Could not remove geofences with ids=$toRemoveIds.\n$it")
+            }
         }.addOnCompleteListener {
             Log.i(TAG, "Adding the new geofences ($toAddIds)")
             if(toAddIds.isEmpty()){
@@ -173,11 +177,7 @@ class BackgroundService: Service() {
             val geofencesObjects = geofences.filter { toAddIds.contains(it.first) }.map {
                 Geofence.Builder()
                     .setRequestId(it.first)
-                    .setCircularRegion(
-                        it.second,
-                        it.third,
-                        resources.getInteger(R.integer.GEOFENCE_RADIUS_IN_METERS).toFloat()
-                    )
+                    .setCircularRegion(it.second, it.third, resources.getInteger(R.integer.GEOFENCE_RADIUS_IN_METERS).toFloat())
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                     .build()

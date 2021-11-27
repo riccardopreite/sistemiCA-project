@@ -3,6 +3,10 @@ package it.unibo.socialplaces.domain
 import android.util.Log
 import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.ApiConnectors
+import it.unibo.socialplaces.exception.FriendshipConfirmationNotSent
+import it.unibo.socialplaces.exception.FriendshipDenialNotSent
+import it.unibo.socialplaces.exception.FriendshipRemovalNotSent
+import it.unibo.socialplaces.exception.FriendshipRequestNotSent
 import it.unibo.socialplaces.model.friends.*
 import okhttp3.ResponseBody
 import retrofit2.HttpException
@@ -85,8 +89,11 @@ object Friends {
         if(response.isSuccessful) {
             Log.i(TAG, "Friend request to $friendUsername successfully sent.")
         } else {
+            Log.d(TAG, response.code().toString())
             // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/11
-            Log.e(TAG, handleApiError(response.errorBody()).toString())
+            val error = handleApiError(response.errorBody())
+            Log.e(TAG, error.toString())
+            throw FriendshipRequestNotSent(error.toString())
         }
     }
 
@@ -111,7 +118,9 @@ object Friends {
             Log.i(TAG, "Friend request coming from $otherUserUsername successfully confirmed.")
         } else {
             // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/12
-            Log.e(TAG, handleApiError(response.errorBody()).toString())
+            val error = handleApiError(response.errorBody())
+            Log.e(TAG, error.toString())
+            throw FriendshipConfirmationNotSent(error.toString())
         }
     }
 
@@ -136,7 +145,9 @@ object Friends {
             Log.i(TAG, "Friend request coming from $senderOfFriendshipRequest successfully denied.")
         } else {
             // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/13
-            Log.e(TAG, handleApiError(response.errorBody()).toString())
+            val error = handleApiError(response.errorBody())
+            Log.e(TAG, error.toString())
+            throw FriendshipDenialNotSent(error.toString())
         }
     }
 
@@ -161,7 +172,9 @@ object Friends {
             Log.i(TAG, "Friend with username $friendUsername successfully removed.")
         } else {
             // TODO Perhaps throw an exception? https://github.com/riccardopreite/sistemiCA-project/issues/14
-            Log.e(TAG, handleApiError(response.errorBody()).toString())
+            val error = handleApiError(response.errorBody())
+            Log.e(TAG, error.toString())
+            throw FriendshipRemovalNotSent(error.toString())
         }
     }
 

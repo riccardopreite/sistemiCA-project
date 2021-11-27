@@ -1,9 +1,5 @@
 package it.unibo.socialplaces.api
 
-import android.content.Context
-import android.util.Base64
-import android.util.Log
-import it.unibo.socialplaces.R
 import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
 import it.unibo.socialplaces.security.RSA
@@ -22,7 +18,7 @@ import java.security.*
 import javax.net.ssl.*
 
 object ApiConnectors {
-    private val TAG = ApiConnectors::class.qualifiedName!!
+//    private val TAG = ApiConnectors::class.qualifiedName!!
 
     // SSL certificate configuration
     private val trustStore: KeyStore = KeyStore.getInstance("BKS")
@@ -125,7 +121,7 @@ object ApiConnectors {
      * Retrofit library error converter.
      */
     private val errorConverter: Converter<ResponseBody, ApiError> by lazy {
-        retrofitBuilder.responseBodyConverter(ApiError.Message::class.java, emptyArray<Annotation>())
+        retrofitBuilder.responseBodyConverter(ApiError::class.java, emptyArray<Annotation>())
     }
 
     /**
@@ -168,13 +164,13 @@ object ApiConnectors {
      * of [ApiError].
      *
      * @param body of type [ResponseBody]
-     * @return instance of type [ApiError.Generic] if [body] is `null`, an instance of [ApiError.Message]
+     * @return instance of type [ApiError]
      * otherwise.
      */
     fun handleApiError(body: ResponseBody?): ApiError {
         if(body == null) {
-            return ApiError.Generic()
+            return ApiError()
         }
-        return errorConverter.convert(body) ?: ApiError.Generic()
+        return errorConverter.convert(body) ?: ApiError()
     }
 }

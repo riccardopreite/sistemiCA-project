@@ -20,6 +20,8 @@ import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterest
 import it.unibo.socialplaces.model.pointofinterests.AddPointOfInterestPoi
 import it.unibo.socialplaces.model.pointofinterests.PointOfInterest
 import com.google.android.material.snackbar.Snackbar
+import it.unibo.socialplaces.exception.FriendshipRemovalNotSent
+import it.unibo.socialplaces.exception.FriendshipRequestNotSent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,12 +73,18 @@ class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
     override fun sendFriendshipRequest(dialog: DialogFragment, username: String) {
         Log.v(TAG, "AddFriendDialogFragment.AddFriendDialogListener.sendFriendshipRequest")
         CoroutineScope(Dispatchers.IO).launch {
-            Friends.addFriend(username)
+            try {
+                Friends.addFriend(username)
 
-            CoroutineScope(Dispatchers.Main).launch {
-                Toast.makeText(this@FriendsListActivity, R.string.friend_request_sent, Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@FriendsListActivity, R.string.friend_request_sent, Toast.LENGTH_SHORT).show()
+                }
+            } catch(e: FriendshipRequestNotSent) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@FriendsListActivity, e.message, Toast.LENGTH_SHORT).show()
+                }
             }
+            CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
         }
     }
 
@@ -99,7 +107,17 @@ class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
     override fun removeFriend(dialog: DialogFragment, friendUsername: String) {
         Log.v(TAG, "FriendDialogFragment.FriendDialogListener.removeFriend")
         CoroutineScope(Dispatchers.IO).launch {
-            Friends.removeFriend(friendUsername)
+            try {
+                Friends.removeFriend(friendUsername)
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@FriendsListActivity, R.string.friend_removal_confirmed, Toast.LENGTH_SHORT).show()
+                }
+            } catch(e: FriendshipRemovalNotSent) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(this@FriendsListActivity, e.message, Toast.LENGTH_SHORT).show()
+                }
+            }
             CoroutineScope(Dispatchers.Main).launch { dialog.dismiss() }
         }
     }
@@ -161,7 +179,17 @@ class FriendsListActivity: it.unibo.socialplaces.activity.ListActivity(),
 
         friendToDelete?.let { friend ->
             CoroutineScope(Dispatchers.IO).launch {
-                Friends.removeFriend(friend.friendUsername)
+                try {
+                    Friends.removeFriend(friend.friendUsername)
+
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Toast.makeText(this@FriendsListActivity, R.string.friend_removal_confirmed, Toast.LENGTH_SHORT).show()
+                    }
+                } catch(e: FriendshipRemovalNotSent) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Toast.makeText(this@FriendsListActivity, e.message, Toast.LENGTH_SHORT).show()
+                    }
+                }
                 CoroutineScope(Dispatchers.Main).launch {
                     dialog.dismiss()
                     updateFriendList()
