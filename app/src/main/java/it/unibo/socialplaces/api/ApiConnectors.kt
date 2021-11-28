@@ -94,7 +94,7 @@ object ApiConnectors {
      * Retrofit base client builder for all the interfaces in the package "api".
      * @see friendsApi
      * @see liveEventsApi
-     * @see notificationApi
+     * @see userDataApi
      * @see pointsOfInterestApi
      */
     private val retrofitBuilder: Retrofit by lazy {
@@ -146,10 +146,10 @@ object ApiConnectors {
     }
 
     /**
-     * @see NotificationApi
+     * @see UserDataApi
      */
-    val notificationApi: NotificationApi by lazy {
-        retrofitBuilder.create(NotificationApi::class.java)
+    val userDataApi: UserDataApi by lazy {
+        retrofitBuilder.create(UserDataApi::class.java)
     }
 
     /**

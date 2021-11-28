@@ -14,7 +14,7 @@ import it.unibo.socialplaces.R
 import it.unibo.socialplaces.api.ApiConnectors
 import it.unibo.socialplaces.config.Api
 import it.unibo.socialplaces.config.Auth
-import it.unibo.socialplaces.domain.Notification
+import it.unibo.socialplaces.domain.UserData
 import it.unibo.socialplaces.security.RSA
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +32,7 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
     private val loginActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if(it.resultCode == Auth.getLoginSuccessResultCode()) {
             CoroutineScope(Dispatchers.IO).launch {
-                Notification.addPublicKey(RSA.devicePublicKey)
+                UserData.addPublicKey(RSA.devicePublicKey)
                 CoroutineScope(Dispatchers.Main).launch {
                     startActivity(Intent(this@SplashActivity, MainActivity::class.java))
                     finish()
@@ -79,7 +79,7 @@ class SplashActivity : AppCompatActivity(R.layout.activity_splash) {
                 Api.setUserId(Auth.getUsername())
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    Notification.addPublicKey(RSA.devicePublicKey)
+                    UserData.addPublicKey(RSA.devicePublicKey)
                 }
 
                 CoroutineScope(Dispatchers.Main).launch {

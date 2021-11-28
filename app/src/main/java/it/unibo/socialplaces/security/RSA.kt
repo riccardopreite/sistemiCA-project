@@ -87,6 +87,7 @@ object RSA {
             setCertificateSerialNumber(BigInteger.valueOf(777)) // Serial number used for the self-signed certificate of the generated key pair, default is 1
             setCertificateSubject(X500Principal("CN=$KEY_ALIAS")) // Subject used for the self-signed certificate of the generated key pair, default is CN=fake
             setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1, KeyProperties.ENCRYPTION_PADDING_RSA_OAEP) // Set of padding schemes with which the key can be used when signing/verifying
+            setKeySize(4096)
             // TODO Enable only if the application is used on a real device.
 //            setUserAuthenticationRequired(true) // Sets whether this key is authorized to be used only if the user has been authenticated, default false
 //            setUserAuthenticationParameters(30, KeyProperties.AUTH_DEVICE_CREDENTIAL or KeyProperties.AUTH_BIOMETRIC_STRONG) //Duration(seconds) for which this key is authorized to be used after the user is successfully authenticated

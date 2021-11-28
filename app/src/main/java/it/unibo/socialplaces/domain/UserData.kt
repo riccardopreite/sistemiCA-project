@@ -9,11 +9,11 @@ import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
 
-object Notification {
-    private val TAG = Notification::class.qualifiedName!!
+object UserData {
+    private val TAG = UserData::class.qualifiedName!!
 
     private val api by lazy {
-        ApiConnectors.notificationApi
+        ApiConnectors.userDataApi
     }
 
     private val handleApiError: (ResponseBody?) -> ApiError = ApiConnectors::handleApiError
@@ -30,8 +30,8 @@ object Notification {
     }
 
     /**
-     * Calls POST /notification/token in the SocialPlaces API.
-     * @see it.unibo.socialplaces.api.NotificationApi
+     * Calls POST /user-data/notification-token in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.UserDataApi
      * @param token the push notification token
      */
     suspend fun addNotificationToken(token: String) {
@@ -67,8 +67,8 @@ object Notification {
     }
 
     /**
-     * Calls POST /notification/publickey in the SocialPlaces API.
-     * @see it.unibo.socialplaces.api.NotificationApi
+     * Calls POST /user-data/public-key in the SocialPlaces API.
+     * @see it.unibo.socialplaces.api.UserDataApi
      * @param token the public key
      */
     suspend fun addPublicKey(publicKey: String) {

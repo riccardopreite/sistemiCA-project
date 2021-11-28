@@ -8,7 +8,7 @@ object Api {
 
     fun setUserId(userId: String?) {
         userId?.let {
-            Notification.setUserId(it)
+            UserData.setUserId(it)
             Recommendation.setUserId(it)
             Friends.setUserId(it)
             LiveEvents.setUserId(it)

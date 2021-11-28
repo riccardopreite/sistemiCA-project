@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
-import it.unibo.socialplaces.domain.Notification
+import it.unibo.socialplaces.domain.UserData
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +29,7 @@ object PushNotification {
         }
 
     /**
-     * Initial setup of the Push Notification managing configuration.
+     * Initial setup of the Push UserData managing configuration.
      */
     fun setupNotificationToken() {
         Log.v(TAG, "loadNotificationManager")
@@ -50,7 +50,7 @@ object PushNotification {
      */
     fun uploadNotificationToken(token: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            Notification.addNotificationToken(token)
+            UserData.addNotificationToken(token)
         }
     }
 
@@ -60,25 +60,6 @@ object PushNotification {
     fun displayNotification(id: Int, notification: android.app.Notification) {
         notificationManager.notify(id, notification)
     }
-
-    /*
-    /**
-     * Cancel a previously set notification with identifier = [id].
-     */
-    fun cancelNotification(id: Int) {
-        notificationManager.cancel(id)
-    }
-
-    /**
-     * Returns `true` if the notification with identifier = [id] is present in the list of displayed
-     * notifications.
-     */
-    fun existsNotification(id: Int): Boolean {
-        Log.d(TAG, "Active notifications' identifiers: ${notificationManager.activeNotifications.map {it.id }}")
-        Log.d(TAG, "Received id: $id")
-        return notificationManager.activeNotifications.any { it.id == id }
-    }
-     */
 
     /**
      * Returns the channel for publishing notifications after FCM receives one.
