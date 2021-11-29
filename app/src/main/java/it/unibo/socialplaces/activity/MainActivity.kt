@@ -130,6 +130,11 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      */
     lateinit var onLocationUpdated: (Location) -> Unit
 
+    /**
+     * Callback for updating the map location status shown in [MainFragment].
+     */
+    lateinit var onLocationStatusUpdated: (Boolean) -> Unit
+
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
@@ -267,6 +272,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
 
         onLocationUpdated = mainFragment::onCurrentLocationUpdated
+        onLocationStatusUpdated = mainFragment::onLocationStatusUpdated
 
         return mainFragment
     }
@@ -524,6 +530,12 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     override fun onLocationChanged(service: Service, location: Location) {
         if (this::onLocationUpdated.isInitialized) {
             onLocationUpdated(location)
+        }
+    }
+
+    override fun onLocationStatusChanged(service: Service, newStatus: Boolean) {
+        if(this::onLocationStatusUpdated.isInitialized) {
+            onLocationStatusUpdated(newStatus)
         }
     }
 

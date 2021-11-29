@@ -41,16 +41,19 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
 
             val locationServiceSwitch = binding.menuNavView.menu.findItem(R.id.location_service_switch).actionView as SwitchCompat
             locationServiceSwitch.isChecked = backgroundService?.isServiceRunning() == true
+            isServiceBound = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             Log.d(TAG, "BackgroundService disconnected from MainMenuFragment.")
-            backgroundService = null
         }
     }
+    private var isServiceBound: Boolean = false
 
     companion object {
         private val TAG: String = MainMenuFragment::class.qualifiedName!!
+
+        private const val ARG_ISSERVICEBOUND = "isServiceBound"
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -130,8 +133,12 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
      * Disables the binding between this fragment and the [BackgroundService].
      */
     private fun unbindLocationService() {
-        //TODO do not call twice
-        requireContext().unbindService(connection)
+        Log.v(TAG, "unbindLocationService")
+        if(isServiceBound) {
+            requireContext().unbindService(connection)
+            backgroundService = null
+            isServiceBound = false
+        }
     }
 
     /**
@@ -161,5 +168,15 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         requireContext().startService(stopIntent)
         unbindLocationService()
         Toast.makeText(requireContext(), R.string.location_service_stopped, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(ARG_ISSERVICEBOUND, isServiceBound)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        isServiceBound = savedInstanceState?.getBoolean(ARG_ISSERVICEBOUND, false) ?: false
     }
 }

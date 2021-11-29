@@ -453,6 +453,15 @@ class MainFragment : Fragment(R.layout.fragment_main),
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun onLocationStatusUpdated(newLocationStatus: Boolean) {
+        if(!this::map.isInitialized) {
+            Log.w(TAG, "The map from Google Maps has not been initialized yet. The map cannot update its current location status.")
+            return
+        }
+        map.isMyLocationEnabled = newLocationStatus
+    }
+
     /**
      * Approximate location check.
      * First [pos0] and [pos1] are approximated to the 4th decimal digit and then compared.

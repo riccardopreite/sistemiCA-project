@@ -22,6 +22,7 @@ class BackgroundService: Service() {
     // Listener
     interface LocationListener {
         fun onLocationChanged(service: Service, location: Location)
+        fun onLocationStatusChanged(service: Service, newStatus: Boolean)
     }
 
     private var locationListener: LocationListener? = null
@@ -114,10 +115,12 @@ class BackgroundService: Service() {
                 )
                 createNotificationChannel()
                 isRunning = true
+                locationListener?.onLocationStatusChanged(this@BackgroundService, true)
             }
             addOnFailureListener {
                 Log.v(TAG, "$it\nCould not start the location service.")
                 isRunning = false
+                locationListener?.onLocationStatusChanged(this@BackgroundService, false)
             }
         }
     }
@@ -131,6 +134,7 @@ class BackgroundService: Service() {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         geofencingClient = LocationServices.getGeofencingClient(this)
 
+
         checkLocationSettings()
     }
 
@@ -139,7 +143,9 @@ class BackgroundService: Service() {
      * Precondition: the use of location is active.
      */
     private fun stopLocationUpdates() {
+        Log.v(TAG, "stopLocationUpdates")
         fusedLocationProviderClient.removeLocationUpdates(locationUpdateCallback)
+        locationListener?.onLocationStatusChanged(this, false)
         stopForeground(true)
         stopSelf()
         isRunning = false
@@ -152,6 +158,7 @@ class BackgroundService: Service() {
      */
     @SuppressLint("MissingPermission")
     fun updateGeofences(geofences: List<Triple<String, Double, Double>>) {
+        Log.v(TAG, "updateGeofences")
         val geofencesSet = geofences.map { it.first }.toSet() // Ex. {0,1,2}
         val geofenceIdsSet = geofenceIds.toSet() // Ex. {1,2,3}
         val toRemoveIds = geofenceIdsSet.minus(geofencesSet) // {1,2,3} \ {0,1,2} = {3}
@@ -201,6 +208,7 @@ class BackgroundService: Service() {
 
     @SuppressLint("MissingPermission")
     fun addGeofence(geofenceId: String, latitude: Double, longitude: Double) {
+        Log.v(TAG, "addGeofence")
         if(geofenceIds.contains(geofenceId)) {
             return
         }
@@ -286,11 +294,13 @@ class BackgroundService: Service() {
     }
 
     override fun onDestroy() {
+        Log.v(TAG, "onDestroy")
         super.onDestroy()
         stopLocationUpdates()
     }
 
     override fun onBind(intent: Intent?): IBinder {
+        Log.v(TAG, "onBind")
         return binder
     }
 }
