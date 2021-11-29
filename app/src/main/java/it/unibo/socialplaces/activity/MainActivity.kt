@@ -251,7 +251,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
                 }
                 getString(R.string.activity_new_live_event) -> {
                     Log.i(TAG, "Handling a notification with a new Live Event creation.")
-                    val live: LiveEvent = intent.getParcelableExtra("liveEvent")!!
+                    val live: LiveEvent = intent.getParcelableExtra("live")!!
                     MainFragment.newInstance(poisList, leList, live)
                 }
                 getString(R.string.activity_friend_request_accepted) -> {

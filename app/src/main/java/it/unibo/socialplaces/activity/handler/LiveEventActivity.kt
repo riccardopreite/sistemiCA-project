@@ -31,7 +31,7 @@ class LiveEventActivity: AppCompatActivity() {
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             action = getString(R.string.activity_new_live_event)
-            putExtra("liveEvent", liveEvent)
+            putExtra("live", liveEvent)
             putExtra("notification", true)
         }
 
