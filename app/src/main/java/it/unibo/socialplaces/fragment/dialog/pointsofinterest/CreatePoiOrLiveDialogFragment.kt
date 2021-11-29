@@ -127,7 +127,7 @@ class CreatePoiOrLiveDialogFragment: DialogFragment() {
                 val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                 positiveButton.setOnClickListener {
                     val name = nameEt.text.toString()
-                    Log.v(TAG, "Inserted name $name")
+                    Log.d(TAG, "Inserted name $name")
                     if(name == "") {
                         displayInsertedDataError(nameEt, "Please insert a name.")
                     } else {

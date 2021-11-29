@@ -5,9 +5,11 @@ import it.unibo.socialplaces.api.ApiError
 import it.unibo.socialplaces.api.ApiConnectors
 import it.unibo.socialplaces.model.liveevents.AddLiveEvent
 import it.unibo.socialplaces.model.liveevents.LiveEvent
+import kotlinx.datetime.Clock
 import okhttp3.ResponseBody
 import retrofit2.HttpException
 import java.io.IOException
+import kotlin.math.floor
 
 object LiveEvents {
     private val TAG = LiveEvents::class.qualifiedName!!
@@ -130,8 +132,8 @@ object LiveEvents {
                 addLiveEvent.latitude,
                 addLiveEvent.longitude,
                 addLiveEvent.name,
-                addLiveEvent.owner,
-                addLiveEvent.expiresAfter.toLong()
+                userId,
+                floor(Clock.System.now().toEpochMilliseconds().toDouble() / 1000.0).toLong() + addLiveEvent.expiresAfter.toLong()
             )
             addLiveEventLocally(currentLive)
             if(validCreateMarkerCallback) {

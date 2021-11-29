@@ -1,5 +1,8 @@
 package it.unibo.socialplaces.fragment
 
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -23,6 +26,8 @@ import it.unibo.socialplaces.databinding.FragmentMainMenuBinding
 import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.Picasso
 import it.unibo.socialplaces.activity.MainActivity
+import it.unibo.socialplaces.config.Alarm
+import it.unibo.socialplaces.receiver.RecommendationAlarm
 import it.unibo.socialplaces.service.BackgroundService
 
 class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
@@ -39,8 +44,15 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
             val binder = service as BackgroundService.LocationBinder
             backgroundService = binder.getService()
 
+            val activeServicesSharedPrefs = requireContext().getSharedPreferences(getString(R.string.sharedpreferences_active_services), Context.MODE_PRIVATE)
+
             val locationServiceSwitch = binding.menuNavView.menu.findItem(R.id.location_service_switch).actionView as SwitchCompat
-            locationServiceSwitch.isChecked = backgroundService?.isServiceRunning() == true
+            locationServiceSwitch.isChecked = activeServicesSharedPrefs.getBoolean("locationService", true)
+
+
+            val geofencingServiceSwitch = binding.menuNavView.menu.findItem(R.id.geofencing_service_switch).actionView as SwitchCompat
+            geofencingServiceSwitch.isChecked = activeServicesSharedPrefs.getBoolean("geofencingService", false)
+
             isServiceBound = true
         }
 
@@ -76,6 +88,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         val email = navBar.findViewById<TextView>(R.id.email)
         val close = navBar.findViewById<ImageView>(R.id.close)
         val locationServiceSwitch = binding.menuNavView.menu.findItem(R.id.location_service_switch).actionView as SwitchCompat
+        val geofencingServiceSwitch = binding.menuNavView.menu.findItem(R.id.geofencing_service_switch).actionView as SwitchCompat
 
         Auth.getUserProfileIcon()?.let { Picasso.get().load(it).into(icon) }
         Auth.getUserFullName()?.let { user.text = it }
@@ -85,16 +98,39 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
             activity?.supportFragmentManager?.popBackStack()
         }
 
+        val activeServicesSharedPrefs = requireContext().getSharedPreferences(getString(R.string.sharedpreferences_active_services), Context.MODE_PRIVATE)
+
         locationServiceSwitch.setOnClickListener {
-            backgroundService?.let {
-                if(it.isServiceRunning()) {
-                    stopLocationService()
-                    locationServiceSwitch.isChecked = false
-                } else {
-                    startLocationService()
-                    locationServiceSwitch.isChecked = true
+            val isLocationServiceActive = activeServicesSharedPrefs.getBoolean("locationService", true)
+            val isGeofencingServiceActive = activeServicesSharedPrefs.getBoolean("geofencingService", false)
+            if(isLocationServiceActive) {
+                stopLocationService()
+                if(isGeofencingServiceActive) {
+                    stopGeofencingService()
+                    geofencingServiceSwitch.isChecked = false
+                    activeServicesSharedPrefs.edit().putBoolean("geofencingService", geofencingServiceSwitch.isChecked).apply()
                 }
+            } else {
+                startLocationService()
             }
+            locationServiceSwitch.isChecked = !isLocationServiceActive
+            activeServicesSharedPrefs.edit().putBoolean("locationService", locationServiceSwitch.isChecked).apply()
+        }
+
+        geofencingServiceSwitch.setOnClickListener {
+            val isLocationServiceActive = activeServicesSharedPrefs.getBoolean("locationService", true)
+            if(!isLocationServiceActive) {
+                geofencingServiceSwitch.isChecked = false
+                return@setOnClickListener
+            }
+            val isGeofencingServiceActive = activeServicesSharedPrefs.getBoolean("geofencingService", false)
+            if(isGeofencingServiceActive) {
+                stopGeofencingService()
+            } else {
+                startGeofencingService()
+            }
+            geofencingServiceSwitch.isChecked = !isGeofencingServiceActive
+            activeServicesSharedPrefs.edit().putBoolean("geofencingService", geofencingServiceSwitch.isChecked).apply()
         }
     }
 
@@ -125,8 +161,12 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
      * Enables the binding between this fragment and the [BackgroundService].
      */
     private fun bindLocationService() {
-        val bindIntent = Intent(requireContext(), BackgroundService::class.java)
-        requireContext().bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
+        val activeServicesSharedPrefs = requireContext().getSharedPreferences(getString(R.string.sharedpreferences_active_services), Context.MODE_PRIVATE)
+        val isLocationServiceActive = activeServicesSharedPrefs.getBoolean("locationService", true)
+        if(isLocationServiceActive) {
+            val bindIntent = Intent(requireContext(), BackgroundService::class.java)
+            requireContext().bindService(bindIntent, connection, Context.BIND_AUTO_CREATE)
+        }
     }
 
     /**
@@ -146,7 +186,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
      * [backgroundService]).
      */
     private fun startLocationService() {
-        Log.v(MainActivity.TAG, "startLocationService")
+        Log.v(TAG, "startLocationService")
         val startIntent = Intent(requireContext(), BackgroundService::class.java).apply {
             action = getString(R.string.background_location_start)
         }
@@ -168,6 +208,39 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
         requireContext().startService(stopIntent)
         unbindLocationService()
         Toast.makeText(requireContext(), R.string.location_service_stopped, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Starts the geofencing broadcast receiver [RecommendationAlarm] that starts the human activity recognition.
+     */
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private fun startGeofencingService() {
+        Log.v(TAG, "startGeofencingService")
+        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmIntent = Intent(requireContext(), RecommendationAlarm::class.java).apply {
+            action = getString(R.string.recommendation_periodic_alarm)
+        }
+        val recommendationBroadcast = PendingIntent.getBroadcast(
+            requireContext(), 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        alarmManager.setRepeating(Alarm.alarmType(), Alarm.firstRunMillis(), Alarm.repeatingRunTimeWindow(), recommendationBroadcast)
+        Toast.makeText(requireContext(), R.string.geofencing_service_started, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Stops the geofencing broadcast receiver [RecommendationAlarm] that stops also the human activity recognition.
+     */
+    @SuppressLint("UnspecifiedImmutableFlag")
+    private fun stopGeofencingService() {
+        Log.v(TAG, "stopGeofencingService")
+        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmIntent = Intent(requireContext(), RecommendationAlarm::class.java).apply {
+            action = getString(R.string.recommendation_periodic_alarm)
+        }
+        val recommendationBroadcast = PendingIntent.getBroadcast(
+            requireContext(), 0, alarmIntent, PendingIntent.FLAG_NO_CREATE
+        )
+        alarmManager.cancel(recommendationBroadcast)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

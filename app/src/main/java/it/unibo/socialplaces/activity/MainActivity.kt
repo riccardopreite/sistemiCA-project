@@ -26,6 +26,7 @@ import androidx.fragment.app.DialogFragment
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
+import it.unibo.socialplaces.config.Alarm
 import it.unibo.socialplaces.config.PushNotification
 import it.unibo.socialplaces.receiver.RecommendationAlarm
 import it.unibo.socialplaces.domain.LiveEvents
@@ -44,7 +45,6 @@ import it.unibo.socialplaces.service.BackgroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 
 class MainActivity: AppCompatActivity(R.layout.activity_main),
     BackgroundService.LocationListener,
@@ -138,6 +138,9 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
+
+        // Setting development / production mode
+        Alarm.isDevelopment = true
 
         // Loading the notification manager.
         PushNotification.loadNotificationManager(this)
@@ -286,7 +289,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             checkLocationPermissions {
                 checkBackgroundLocationPermissions {
                     startLocationService()
-                    startAlarmService()
+                    startGeofencingService()
                     fetchPoisAndLiveEvents()
                 }
             }
@@ -416,7 +419,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
 
         val loadServicesAndFetchData: () -> Unit = {
             startLocationService()
-            startAlarmService()
+            startGeofencingService()
             fetchPoisAndLiveEvents()
         }
 
@@ -486,6 +489,17 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     private fun startLocationService() {
         Log.v(TAG, "startLocationService")
 
+        val activeServicesSharedPrefs = getSharedPreferences(getString(R.string.sharedpreferences_active_services), Context.MODE_PRIVATE)
+
+        if(!activeServicesSharedPrefs.contains("locationService")) {
+            // The default value is true since we want the LocationService to start at least the first time.
+            activeServicesSharedPrefs.edit().putBoolean("locationService", true).apply()
+        }
+
+        if(!activeServicesSharedPrefs.getBoolean("locationService", true)) {
+            return
+        }
+
         val startIntent = Intent(this, BackgroundService::class.java).apply {
             action = getString(R.string.background_location_start)
         }
@@ -501,12 +515,23 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
      * Retrieves the instance of [AlarmManager] for running [RecommendationAlarm].
      */
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun startAlarmService() {
+    private fun startGeofencingService() {
         Log.v(TAG, "startAlarmService")
 
+        val activeServicesSharedPrefs = getSharedPreferences(getString(R.string.sharedpreferences_active_services), Context.MODE_PRIVATE)
+
+        if(!activeServicesSharedPrefs.contains("geofencingService")) {
+            activeServicesSharedPrefs.edit().putBoolean("geofencingService", false).apply()
+        }
+
+        if(!activeServicesSharedPrefs.getBoolean("geofencingService", false)) {
+            return
+        }
+
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(this, RecommendationAlarm::class.java)
-        alarmIntent.action = getString(R.string.recommendation_periodic_alarm)
+        val alarmIntent = Intent(this, RecommendationAlarm::class.java).apply {
+            action = getString(R.string.recommendation_periodic_alarm)
+        }
 
         val recommendationBroadcast = PendingIntent.getBroadcast(
             this,
@@ -516,12 +541,13 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         )
 
         alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            Clock.System.now().toEpochMilliseconds() + 10, // Only while developing
-//            AlarmManager.INTERVAL_HOUR * 3,
-            AlarmManager.INTERVAL_HOUR * 3,
+            Alarm.alarmType(),
+            Alarm.firstRunMillis(),
+            Alarm.repeatingRunTimeWindow(),
             recommendationBroadcast
         )
+
+        Toast.makeText(this, R.string.geofencing_service_started, Toast.LENGTH_SHORT).show()
     }
 
     /**

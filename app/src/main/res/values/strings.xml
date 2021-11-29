@@ -63,8 +63,11 @@
     <string name="add_to_user_pois">Add to mine</string>
     <string name="no_address">Address not found</string>
     <string name="location_service">Location service</string>
+    <string name="geofencing_service">Geofencing service</string>
     <string name="location_service_started">Location service started</string>
     <string name="location_service_stopped">Location service stopped</string>
+    <string name="geofencing_service_started">Geofencing service started</string>
+    <string name="geofencing_service_stopped">Geofencing service stopped</string>
     <string name="location_service_description">SocialPlaces Location Service for accessing the device location in real time.</string>
     <string name="location_permission_denied">Permission to use location services denied. Closing the app…</string>
     <string name="app_logo_description">App logo</string>

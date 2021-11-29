@@ -108,6 +108,7 @@ class BackgroundService: Service() {
         val client: SettingsClient = LocationServices.getSettingsClient(this)
         return client.checkLocationSettings(LocationConfig.createLocationSettingsRequest()).apply {
             addOnSuccessListener {
+                Log.d(TAG, "Starting location updates.")
                 fusedLocationProviderClient.requestLocationUpdates(
                     LocationConfig.createLocationRequest(),
                     locationUpdateCallback,
@@ -118,7 +119,7 @@ class BackgroundService: Service() {
                 locationListener?.onLocationStatusChanged(this@BackgroundService, true)
             }
             addOnFailureListener {
-                Log.v(TAG, "$it\nCould not start the location service.")
+                Log.e(TAG, "$it\nCould not start the location service.")
                 isRunning = false
                 locationListener?.onLocationStatusChanged(this@BackgroundService, false)
             }
@@ -133,7 +134,6 @@ class BackgroundService: Service() {
         Log.v(TAG, "startLocationUpdates")
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         geofencingClient = LocationServices.getGeofencingClient(this)
-
 
         checkLocationSettings()
     }

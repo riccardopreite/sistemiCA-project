@@ -25,4 +25,5 @@
     <string name="sharedpreferences_place_recommendation">sharePlacesRecommendation</string>
     <string name="sharedpreferences_validity_recommendation">sharePlacesGeofence</string>
     <string name="sharedpreferences_location_updates">sharePlacesLocation</string>
+    <string name="sharedpreferences_active_services">activeServices</string>
 </resources>

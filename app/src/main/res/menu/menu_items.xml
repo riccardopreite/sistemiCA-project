@@ -32,6 +32,13 @@
             app:actionViewClass="androidx.appcompat.widget.SwitchCompat"
             app:showAsAction="ifRoom"/>
 
+        <item
+            android:id="@+id/geofencing_service_switch"
+            android:icon="@drawable/ic_route_start_svgrepo_com"
+            android:title="@string/geofencing_service"
+            app:actionViewClass="androidx.appcompat.widget.SwitchCompat"
+            app:showAsAction="ifRoom"/>
+
     </group>
 
 </menu>
