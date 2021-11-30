@@ -37,8 +37,8 @@ class RecognizedActivityReceiver(
     override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "onReceive")
 
-        val humanActivity = intent.extras!!.getString("human_activity_type", "")
-        val confidence = intent.extras!!.getInt("confidence", 0)
+        val humanActivity = intent.extras!!.getString(context.getString(R.string.extra_human_activity_type), "")
+        val confidence = intent.extras!!.getInt(context.getString(R.string.extra_confidence), 0)
 
         if (humanActivity == "" || confidence < 75) {
             return
@@ -59,7 +59,7 @@ class RecognizedActivityReceiver(
             (Calendar.HOUR_OF_DAY * 3600) + (Calendar.MINUTE * 60) + (Calendar.SECOND)
         val weekDay = dayDict[Calendar.DAY_OF_WEEK]!!
 
-        val recommendation = intent.extras!!.getString("recommendation")!!
+        val recommendation = intent.extras!!.getString(context.getString(R.string.extra_recommendation))!!
 
         val sharePreferenceFile = when(recommendation) {
             context.getString(R.string.recommendation_periodic_alarm) -> context.getString(R.string.sharedpreferences_place_recommendation)
@@ -97,7 +97,7 @@ class RecognizedActivityReceiver(
                 }
                 context.getString(R.string.recommendation_geofence_enter) -> {
                     Log.d(TAG,"Asking for place recommendation of a specific category...")
-                    val placeCategory = intent.getStringExtra("place_category") ?: ""
+                    val placeCategory = intent.getStringExtra(context.getString(R.string.extra_place_category)) ?: ""
                     if(placeCategory == "") {
                         return@launch
                     }

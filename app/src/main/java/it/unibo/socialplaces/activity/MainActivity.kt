@@ -168,8 +168,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         super.onResume()
 
         if (!launchedWithNotificationHandler) {
-            launchedWithNotificationHandler = intent.getBooleanExtra("notification",false)
-            intent.removeExtra("notification")
+            launchedWithNotificationHandler = intent.getBooleanExtra(getString(R.string.extra_notification),false)
+            intent.removeExtra(getString(R.string.extra_notification))
         }
         CoroutineScope(Dispatchers.IO).launch {
             backgroundService?.updateGeofences(
@@ -205,8 +205,8 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     private fun fetchPoisAndLiveEvents() {
         Log.v(TAG, "fetchPoisAndLiveEvents")
         if (!launchedWithNotificationHandler) {
-            launchedWithNotificationHandler = intent.getBooleanExtra("notification",false)
-            intent.removeExtra("notification")
+            launchedWithNotificationHandler = intent.getBooleanExtra(getString(R.string.extra_notification),false)
+            intent.removeExtra(getString(R.string.extra_notification))
         }
 
         val handlingNotificationInFetching = launchedWithNotificationHandler
@@ -241,27 +241,27 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
             when (intent.action) {
                 getString(R.string.activity_place_place_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a Point of Interest recommendation.")
-                    val poi: PointOfInterest = intent.getParcelableExtra("place")!!
+                    val poi: PointOfInterest = intent.getParcelableExtra(getString(R.string.extra_point_of_interest))!!
                     MainFragment.newInstance(poisList, leList, poi, getString(R.string.activity_place_place_recommendation))
                 }
                 getString(R.string.activity_place_validity_recommendation) -> {
                     Log.i(TAG, "Handling a notification with a validity Point of Interest recommendation.")
-                    val poi: PointOfInterest = intent.getParcelableExtra("place")!!
+                    val poi: PointOfInterest = intent.getParcelableExtra(getString(R.string.extra_point_of_interest))!!
                     MainFragment.newInstance(poisList, leList, poi, getString(R.string.activity_place_validity_recommendation))
                 }
                 getString(R.string.activity_new_live_event) -> {
                     Log.i(TAG, "Handling a notification with a new Live Event creation.")
-                    val live: LiveEvent = intent.getParcelableExtra("live")!!
+                    val live: LiveEvent = intent.getParcelableExtra(getString(R.string.extra_live_event))!!
                     MainFragment.newInstance(poisList, leList, live)
                 }
                 getString(R.string.activity_friend_request_accepted) -> {
                     Log.i(TAG, "Handling a notification with a friend request accepted.")
-                    val friend = intent.getStringExtra("friendUsername")!!
+                    val friend = intent.getStringExtra(getString(R.string.extra_friend_username))!!
                     MainFragment.newInstance(poisList, leList, friend,false)
                 }
                 getString(R.string.activity_new_friend_request) -> {
                     Log.i(TAG, "Handling a notification with a new friend request.")
-                    val friend = intent.getStringExtra("friendUsername")!!
+                    val friend = intent.getStringExtra(getString(R.string.extra_friend_username))!!
                     MainFragment.newInstance(poisList, leList, friend,true)
                 }
                 else -> {

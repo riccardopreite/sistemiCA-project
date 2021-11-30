@@ -26,4 +26,27 @@
     <string name="sharedpreferences_validity_recommendation">sharePlacesGeofence</string>
     <string name="sharedpreferences_location_updates">sharePlacesLocation</string>
     <string name="sharedpreferences_active_services">activeServices</string>
+    <!-- Extras for FriendRequestAcceptedActivity/NewFriendRequestActivity -->
+    <string name="extra_friend_username">friendUsername</string>
+    <string name="extra_notification">notification</string>
+    <!-- Extras for LiveEventActivity -->
+    <string name="extra_live_event">live</string>
+    <!--<string name="extra_notification">notification</string>-->
+    <string name="extra_live_event_id">id</string>
+    <string name="extra_live_event_name">name</string>
+    <string name="extra_live_event_latitude">latitude</string>
+    <string name="extra_live_event_longitude">longitude</string>
+    <string name="extra_live_event_owner">owner</string>
+    <string name="extra_live_event_address">address</string>
+    <string name="extra_live_event_expiration_date">expirationDate</string>
+    <!-- Extras for PlaceRecommendationActivity -->
+    <string name="extra_encrypted_message">encrypted</string>
+    <string name="extra_point_of_interest">place</string>
+    <!--<string name="extra_notification">notification</string>-->
+    <!-- Extras for RecommendationAlarm -->
+    <string name="extra_place_category">place_category</string>
+    <!-- Extras for RecognizedActivityReceiver -->
+    <string name="extra_human_activity_type">human_activity_type</string>
+    <string name="extra_confidence">confidence</string>
+    <string name="extra_recommendation">recommendation</string>
 </resources>

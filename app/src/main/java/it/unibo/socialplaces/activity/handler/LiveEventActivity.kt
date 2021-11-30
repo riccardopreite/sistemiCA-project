@@ -18,21 +18,21 @@ class LiveEventActivity: AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val liveEvent = LiveEvent(
-            intent.getStringExtra("id")!!,
-            intent.getStringExtra("address")!!,
-            intent.getStringExtra("latitude")!!.toDouble(),
-            intent.getStringExtra("longitude")!!.toDouble(),
-            intent.getStringExtra("name")!!,
-            intent.getStringExtra("owner")!!,
-            intent.getStringExtra("expirationDate")!!.toLong()
+            intent.getStringExtra(getString(R.string.extra_live_event_id))!!,
+            intent.getStringExtra(getString(R.string.extra_live_event_address))!!,
+            intent.getStringExtra(getString(R.string.extra_live_event_latitude))!!.toDouble(),
+            intent.getStringExtra(getString(R.string.extra_live_event_longitude))!!.toDouble(),
+            intent.getStringExtra(getString(R.string.extra_live_event_name))!!,
+            intent.getStringExtra(getString(R.string.extra_live_event_owner))!!,
+            intent.getStringExtra(getString(R.string.extra_live_event_expiration_date))!!.toLong()
         )
 
         Log.i(TAG, "A new live event has been published: $liveEvent.")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             action = getString(R.string.activity_new_live_event)
-            putExtra("live", liveEvent)
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_live_event), liveEvent)
+            putExtra(getString(R.string.extra_notification), true)
         }
 
         startActivity(notificationIntent)

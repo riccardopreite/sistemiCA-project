@@ -109,14 +109,14 @@ class PushNotificationService: FirebaseMessagingService() {
             return null
         }
 
-        val jsonString = RSA.decrypt(data["encrypted"]!!)
+        val jsonString = RSA.decrypt(data[getString(R.string.extra_encrypted_message)]!!)
         val recommendedPlace = Gson().fromJson(jsonString, PointOfInterest::class.java)
 
         val recommendationIntent = Intent(this, MainActivity::class.java).apply {
             action = actionName
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("place", recommendedPlace) // PointOfInterest
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_point_of_interest), recommendedPlace) // PointOfInterest
+            putExtra(getString(R.string.extra_notification), true)
         }
 
 
@@ -141,19 +141,19 @@ class PushNotificationService: FirebaseMessagingService() {
         }
 
         val liveEvent = LiveEvent(
-            data["id"]!!,
-            data["address"]!!,
-            data["latitude"]!!.toDouble(),
-            data["longitude"]!!.toDouble(),
-            data["name"]!!,
-            data["owner"]!!,
-            data["expirationDate"]!!.toLong()
+            data[getString(R.string.extra_live_event_id)]!!,
+            data[getString(R.string.extra_live_event_address)]!!,
+            data[getString(R.string.extra_live_event_latitude)]!!.toDouble(),
+            data[getString(R.string.extra_live_event_longitude)]!!.toDouble(),
+            data[getString(R.string.extra_live_event_name)]!!,
+            data[getString(R.string.extra_live_event_owner)]!!,
+            data[getString(R.string.extra_live_event_expiration_date)]!!.toLong()
         )
         val liveEventIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_new_live_event)
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("live", liveEvent) // LiveEvent
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_live_event), liveEvent) // LiveEvent
+            putExtra(getString(R.string.extra_notification), true)
         }
 
         builder.setCategory(android.app.Notification.CATEGORY_RECOMMENDATION)
@@ -176,13 +176,13 @@ class PushNotificationService: FirebaseMessagingService() {
             return null
         }
 
-        val friendUsername = data["friendUsername"]!!
+        val friendUsername = data[getString(R.string.extra_friend_username)]!!
 
         val friendAcceptedIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_friend_request_accepted)
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("friendUsername", friendUsername) // String
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_friend_username), friendUsername) // String
+            putExtra(getString(R.string.extra_notification), true)
         }
 
         builder.setCategory(android.app.Notification.CATEGORY_SOCIAL)
@@ -206,15 +206,15 @@ class PushNotificationService: FirebaseMessagingService() {
             return null
         }
 
-        val friendUsername = data["friendUsername"]!!
+        val friendUsername = data[getString(R.string.extra_friend_username)]!!
 
         Log.d(TAG, "Creating notification with id=$id")
 
         val notificationFriendRequestIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_new_friend_request)
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("friendUsername", friendUsername)
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_friend_username), friendUsername)
+            putExtra(getString(R.string.extra_notification), true)
         }
 
         builder.setCategory(android.app.Notification.CATEGORY_SOCIAL)

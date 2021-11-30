@@ -19,7 +19,7 @@ class PlaceRecommendationActivity: AppCompatActivity() {
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
 
-        val encryptedMessage = intent.getStringExtra("encrypted")!!
+        val encryptedMessage = intent.getStringExtra(getString(R.string.extra_encrypted_message))!!
         val jsonString = RSA.decrypt(encryptedMessage)
         val recommendedPlace = Gson().fromJson(jsonString, PointOfInterest::class.java)
 
@@ -32,8 +32,8 @@ class PlaceRecommendationActivity: AppCompatActivity() {
                     getString(R.string.notification_place_recommendation) -> getString(R.string.activity_place_place_recommendation)
                     else -> ""
                 }
-            putExtra("place", recommendedPlace)
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_point_of_interest), recommendedPlace)
+            putExtra(getString(R.string.extra_notification), true)
         }
 
         startActivity(notificationIntent)

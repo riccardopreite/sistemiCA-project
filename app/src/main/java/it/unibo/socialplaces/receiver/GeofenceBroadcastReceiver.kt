@@ -20,11 +20,8 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "onReceive")
-        if(intent == null) {
-            return
-        }
 
         val geofencingEvent = GeofencingEvent.fromIntent(intent)
         if (geofencingEvent.hasError()) {
@@ -48,10 +45,10 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 val poi = pois[0]
                 val geofenceRecommendationIntent = Intent(context, RecommendationAlarm::class.java).apply {
                     action = context?.getString(R.string.recommendation_geofence_enter)
-                    putExtra("place_category", poi.type)
+                    putExtra(context.getString(R.string.extra_place_category), poi.type)
                 }
 
-                context?.sendBroadcast(geofenceRecommendationIntent)
+                context.sendBroadcast(geofenceRecommendationIntent)
                 Log.i(TAG, "Entered in the geofence of: " + poi.name)
             }
 

@@ -32,7 +32,7 @@ class RecommendationAlarm : BroadcastReceiver() {
      */
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "onReceive")
-        val placeCategory = intent.getStringExtra("place_category") ?: ""
+        val placeCategory = intent.getStringExtra(context.getString(R.string.extra_place_category)) ?: ""
 
         initARClientAndIntents(context.applicationContext, intent.action!!, placeCategory)
         registerReceiver(context.applicationContext)
@@ -48,7 +48,7 @@ class RecommendationAlarm : BroadcastReceiver() {
         if(!this::recommendPendingIntent.isInitialized) {
             val activityRecognitionIntent = Intent(context, RecognizedActivity::class.java).apply {
                 this.action = action
-                putExtra("place_category", category)
+                putExtra(context.getString(R.string.extra_place_category), category)
             }
             recommendPendingIntent = PendingIntent.getService(
                 context,

@@ -256,6 +256,7 @@ class BackgroundService: Service() {
             .setContentTitle(CHANNEL_NAME)
             .setContentText("Foreground location service is active.")
             .setContentIntent(pendingIntent)
+            .setSmallIcon(R.mipmap.ic_social)
             .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setCategory(Notification.CATEGORY_SERVICE)
             .build()

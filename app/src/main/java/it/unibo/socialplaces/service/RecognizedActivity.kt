@@ -34,11 +34,11 @@ class RecognizedActivity : IntentService(TAG) {
         Log.d(TAG,"Recommendation (intent.action): ${receivedIntent.action}.")
 
         val sendHaIntent = Intent(getString(R.string.recognized_ha)).apply {
-            putExtra("human_activity_type", acceptedActivities[detectedActivity.type])
-            putExtra("confidence", detectedActivity.confidence)
-            putExtra("recommendation", receivedIntent.action)
-            val placeCategory = receivedIntent.getStringExtra("place_category") ?: ""
-            putExtra("place_category", placeCategory)
+            putExtra(getString(R.string.extra_human_activity_type), acceptedActivities[detectedActivity.type])
+            putExtra(getString(R.string.extra_confidence), detectedActivity.confidence)
+            putExtra(getString(R.string.extra_recommendation), receivedIntent.action)
+            val placeCategory = receivedIntent.getStringExtra(getString(R.string.extra_place_category)) ?: ""
+            putExtra(getString(R.string.extra_place_category), placeCategory)
         }
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(sendHaIntent)

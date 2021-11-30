@@ -16,13 +16,13 @@ class NewFriendRequestActivity: AppCompatActivity(){
         Log.v(TAG, "onCreate")
         super.onCreate(savedInstanceState)
 
-        val friendUsername = intent.getStringExtra("friendUsername")
+        val friendUsername = intent.getStringExtra(getString(R.string.extra_friend_username))
 
         Log.i(TAG,"Friend request from $friendUsername!")
         val notificationIntent = Intent(this, MainActivity::class.java).apply {
             action = getString(R.string.activity_new_friend_request)
-            putExtra("friendUsername", friendUsername)
-            putExtra("notification", true)
+            putExtra(getString(R.string.extra_friend_username), friendUsername)
+            putExtra(getString(R.string.extra_notification), true)
         }
 
         startActivity(notificationIntent)
