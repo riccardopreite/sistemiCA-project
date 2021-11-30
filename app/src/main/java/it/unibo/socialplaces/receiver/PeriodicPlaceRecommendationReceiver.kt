@@ -12,9 +12,9 @@ import com.google.android.gms.location.ActivityRecognitionClient
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.service.RecognizedActivity
 
-class RecommendationAlarm : BroadcastReceiver() {
+class PeriodicPlaceRecommendationReceiver : BroadcastReceiver() {
     companion object {
-        private val TAG: String = RecommendationAlarm::class.qualifiedName!!
+        private val TAG: String = PeriodicPlaceRecommendationReceiver::class.qualifiedName!!
     }
 
     /**

@@ -43,7 +43,7 @@
     <string name="extra_encrypted_message">encrypted</string>
     <string name="extra_point_of_interest">place</string>
     <!--<string name="extra_notification">notification</string>-->
-    <!-- Extras for RecommendationAlarm -->
+    <!-- Extras for PeriodicPlaceRecommendationReceiver -->
     <string name="extra_place_category">place_category</string>
     <!-- Extras for RecognizedActivityReceiver -->
     <string name="extra_human_activity_type">human_activity_type</string>

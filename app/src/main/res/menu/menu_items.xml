@@ -35,7 +35,7 @@
         <item
             android:id="@+id/geofencing_service_switch"
             android:icon="@drawable/ic_route_start_svgrepo_com"
-            android:title="@string/geofencing_service"
+            android:title="@string/periodic_place_recommendation_service"
             app:actionViewClass="androidx.appcompat.widget.SwitchCompat"
             app:showAsAction="ifRoom"/>
 

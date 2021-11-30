@@ -25,9 +25,8 @@ import it.unibo.socialplaces.config.Auth
 import it.unibo.socialplaces.databinding.FragmentMainMenuBinding
 import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.Picasso
-import it.unibo.socialplaces.activity.MainActivity
 import it.unibo.socialplaces.config.Alarm
-import it.unibo.socialplaces.receiver.RecommendationAlarm
+import it.unibo.socialplaces.receiver.PeriodicPlaceRecommendationReceiver
 import it.unibo.socialplaces.service.BackgroundService
 
 class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
@@ -106,7 +105,7 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
             if(isLocationServiceActive) {
                 stopLocationService()
                 if(isGeofencingServiceActive) {
-                    stopGeofencingService()
+                    stopPeriodicPlaceRecommendation()
                     geofencingServiceSwitch.isChecked = false
                     activeServicesSharedPrefs.edit().putBoolean("geofencingService", geofencingServiceSwitch.isChecked).apply()
                 }
@@ -125,9 +124,9 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
             }
             val isGeofencingServiceActive = activeServicesSharedPrefs.getBoolean("geofencingService", false)
             if(isGeofencingServiceActive) {
-                stopGeofencingService()
+                stopPeriodicPlaceRecommendation()
             } else {
-                startGeofencingService()
+                startPeriodicPlaceRecommendation()
             }
             geofencingServiceSwitch.isChecked = !isGeofencingServiceActive
             activeServicesSharedPrefs.edit().putBoolean("geofencingService", geofencingServiceSwitch.isChecked).apply()
@@ -211,30 +210,30 @@ class MainMenuFragment : Fragment(R.layout.fragment_main_menu),
     }
 
     /**
-     * Starts the geofencing broadcast receiver [RecommendationAlarm] that starts the human activity recognition.
+     * Starts the geofencing broadcast receiver [PeriodicPlaceRecommendationReceiver] that starts the human activity recognition.
      */
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun startGeofencingService() {
-        Log.v(TAG, "startGeofencingService")
+    private fun startPeriodicPlaceRecommendation() {
+        Log.v(TAG, "startPeriodicPlaceRecommendation")
         val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(requireContext(), RecommendationAlarm::class.java).apply {
+        val alarmIntent = Intent(requireContext(), PeriodicPlaceRecommendationReceiver::class.java).apply {
             action = getString(R.string.recommendation_periodic_alarm)
         }
         val recommendationBroadcast = PendingIntent.getBroadcast(
             requireContext(), 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
         alarmManager.setRepeating(Alarm.alarmType(), Alarm.firstRunMillis(), Alarm.repeatingRunTimeWindow(), recommendationBroadcast)
-        Toast.makeText(requireContext(), R.string.geofencing_service_started, Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), R.string.periodic_place_recommendation_service_started, Toast.LENGTH_SHORT).show()
     }
 
     /**
-     * Stops the geofencing broadcast receiver [RecommendationAlarm] that stops also the human activity recognition.
+     * Stops the geofencing broadcast receiver [PeriodicPlaceRecommendationReceiver] that stops also the human activity recognition.
      */
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun stopGeofencingService() {
-        Log.v(TAG, "stopGeofencingService")
+    private fun stopPeriodicPlaceRecommendation() {
+        Log.v(TAG, "stopPeriodicPlaceRecommendation")
         val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(requireContext(), RecommendationAlarm::class.java).apply {
+        val alarmIntent = Intent(requireContext(), PeriodicPlaceRecommendationReceiver::class.java).apply {
             action = getString(R.string.recommendation_periodic_alarm)
         }
         val recommendationBroadcast = PendingIntent.getBroadcast(

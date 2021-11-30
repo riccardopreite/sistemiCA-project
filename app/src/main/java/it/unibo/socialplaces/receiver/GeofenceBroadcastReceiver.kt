@@ -43,7 +43,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                     return@launch
                 }
                 val poi = pois[0]
-                val geofenceRecommendationIntent = Intent(context, RecommendationAlarm::class.java).apply {
+                val geofenceRecommendationIntent = Intent(context, PeriodicPlaceRecommendationReceiver::class.java).apply {
                     action = context?.getString(R.string.recommendation_geofence_enter)
                     putExtra(context.getString(R.string.extra_place_category), poi.type)
                 }
