@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.PointsOfInterestListFragment
@@ -32,9 +33,15 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         savedInstanceState?.let {
             poiToDelete = it.getParcelable(ARG_POITODELETE) as PointOfInterest?
         }
+
+        // Using findViewById(android.R.id.content) is a workaround for accessing a view instance
+        val snackbar = Snackbar.make(findViewById(android.R.id.content), R.string.loading_pois, Snackbar.LENGTH_INDEFINITE)
+        snackbar.show()
+
         updatePoisList()
     }
 
@@ -138,14 +145,17 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
     }
 
     /**
-     * Retrieves the list of points of interest and pushes the [PointsOfInterestListFragment].
+     * Updates the points of interest list calling the SocialPlaces API and, if a loading snackbar
+     * was pushed, dismisses the snackbar when the update is completed.
      */
-    private fun updatePoisList() {
+    private fun updatePoisList(snackbar: Snackbar? = null) {
         Log.v(TAG,"updatePoisList")
+
         CoroutineScope(Dispatchers.IO).launch {
             val poisList = PointsOfInterest.getPointsOfInterest(forceSync = true)
             val poisFragment = PointsOfInterestListFragment.newInstance(poisList)
             pushFragment(poisFragment)
+            CoroutineScope(Dispatchers.Main).launch { snackbar?.dismiss() }
         }
     }
 }

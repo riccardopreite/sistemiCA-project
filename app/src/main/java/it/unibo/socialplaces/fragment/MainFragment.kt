@@ -305,6 +305,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
         notificationLive?.let {
             val shouldCreateMarker = !liveEventsList.contains(it)
+            if(shouldCreateMarker) {
+                LiveEvents.addLiveEventLocally(it)
+                CoroutineScope(Dispatchers.IO).launch {
+                    liveEventsList = LiveEvents.getLiveEvents()
+                    arguments?.putParcelableArray(ARG_LIVEEVENTSLIST, liveEventsList.toTypedArray())
+                }
+            }
             showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.id,"live",shouldCreateMarker)
             notificationLive = null
         }
@@ -367,11 +374,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
         // Searching for the marker in the map of saved markers.
         val foundMarker = markers.entries.filter { it.value == marker }
         if(foundMarker.isNotEmpty()) {
+            Log.d(TAG, "Marker has been found: handling it.")
             // The marker has been found, hence we need to discover if it is a live event or point of interest.
             val markerId = foundMarker[0].key
 
             val foundPoi = poisList.filter { it.markId == markerId }
             if(foundPoi.isNotEmpty()) {
+                Log.d(TAG, "The marker is a point of interest.")
                 val recommendationFile =
                     when(recommendationType) {
                         getString(R.string.activity_place_validity_recommendation) -> getString(R.string.sharedpreferences_validity_recommendation)
@@ -420,6 +429,7 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
             val foundLiveEvent = liveEventsList.filter { it.id == markerId }
             if(foundLiveEvent.isNotEmpty()) {
+                Log.d(TAG, "The marker is a live event.")
                 val liveDetailFragment = LiveEventDetailsDialogFragment.newInstance(foundLiveEvent[0])
                 liveDetailFragment.setOnDismissCallback { isShowingDetails = false }
 

@@ -7,9 +7,12 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.domain.LiveEvents
+import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.LiveEventsListFragment
+import it.unibo.socialplaces.fragment.PointsOfInterestListFragment
 import it.unibo.socialplaces.fragment.dialog.liveevents.LiveEventDetailsDialogFragment
 import it.unibo.socialplaces.model.liveevents.LiveEvent
 import kotlinx.coroutines.CoroutineScope
@@ -26,11 +29,12 @@ class LiveEventsListActivity: it.unibo.socialplaces.activity.ListActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        CoroutineScope(Dispatchers.IO).launch {
-            val liveEventsList = LiveEvents.getLiveEvents(true)
-            val liveEventsFragment = LiveEventsListFragment.newInstance(liveEventsList)
-            pushFragment(liveEventsFragment)
-        }
+
+        // Using findViewById(android.R.id.content) is a workaround for accessing a view instance
+        val snackbar = Snackbar.make(findViewById(android.R.id.content), R.string.loading_liveevents, Snackbar.LENGTH_INDEFINITE)
+        snackbar.show()
+
+        updateLiveEventsList(snackbar)
     }
 
     /**
@@ -78,5 +82,20 @@ class LiveEventsListActivity: it.unibo.socialplaces.activity.ListActivity(),
             getString(R.string.share_place_intent, liveEvent.name)
         )
         ContextCompat.startActivity(this, createdIntent, null)
+    }
+
+    /**
+     * Updates the live events list calling the SocialPlaces API and, if a loading snackbar
+     * was pushed, dismisses the snackbar when the update is completed.
+     */
+    private fun updateLiveEventsList(snackbar: Snackbar? = null) {
+        Log.v(TAG,"updateLiveEventsList")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val leList = LiveEvents.getLiveEvents(forceSync = true)
+            val lesFragment = LiveEventsListFragment.newInstance(leList)
+            pushFragment(lesFragment)
+            CoroutineScope(Dispatchers.Main).launch { snackbar?.dismiss() }
+        }
     }
 }

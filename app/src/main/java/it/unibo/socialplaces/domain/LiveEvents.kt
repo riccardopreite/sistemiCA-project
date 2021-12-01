@@ -162,7 +162,7 @@ object LiveEvents {
      * Adds a live event locally and sorts the list of live events.
      * @param liveEvent new live event to add (locally).
      */
-    private fun addLiveEventLocally(liveEvent: LiveEvent) {
+    fun addLiveEventLocally(liveEvent: LiveEvent) {
         Log.v(TAG, "addLiveEventLocally")
 
         liveEvents.add(liveEvent)
