@@ -299,6 +299,13 @@ class MainFragment : Fragment(R.layout.fragment_main),
 
         notificationPoi?.let {
             val shouldCreateMarker = !poisList.contains(it)
+            if(shouldCreateMarker) {
+                PointsOfInterest.addPointOfInterestLocally(it)
+                CoroutineScope(Dispatchers.IO).launch {
+                    poisList = PointsOfInterest.getPointsOfInterest()
+                    arguments?.putParcelableArray(ARG_POISLIST, poisList.toTypedArray())
+                }
+            }
             showNotifiedPoiOrLiveOnMap(it.latitude,it.longitude,it.name,it.address,it.markId,it.type,shouldCreateMarker)
             notificationPoi = null
         }

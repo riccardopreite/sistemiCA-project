@@ -42,7 +42,7 @@ class PointsOfInterestListActivity: it.unibo.socialplaces.activity.ListActivity(
         val snackbar = Snackbar.make(findViewById(android.R.id.content), R.string.loading_pois, Snackbar.LENGTH_INDEFINITE)
         snackbar.show()
 
-        updatePoisList()
+        updatePoisList(snackbar)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
