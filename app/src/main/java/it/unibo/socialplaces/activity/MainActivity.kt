@@ -28,7 +28,7 @@ import com.google.android.material.snackbar.Snackbar
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.config.Alarm
 import it.unibo.socialplaces.config.PushNotification
-import it.unibo.socialplaces.receiver.PeriodicPlaceRecommendationReceiver
+import it.unibo.socialplaces.receiver.PlaceRecommendationReceiver
 import it.unibo.socialplaces.domain.LiveEvents
 import it.unibo.socialplaces.domain.PointsOfInterest
 import it.unibo.socialplaces.fragment.MainFragment
@@ -512,7 +512,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
     }
 
     /**
-     * Retrieves the instance of [AlarmManager] for running [PeriodicPlaceRecommendationReceiver].
+     * Retrieves the instance of [AlarmManager] for running [PlaceRecommendationReceiver].
      */
     @SuppressLint("UnspecifiedImmutableFlag")
     private fun startGeofencingService() {
@@ -529,7 +529,7 @@ class MainActivity: AppCompatActivity(R.layout.activity_main),
         }
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val alarmIntent = Intent(this, PeriodicPlaceRecommendationReceiver::class.java).apply {
+        val alarmIntent = Intent(this, PlaceRecommendationReceiver::class.java).apply {
             action = getString(R.string.recommendation_periodic_alarm)
         }
 

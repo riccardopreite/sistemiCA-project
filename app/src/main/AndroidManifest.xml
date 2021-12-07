@@ -29,7 +29,7 @@
         android:allowBackup="true">
 
         <!-- Receivers -->
-        <receiver android:name=".receiver.PeriodicPlaceRecommendationReceiver"
+        <receiver android:name=".receiver.PlaceRecommendationReceiver"
             android:enabled="true" />
 
         <receiver android:name=".receiver.GeofenceBroadcastReceiver"

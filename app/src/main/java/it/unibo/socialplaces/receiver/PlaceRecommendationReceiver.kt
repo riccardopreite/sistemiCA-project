@@ -12,9 +12,9 @@ import com.google.android.gms.location.ActivityRecognitionClient
 import it.unibo.socialplaces.R
 import it.unibo.socialplaces.service.RecognizedActivity
 
-class PeriodicPlaceRecommendationReceiver : BroadcastReceiver() {
+class PlaceRecommendationReceiver : BroadcastReceiver() {
     companion object {
-        private val TAG: String = PeriodicPlaceRecommendationReceiver::class.qualifiedName!!
+        private val TAG: String = PlaceRecommendationReceiver::class.qualifiedName!!
     }
 
     /**
@@ -91,10 +91,8 @@ class PeriodicPlaceRecommendationReceiver : BroadcastReceiver() {
 
     /**
      * Set and remove human activity updates.
-     * Is a work around because the only way is to ask periodically so after get the first response we remove it
-     *
+     * Is a work around because the only way is to ask periodically so after get the first response we remove it.
      */
-
     private fun removeActivityUpdates(){
         activityRecognitionClient.removeActivityUpdates(
             recommendPendingIntent
