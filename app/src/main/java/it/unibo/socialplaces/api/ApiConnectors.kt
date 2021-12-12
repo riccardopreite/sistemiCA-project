@@ -15,6 +15,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.InputStream
 import java.security.*
+import java.util.regex.Pattern
 import javax.net.ssl.*
 
 object ApiConnectors {
@@ -36,10 +37,16 @@ object ApiConnectors {
     }
     private val trustManager = tmf.trustManagers[0] as X509TrustManager
 
+    private const val zeroTo255 = ("(\\d{1,2}|(0|1)\\d{2}|2[0-4]\\d|25[0-5])")
+    private const val ipRegex = "$zeroTo255\\.$zeroTo255\\.$zeroTo255\\.$zeroTo255"
+    private val pattern = Pattern.compile(ipRegex)
+
     private val hostnameVerifier = HostnameVerifier { _, session -> //first
         val hv: HostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
-        hv.verify(Api.ip, session)
-        return@HostnameVerifier true
+        if(pattern.matcher(Api.hostname).matches()) {
+            return@HostnameVerifier true // Skipping to check for IP addresses
+        }
+        return@HostnameVerifier hv.verify(Api.hostname, session)
     }
 
     /**
@@ -99,7 +106,7 @@ object ApiConnectors {
      */
     private val retrofitBuilder: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
+            .baseUrl("https://${Api.hostname}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -111,7 +118,7 @@ object ApiConnectors {
      */
     private val secureRetrofitBuilder: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://${Api.ip}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
+            .baseUrl("https://${Api.hostname}${if (Api.port.isNotEmpty()) ":${Api.port}" else ""}")
             .client(secureClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
