@@ -44,6 +44,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.util.*
+import kotlin.math.roundToLong
 
 
 class MainFragment : Fragment(R.layout.fragment_main),
@@ -488,10 +490,10 @@ class MainFragment : Fragment(R.layout.fragment_main),
      * @return `true` if the approximated position are equal, `false` otherwise.
      */
     private fun checkIfPositionsAreEqualApproximated(pos0: LatLng, pos1: LatLng): Boolean {
-        val lat0 = "%.4f".format(pos0.latitude).toDouble()
-        val lon0 = "%.4f".format(pos0.longitude).toDouble()
-        val lat1 = "%.4f".format(pos1.latitude).toDouble()
-        val lon1 = "%.4f".format(pos1.longitude).toDouble()
+        val lat0 = "%.4f".format(Locale.US, pos0.latitude).toDouble()
+        val lon0 = "%.4f".format(Locale.US, pos0.longitude).toDouble()
+        val lat1 = "%.4f".format(Locale.US, pos1.latitude).toDouble()
+        val lon1 = "%.4f".format(Locale.US, pos1.longitude).toDouble()
 
         return lat0 == lat1 && lon0 == lon1
     }
