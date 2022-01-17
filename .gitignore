@@ -2,6 +2,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/android,androidstudio,intellij+all,intellij,intellij+iml,git,gradle
 # Edit at https://www.toptal.com/developers/gitignore?templates=android,androidstudio,intellij+all,intellij,intellij+iml,git,gradle
 
+# Keys
+app/google-services.json
+app/src/main/res/raw/*
+
 ### Android ###
 # Built application files
 *.apk
